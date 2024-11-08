@@ -31,6 +31,9 @@ pip install -r requirements.txt
 ```
 
 ## Running the backend
+
+Copy the provided `.env` file *into the `backend` directory* (not the root directory). See `backend/.env.example` for the required fields.
+
 ```
 cd backend
 python manage.py runserver
