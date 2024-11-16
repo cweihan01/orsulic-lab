@@ -10,6 +10,17 @@ git clone https://github.com/cweihan01/orsulic-lab.git
 cd orsulic-lab
 ```
 
+## Running the frontend
+```
+cd frontend
+```
+
+We use `yarn` as our package manager.
+```
+yarn install
+yarn start
+```
+
 ## Running the backend
 ```
 cd backend
