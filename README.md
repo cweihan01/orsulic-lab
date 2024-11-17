@@ -15,7 +15,12 @@ cd orsulic-lab
 cd frontend
 ```
 
-We use `yarn` as our package manager.
+We use `yarn` as our package manager. To install yarn:
+```
+npm install --global yarn
+```
+
+Install packages and start server:
 ```
 yarn install
 yarn start
