@@ -1,7 +1,45 @@
+/* General app styles */
 .App {
   text-align: center;
+  font-family: 'Arial', sans-serif;
+  background-color: #f0f4f8;
+  padding: 20px;
+  margin: 0;
 }
 
+/* App header */
+.App-header {
+  background: linear-gradient(135deg, #007bff, #00c6ff); /* Vibrant gradient */
+  min-height: 25vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(12px + 2vmin);
+  color: white;
+  padding: 20px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.App-header h1 {
+  font-size: 2.8rem;
+  margin: 0;
+  font-weight: bold;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Links */
+.App-link {
+  color: #ffffff;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.App-link:hover {
+  color: #ffdd57;
+}
+
+/* Logo animation */
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -13,21 +51,6 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -36,3 +59,99 @@
     transform: rotate(360deg);
   }
 }
+
+/* Query and results sections */
+.query-form, .correlation-result {
+  background: #ffffff; /* Clean white card */
+  margin: 20px auto;
+  padding: 25px;
+  max-width: 800px;
+  border-radius: 12px;
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Form styling */
+.query-form form {
+  display: flex;
+  flex-direction: column;
+}
+
+.query-form label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.query-form input, .query-form select, .query-form button {
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.query-form button {
+  background: linear-gradient(135deg, #007bff, #00c6ff); /* Vibrant button */
+  color: white;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.query-form button:hover {
+  background: linear-gradient(135deg, #0056b3, #009acf); /* Slightly darker gradient */
+}
+
+/* Table styling */
+.correlation-result table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.correlation-result th, .correlation-result td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.correlation-result th {
+  background: #007bff;
+  color: white;
+}
+
+.correlation-result tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.correlation-result tr:hover {
+  background-color: #e1f5fe;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .query-form, .correlation-result {
+    padding: 15px;
+    margin: 10px auto;
+  }
+
+  .query-form input, .query-form select, .query-form button {
+    font-size: 0.9rem;
+  }
+
+  .correlation-result table {
+    font-size: 0.9rem;
+  }
+}
+
+/* Add a subtle gradient background to the entire app */
+body {
+  background: linear-gradient(to bottom, #e3f2fd, #ffffff);
+  margin: 0;
+  padding: 0;
+}
+
+
+
