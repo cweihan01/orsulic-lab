@@ -53,6 +53,7 @@ CELL_LINES = [
     "ACH-000947"
 ]
 
+
 class Feature(models.Model):
     """
     Stores each feature.
@@ -61,6 +62,7 @@ class Feature(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class CellLine(models.Model):
     """

@@ -4,9 +4,9 @@ from .models import Feature, CellLine
 from .serializers import FeatureSerializer, CellLineSerializer
 
 
-# Create your views here.
 def index(request):
     return render(request, 'database/index.html')
+
 
 def cellline(request):
     rows = CellLine.objects.all()
@@ -21,6 +21,7 @@ def cellline(request):
 class FeatureViewSet(viewsets.ModelViewSet):
     queryset = Feature.objects.all()
     serializer_class = FeatureSerializer
+
 
 class CellLineViewSet(viewsets.ModelViewSet):
     queryset = CellLine.objects.all()
