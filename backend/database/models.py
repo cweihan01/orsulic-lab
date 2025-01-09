@@ -68,7 +68,6 @@ class CellLine(models.Model):
             subsequent columns correspond to each cell line
     """
     feature = models.OneToOneField(Feature, on_delete=models.CASCADE, primary_key=True)
-    # feature = models.CharField(max_length=100, primary_key=True, default="")
 
     for cellline in CELL_LINES:
         locals()[cellline] = models.FloatField(default=0)
