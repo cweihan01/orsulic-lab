@@ -1,4 +1,4 @@
-// App.js
+// App.jsx
 import React, { useState } from 'react';
 import QueryForm from './components/QueryForm';
 import CorrelationResult from './components/CorrelationResult';
