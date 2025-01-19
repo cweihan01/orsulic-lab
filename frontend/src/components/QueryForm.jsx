@@ -134,13 +134,13 @@ function QueryForm({ onSubmit }) {
 
     // Get list of features from API
     useEffect(() => {
-        console.log("Making request with: " + `${process.env.REACT_APP_API_ROOT}features`)
+        console.log('Making request with: ' + `${process.env.REACT_APP_API_ROOT}features`);
         axios
             .get(`${process.env.REACT_APP_API_ROOT}features/`)
             .then((response) => {
-                setFeatureList(response.data.features);
-                console.log("Retrieved feature list from endpoint");
+                console.log('Retrieved response:');
                 console.log(response);
+                setFeatureList(response.data.map((feature) => feature.name));
             })
             .catch((error) => {
                 console.error('Error fetching features:', error);
@@ -180,7 +180,7 @@ function QueryForm({ onSubmit }) {
                         className="w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:ring focus:ring-purple-100 focus:outline-none"
                     >
                         <option value="">Select an option</option>
-                        {TEST_FEATURE_LIST.map((option, index) => (
+                        {featureList.map((option, index) => (
                             <option key={index} value={option}>
                                 {option}
                             </option>
@@ -206,7 +206,7 @@ function QueryForm({ onSubmit }) {
 
                     <MultiSelectDropdown
                         formFieldName="feature2"
-                        options={TEST_FEATURE_LIST}
+                        options={featureList}
                         onChange={(selected) => setFeature2(selected)}
                         prompt="Select one or more features"
                     />
