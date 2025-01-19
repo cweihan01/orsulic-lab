@@ -1,5 +1,6 @@
 // QueryForm.js
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 
 const TEST_FEATURE_LIST = ['A1BG', '5thPercentile', 'A23F', '99thPercentile'];
 
@@ -125,10 +126,26 @@ function MultiSelectDropdown({
 }
 
 function QueryForm({ onSubmit }) {
+    const [featureList, setFeatureList] = useState([]);
     const [feature1, setFeature1] = useState('');
     const [feature2, setFeature2] = useState([]);
-    const [minCorrelation, setMinCorrelation] = useState('');
-    const [maxPValue, setMaxPValue] = useState('');
+    const [minCorrelation, setMinCorrelation] = useState(0.0);
+    const [maxPValue, setMaxPValue] = useState(1.0);
+
+    // Get list of features from API
+    useEffect(() => {
+        console.log("Making request with: " + `${process.env.REACT_APP_API_ROOT}features`)
+        axios
+            .get(`${process.env.REACT_APP_API_ROOT}features/`)
+            .then((response) => {
+                setFeatureList(response.data.features);
+                console.log("Retrieved feature list from endpoint");
+                console.log(response);
+            })
+            .catch((error) => {
+                console.error('Error fetching features:', error);
+            });
+    }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
