@@ -87,7 +87,7 @@ class CorrelationView(APIView):
             # Convert the results DataFrame to a JSON-compatible format
             results_json = results_df.to_dict(orient="records")
 
-            return Response({"Correlations": results_json}, status=status.HTTP_200_OK)
+            return Response({"correlations": results_json}, status=status.HTTP_200_OK)
 
         except Exception as e:
             print("Error:", traceback.format_exc())
