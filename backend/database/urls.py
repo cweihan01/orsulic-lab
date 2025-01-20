@@ -1,10 +1,17 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
 from . import views
 
-urlpatterns = [
+router = DefaultRouter()
+router.register("features", views.FeatureViewSet)
+router.register("celllines", views.CellLineViewSet)
 
+urlpatterns = [
     path('', views.index, name=""),
     path('cellline', views.cellline, name="cellline"),
     path('corr', views.corr, name="corr"),
+    path('api/', include(router.urls)),
+    path('api/correlations/', views.CorrelationView.as_view()),
 
 ]

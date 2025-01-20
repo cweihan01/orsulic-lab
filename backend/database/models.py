@@ -53,14 +53,20 @@ CELL_LINES = [
     "ACH-000947"
 ]
 
+
 class Feature(models.Model):
     """
     Stores each feature.
     """
     name = models.CharField(max_length=100, primary_key=True)
+    # TODO:
+    # store type (image, clinical, etc)
+    # store data type (numerical or categorical)
+    # use id as primary key - features may have the same names
 
     def __str__(self):
         return self.name
+
 
 class CellLine(models.Model):
     """
@@ -68,7 +74,6 @@ class CellLine(models.Model):
             subsequent columns correspond to each cell line
     """
     feature = models.OneToOneField(Feature, on_delete=models.CASCADE, primary_key=True)
-    # feature = models.CharField(max_length=100, primary_key=True, default="")
 
     for cellline in CELL_LINES:
         locals()[cellline] = models.FloatField(default=0)
