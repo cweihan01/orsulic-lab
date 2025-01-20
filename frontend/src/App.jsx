@@ -2,15 +2,36 @@
 import React, { useState } from 'react';
 import QueryForm from './components/QueryForm';
 import CorrelationResult from './components/CorrelationResult';
-import { mockCorrelationData } from './components/MockData';
+// import { mockCorrelationData } from './components/MockData';
 import './App.css'; // Importing App.css for styling
 import './index.js';
 
-function App() {
-    const [data, setData] = useState([]);
+import axios from 'axios';
 
+function App() {
+    const [correlations, setCorrelations] = useState([]);
+
+    // When query form submitted, make POST request to correlations API
     const handleQuery = (query) => {
-        console.log("Handing query...")
+        console.log('Handling POST query to /correlations/...');
+        // console.log('Query as from App.jsx:');
+        console.log(query);
+
+        // TODO: add p-value, correlation fields (need to be handled by backend)
+        axios
+            .post(`${process.env.REACT_APP_API_ROOT}correlations/`, {
+                feature1: query.feature1,
+                feature2: query.feature2,
+            })
+            .then((response) => {
+                console.log('Retrieved correlations:');
+                console.log(response);
+                setCorrelations(response.data.correlations);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+
         // const filteredData = mockCorrelationData.filter((item) => {
         //     const meetsFeature1 = query.feature1
         //         ? item.feature_1_name.toLowerCase().includes(query.feature1.toLowerCase())
@@ -36,11 +57,9 @@ function App() {
 
     return (
         <div className="text-center content-center">
-            <h1 className="bg-indigo-300 text-4xl text-bold py-3">
-                Database Query Interface
-            </h1>
+            <h1 className="bg-indigo-300 text-4xl text-bold py-3">Database Query Interface</h1>
             <QueryForm onSubmit={handleQuery} />
-            <CorrelationResult data={data} />
+            <CorrelationResult data={correlations} />
         </div>
     );
 }

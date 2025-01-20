@@ -38,4 +38,4 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                 results.append([f1_name, f2_name, count, corr, p_value])
 
     # Convert the results into a DataFrame
-    return pd.DataFrame(results, columns=["feature1", "feature2", "count", "spearman_correlation", "spearman_p-value"])
+    return pd.DataFrame(results, columns=["feature1", "feature2", "count", "spearman_correlation", "spearman_p_value"])

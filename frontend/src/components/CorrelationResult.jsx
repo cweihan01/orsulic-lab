@@ -1,4 +1,4 @@
-// CorrelationResult.js
+// CorrelationResult.jsx
 import React from 'react';
 
 function CorrelationResult({ data }) {
@@ -39,8 +39,8 @@ function CorrelationResult({ data }) {
                     <tbody>
                         {sortedData.map((item, index) => (
                             <tr key={index}>
-                                <td>{item.feature_1_name}</td>
-                                <td>{item.feature_2_name}</td>
+                                <td>{item.feature1}</td>
+                                <td>{item.feature2}</td>
                                 <td>{item.count}</td>
                                 <td style={{ color: getCorrelationColor(item.spearman_correlation) }}>
                                     {item.spearman_correlation}
