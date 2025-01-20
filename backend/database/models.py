@@ -75,3 +75,21 @@ class CellLine(models.Model):
 
     def __str__(self):
         return self.feature.name
+    
+class Correlation(models.Model):
+    """
+
+    Schema:
+
+    """
+    feature1 = models.ForeignKey(Feature, on_delete=models.CASCADE, related_name="feature1")
+    feature2 = models.ForeignKey(Feature, on_delete=models.CASCADE, related_name="feature2")
+    count = models.IntegerField(default=0)
+    spearman_corr = models.FloatField(default=0)
+    spearman_pvalue = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = ("feature1", "feature2")
+
+    def __str__(self):
+        return f"Correlation between {self.feature1.name} and {self.feature2.name}"

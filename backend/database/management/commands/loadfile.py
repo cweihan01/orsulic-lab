@@ -1,7 +1,6 @@
 import pandas as pd
 from django.core.management import BaseCommand
 from database.models import CellLine, Feature
-# from database.models import CellLine, Feature, CellLineFeatureValue
 
 class Command(BaseCommand):
     help = "Reads in a CSV file and stores data to database"

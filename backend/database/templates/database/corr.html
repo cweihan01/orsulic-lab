@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cell Line Table</title>
+    <title>Correlations Table</title>
     <style>
         table {
             border-collapse: collapse;
@@ -21,7 +21,7 @@
     </style>
 </head>
 <body>
-    <h1>Cell Line Data Table</h1>
+    <h1>Correlations Table</h1>
     <table>
         <thead>
             <tr>
@@ -31,10 +31,10 @@
             </tr>
         </thead>
         <tbody>
-            {% for feature in features %}
+            {% for corr in correlations %}
                 <tr>
                     {% for col in columns %}
-                        <td>{{ feature|attr:col }}</td>
+                        <td>{{ corr|attr:col }}</td>
                     {% endfor %}
                 </tr>
             {% endfor %}
