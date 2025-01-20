@@ -1,8 +1,6 @@
-// QueryForm.js
+// QueryForm.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-
-const TEST_FEATURE_LIST = ['A1BG', '5thPercentile', 'A23F', '99thPercentile'];
 
 function MultiSelectDropdown({
     formFieldName,
@@ -12,6 +10,23 @@ function MultiSelectDropdown({
 }) {
     const [selectedOptions, setSelectedOptions] = useState([]);
     const optionsListRef = useRef(null);
+
+    const [isOpen, setIsOpen] = useState(false); // Track dropdown visibility
+    const dropdownRef = useRef(null); // Ref for the entire dropdown component
+
+    // Close the dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const handleChange = (e) => {
         const isChecked = e.target.checked;
@@ -60,8 +75,16 @@ function MultiSelectDropdown({
     };
 
     return (
-        <label className="relative w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 text-gray-700">
-            <input type="checkbox" className="hidden peer" />
+        <label
+            ref={dropdownRef}
+            className="relative w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 text-gray-700"
+        >
+            <input
+                type="checkbox"
+                className="hidden peer"
+                checked={isOpen}
+                onChange={() => setIsOpen((prev) => !prev)}
+            />
 
             {/* <div className="after:content-['▼'] after:text-xs after:ml-1 after:inline-flex after:items-center peer-checked:after:-rotate-180 after:transition-transform text-left pl-5"> */}
             <div className="flex justify-between items-center pl-5">
@@ -71,7 +94,9 @@ function MultiSelectDropdown({
                             <span className="ml-1 text-blue-500">
                                 {`(${selectedOptions.length} selected)`} {''}
                             </span>
-                            {selectedOptions[0] + ', ' + (selectedOptions[1] || '') + '...'}
+                            {selectedOptions[0] +
+                                (selectedOptions[1] ? `, ${selectedOptions[1]}` : '') +
+                                (selectedOptions[2] ? ', ...' : '')}
                         </span>
                     ) : (
                         prompt
@@ -80,47 +105,50 @@ function MultiSelectDropdown({
                 <span className="after:content-['▼'] after:text-xs after:inline-flex peer-checked:after:-rotate-180 after:transition-transform after:ml-2 text-gray-500"></span>
             </div>
 
-            <div className="absolute bg-gray-100 border rounded-lg transition-opacity opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto w-full max-h-60 overflow-auto">
-                <ul>
-                    <li>
-                        <button
-                            onClick={handleSelectAllClick}
-                            disabled={!isSelectAllEnabled}
-                            className="w-full text-left px-2 py-1 text-blue-600 disabled:opacity-50"
-                        >
-                            {'Select All'}
-                        </button>
-                    </li>
-                    <li>
-                        <button
-                            onClick={handleClearSelectionClick}
-                            disabled={!isClearSelectionEnabled}
-                            className="w-full text-left px-2 py-1 text-blue-600 disabled:opacity-50"
-                        >
-                            {'Clear selection'}
-                        </button>
-                    </li>
-                </ul>
+            {isOpen && (
+                <div className="absolute bg-gray-100 border rounded-lg transition-opacity opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto w-full max-h-60 overflow-auto">
+                    <ul>
+                        <li>
+                            <button
+                                onClick={handleSelectAllClick}
+                                disabled={!isSelectAllEnabled}
+                                className="w-full text-left px-2 py-1 text-blue-600 disabled:opacity-50"
+                            >
+                                {'Select All'}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                onClick={handleClearSelectionClick}
+                                disabled={!isClearSelectionEnabled}
+                                className="w-full text-left px-2 py-1 text-blue-600 disabled:opacity-50"
+                            >
+                                {'Clear selection'}
+                            </button>
+                        </li>
+                    </ul>
 
-                <ul ref={optionsListRef}>
-                    {options.map((option, i) => {
-                        return (
-                            <li key={option}>
-                                <label className="flex whitespace-nowrap cursor-pointer px-2 py-1 transition-colors hover:bg-blue-100 [&:has(input:checked)]:bg-blue-200">
-                                    <input
-                                        type="checkbox"
-                                        name={formFieldName}
-                                        value={option}
-                                        className="cursor-pointer"
-                                        onChange={handleChange}
-                                    />
-                                    <span className="ml-1">{option}</span>
-                                </label>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </div>
+                    <ul ref={optionsListRef}>
+                        {options.map((option, i) => {
+                            return (
+                                <li key={option}>
+                                    <label className="flex whitespace-nowrap cursor-pointer px-2 py-1 transition-colors hover:bg-blue-100 [&:has(input:checked)]:bg-blue-200">
+                                        <input
+                                            type="checkbox"
+                                            name={formFieldName}
+                                            value={option}
+                                            checked={selectedOptions.includes(option)}
+                                            className="cursor-pointer"
+                                            onChange={handleChange}
+                                        />
+                                        <span className="ml-1">{option}</span>
+                                    </label>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            )}
         </label>
     );
 }
