@@ -1,6 +1,7 @@
 import pandas as pd
+import numpy as np
 from scipy.stats import spearmanr
-from itertools import combinations
+import warnings
 
 def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
     """
@@ -25,17 +26,21 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
 
     results = []
     # Compute Spearman correlations for each unique pair of features
-    for f1_name, f1_vals in df1.iterrows():
-        for f2_name, f2_vals in df2.iterrows():
-            # f1_vals, f2_vals = f1_vals.align(f2_vals, axis=1, join="inner")
-            valid_data = pd.concat([f1_vals, f2_vals], axis=1).dropna()
-            count = valid_data.shape[0]  # Number of valid data points
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for f1_name, f1_vals in df1.iterrows():
+            for f2_name, f2_vals in df2.iterrows():
+                # f1_vals, f2_vals = f1_vals.align(f2_vals, axis=1, join="inner")
+                valid_data = pd.concat([f1_vals, f2_vals], axis=1).dropna()
+                count = valid_data.shape[0]  # Number of valid data points
 
-            if count > 1:
-                f1_valid = valid_data.iloc[:, 0]
-                f2_valid = valid_data.iloc[:, 1]
-                corr, p_value = spearmanr(f1_valid, f2_valid, nan_policy="omit")
-                results.append([f1_name, f2_name, count, corr, p_value])
+                if count > 1:
+                    f1_valid = valid_data.iloc[:, 0]
+                    f2_valid = valid_data.iloc[:, 1]
+                    corr, p_value = spearmanr(f1_valid, f2_valid, nan_policy="omit")
+                    # Reject null values
+                    if not np.isnan(corr):
+                        results.append([f1_name, f2_name, count, corr, p_value])
 
     # Convert the results into a DataFrame
     return pd.DataFrame(results, columns=["feature1", "feature2", "count", "spearman_correlation", "spearman_p_value"])
