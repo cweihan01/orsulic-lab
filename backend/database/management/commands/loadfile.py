@@ -6,7 +6,7 @@ class Command(BaseCommand):
     help = "Reads in a CSV file and stores data to database"
 
     def handle(self, *args, **kwargs):
-        filepath = "testdata/cellline_sample.csv"
+        filepath = "testdata/nuclear_features.csv"
 
         try:
             df = pd.read_csv(filepath)
