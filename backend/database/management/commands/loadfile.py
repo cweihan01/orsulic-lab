@@ -23,10 +23,16 @@ class Command(BaseCommand):
             # Extract cell line name and depmap id
             # Note: most sheets will not need to process the slide name
             feature_name = row.iloc[0]
-            cellline_values = row.iloc[1:]
+            data_type = row.iloc[1]
+            cellline_values = row.iloc[2:]
 
             # Add to Feature model
-            feature_obj, created = Feature.objects.get_or_create(name=feature_name)
+            feature_obj, created = Feature.objects.get_or_create(name=feature_name, defaults={"data_type": data_type})
+
+            # Update feature if exists
+            if not created:
+                feature_obj.data_type = data_type
+                feature_obj.save()
 
             # Add to CellLine model
             cellline_data = {cellline_name: value for cellline_name, value in cellline_values.items()}

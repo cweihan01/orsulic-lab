@@ -59,6 +59,7 @@ class Feature(models.Model):
     Stores each feature.
     """
     name = models.CharField(max_length=100, primary_key=True)
+    data_type = models.CharField(max_length=3, choices=[("num", "Numerical"), ("cat", "Categorical")], default="num")
     # TODO:
     # store type (image, clinical, etc)
     # store data type (numerical or categorical)
