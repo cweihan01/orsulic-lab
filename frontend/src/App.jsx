@@ -1,12 +1,12 @@
 // App.jsx
-import React, { useState } from 'react';
-import QueryForm from './components/QueryForm';
-import CorrelationResult from './components/CorrelationResult';
+import React, { useState } from "react";
+import QueryForm from "./components/QueryForm";
+import CorrelationResult from "./components/CorrelationResult";
+import Graph from "./components/Graph"; // Import Graph component
+import axios from "axios";
 // import { mockCorrelationData } from './components/MockData';
-import './App.css'; // Importing App.css for styling
+import "./App.css"; // Importing App.css for styling
 import './index.js';
-
-import axios from 'axios';
 
 function App() {
     const [correlations, setCorrelations] = useState([]);
@@ -60,6 +60,7 @@ function App() {
             <h1 className="bg-indigo-300 text-4xl text-bold py-3">Database Query Interface</h1>
             <QueryForm onSubmit={handleQuery} />
             <CorrelationResult data={correlations} />
+            <Graph data={correlations} /> {/* Render the chart */}
         </div>
     );
 }
