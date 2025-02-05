@@ -7,7 +7,7 @@ from .models import Feature, CellLine, CELL_LINES
 class FeatureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feature
-        fields = ['name']
+        fields = ['name', 'data_type']
 
 
 class CellLineSerializer(serializers.ModelSerializer):
