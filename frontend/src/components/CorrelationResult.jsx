@@ -1,7 +1,6 @@
-// CorrelationResult.jsx
 import React from 'react';
 
-function CorrelationResult({ data }) {
+function CorrelationResult({ data, minCorrelation, maxPValue }) {
     // Function to determine text color for correlation values
     const getCorrelationColor = (correlation) => {
         if (correlation > 0.75) return '#2e7d32'; // Dark green for strong positive correlation
@@ -19,13 +18,19 @@ function CorrelationResult({ data }) {
         return '#9e9e9e'; // Gray for non-significant p-value
     };
 
-    // Sort data by Spearman p-value in ascending order
-    const sortedData = [...data].sort((a, b) => a.spearman_p_value - b.spearman_p_value);
+    // Filter and sort data
+    const filteredData = data
+        .filter(
+            (item) => 
+                item.spearman_correlation >= minCorrelation &&
+                item.spearman_p_value <= maxPValue
+        )
+        .sort((a, b) => a.spearman_p_value - b.spearman_p_value); // Sort by p-value
 
     return (
         <div className="max-w-4xl mx-auto rounded-lg drop-shadow-lg bg-white p-6 my-4 bg-gray-200">
             <h2 className="text-3xl font-semibold text-gray-800 mb-4">Correlation Results</h2>
-            {sortedData.length > 0 ? (
+            {filteredData.length > 0 ? (
                 <table className="correlation-result">
                     <thead>
                         <tr>
@@ -37,7 +42,7 @@ function CorrelationResult({ data }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {sortedData.map((item, index) => (
+                        {filteredData.map((item, index) => (
                             <tr key={index}>
                                 <td>{item.feature1}</td>
                                 <td>{item.feature2}</td>
