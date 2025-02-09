@@ -108,25 +108,28 @@ function MultiSelectDropdown({
     const handleChange = (e) => {
         const isChecked = e.target.checked;
         const option = e.target.value;
-        
+
         const selectedOptionSet = new Set(selectedOptions);
         if (isChecked) {
             selectedOptionSet.add(option);
         } else {
             selectedOptionSet.delete(option);
         }
-        
+
         const newSelectedOptions = Array.from(selectedOptionSet);
         setSelectedOptions(newSelectedOptions);
+        onChange(newSelectedOptions);
     };
 
-    const isSelectAllEnabled = selectedOptions.length < options.length;
+    const isSelectAllEnabled = filteredOptions.length > 0 && selectedOptions.length < filteredOptions.length;
     const isClearSelectionEnabled = selectedOptions.length > 0;
 
     const handleSelectAllClick = (e) => {
         e.preventDefault();
-        setSelectedOptions([...options]);
-        onChange([...options]);
+        // Select only the filtered options
+        const newSelectedOptions = filteredOptions;
+        setSelectedOptions(newSelectedOptions);
+        onChange(newSelectedOptions);
     };
 
     const handleClearSelectionClick = (e) => {
@@ -135,6 +138,8 @@ function MultiSelectDropdown({
         onChange([]);
     };
 
+    // this is a bit slow because of the .join() call
+    // Change this, to another place holder if needed
     const displayText = selectedOptions.length > 0 
         ? selectedOptions.join(', ')
         : prompt;
@@ -281,6 +286,9 @@ function QueryForm({ onSubmit }) {
                         type="number"
                         id="minCorrelation"
                         value={minCorrelation}
+                        min="-1"
+                        max="1"
+                        step="0.01"
                         className="w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:ring focus:ring-purple-100 focus:outline-none"
                         onChange={(e) => setMinCorrelation(e.target.value)}
                     />
@@ -296,9 +304,11 @@ function QueryForm({ onSubmit }) {
                     </label>
                     <input
                         type="number"
-                        step="any"
                         id="maxPValue"
                         value={maxPValue}
+                        min="0"
+                        max="1"
+                        step="0.01"
                         className="w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:ring focus:ring-purple-100 focus:outline-none"
                         onChange={(e) => setMaxPValue(e.target.value)}
                     />
