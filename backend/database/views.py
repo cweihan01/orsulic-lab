@@ -94,7 +94,71 @@ class CorrelationView(APIView):
             # Convert the results DataFrame to a JSON-compatible format
             results_json = results_df.to_dict(orient="records")
 
+            print("Results JSON:", results_json)
+
             return Response({"correlations": results_json}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print("Error:", traceback.format_exc())
+            return Response({"Error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ScatterView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            # Extract input features from the request body
+            f1_name = request.data.get("feature1")
+            f2_name = request.data.get("feature2")  # Change to single value
+
+            # Ensure input features are provided
+            if not f1_name:
+                return Response({"error": "Feature 1 is required."}, status=status.HTTP_400_BAD_REQUEST)
+            if not f2_name:  # Check for single value
+                return Response({"error": "Feature 2 is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Fetch Feature objects
+            try:
+                feature1 = Feature.objects.get(name=f1_name)
+            except Feature.DoesNotExist:
+                return Response({"error": f"Feature '{f1_name}' not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            try:
+                feature2 = Feature.objects.get(name=f2_name)  # Fetch single feature
+            except Feature.DoesNotExist:
+                return Response({"error": f"Feature '{f2_name}' not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            # Query CellLine table using the retrieved Features
+            f1_data = CellLine.objects.filter(feature=feature1)
+            f2_data = CellLine.objects.filter(feature=feature2)  # Use single feature
+            if not f1_data.exists() or not f2_data.exists():
+                return Response({"error": "No cell line data found for the specified features."}, status=status.HTTP_404_NOT_FOUND)
+
+            # Convert CellLine data into dataframes
+            f1_queryset = f1_data.values_list()
+            f2_queryset = f2_data.values_list()
+            f1_df = pd.DataFrame(list(f1_queryset), columns=["Feature", *CELL_LINES])
+            f2_df = pd.DataFrame(list(f2_queryset), columns=["Feature", *CELL_LINES])
+
+            # Merge the two DataFrames by column
+            merged_df = pd.concat([f1_df, f2_df], axis=0)
+
+            print("Merged DataFrame:")
+            print(merged_df.head(5))
+
+            # Transpose the merged DataFrame
+            transposed_df = merged_df.T.reset_index()
+            transposed_df.columns = ["cell_lines"] + [f"{f1_name}", f"{f2_name}"]  # Rename columns
+
+            # Remove redundnant first row
+            transposed_df = transposed_df.iloc[1:].reset_index(drop=True)
+
+            # print("Transposed DataFrame:")
+            # print(transposed_df.head(5))
+
+            # Convert the transposed DataFrame to a JSON-compatible format
+            transposed_json = transposed_df.to_dict(orient="records")
+
+            return Response({"scatter_data": transposed_json}, status=status.HTTP_200_OK)
 
         except Exception as e:
             print("Error:", traceback.format_exc())

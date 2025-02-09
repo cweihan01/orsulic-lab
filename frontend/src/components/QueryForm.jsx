@@ -218,7 +218,7 @@ function QueryForm({ onSubmit }) {
 
     // Get list of features from API
     useEffect(() => {
-        console.log('Making request with: ' + `${process.env.REACT_APP_API_ROOT}features`);
+        console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
         axios
             .get(`${process.env.REACT_APP_API_ROOT}features/`)
             .then((response) => {

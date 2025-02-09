@@ -13,5 +13,5 @@ urlpatterns = [
     path('corr', views.corr, name="corr"),
     path('api/', include(router.urls)),
     path('api/correlations/', views.CorrelationView.as_view()),
-
+    path('api/scatter/', views.ScatterView.as_view()),
 ]
