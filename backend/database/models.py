@@ -69,7 +69,7 @@ class Feature(models.Model):
         return self.name
 
 
-class CellLine(models.Model):
+class Nuclear(models.Model):
     """
     Schema: First column is feature_name (primary key), 
             subsequent columns correspond to each cell line

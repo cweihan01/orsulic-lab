@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import CellLine, Feature, Correlation
+from .models import Nuclear, Feature, Correlation
 
 # Register your models here.
-admin.site.register(CellLine)
+admin.site.register(Nuclear)
 admin.site.register(Feature)
 admin.site.register(Correlation)

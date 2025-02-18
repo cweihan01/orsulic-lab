@@ -4,8 +4,8 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Feature, CellLine, CELL_LINES, Correlation
-from .serializers import FeatureSerializer, CellLineSerializer
+from .models import Feature, Nuclear, CELL_LINES, Correlation
+from .serializers import FeatureSerializer, NuclearSerializer
 
 from .utils import correlations
 
@@ -15,8 +15,8 @@ def index(request):
 
 
 def cellline(request):
-    rows = CellLine.objects.all()
-    columns = [col.name for col in CellLine._meta.get_fields()]
+    rows = Nuclear.objects.all()
+    columns = [col.name for col in Nuclear._meta.get_fields()]
     context = {
         'features': rows,
         'columns': columns,
@@ -38,9 +38,9 @@ class FeatureViewSet(viewsets.ModelViewSet):
     serializer_class = FeatureSerializer
 
 
-class CellLineViewSet(viewsets.ModelViewSet):
-    queryset = CellLine.objects.all()
-    serializer_class = CellLineSerializer
+class NuclearViewSet(viewsets.ModelViewSet):
+    queryset = Nuclear.objects.all()
+    serializer_class = NuclearSerializer
 
 
 class CorrelationView(APIView):
@@ -71,13 +71,13 @@ class CorrelationView(APIView):
             if not f2_objects.exists():
                 return Response({"error": f"None of the provided features in Feature 2 were found: {f2_names}."}, status=status.HTTP_404_NOT_FOUND)
 
-            # Query CellLine table using the retrieved Features
-            f1_data = CellLine.objects.filter(feature=feature1)
-            f2_data = CellLine.objects.filter(feature__in=f2_objects)
+            # Query Nuclear table using the retrieved Features
+            f1_data = Nuclear.objects.filter(feature=feature1)
+            f2_data = Nuclear.objects.filter(feature__in=f2_objects)
             if not f1_data.exists() or not f2_data.exists():
                 return Response({"error": "No cell line data found for the specified features."}, status=status.HTTP_404_NOT_FOUND)
 
-            # Convert CellLine data into dataframes
+            # Convert Nuclear data into dataframes
             f1_queryset = f1_data.values_list()
             f2_queryset = f2_data.values_list()
             f1_df = pd.DataFrame(list(f1_queryset), columns=["Feature", *CELL_LINES])
@@ -128,8 +128,8 @@ class ScatterView(APIView):
                 return Response({"error": f"Feature '{f2_name}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
             # Query CellLine table using the retrieved Features
-            f1_data = CellLine.objects.filter(feature=feature1)
-            f2_data = CellLine.objects.filter(feature=feature2)  # Use single feature
+            f1_data = Nuclear.objects.filter(feature=feature1)
+            f2_data = Nuclear.objects.filter(feature=feature2)  # Use single feature
             if not f1_data.exists() or not f2_data.exists():
                 return Response({"error": "No cell line data found for the specified features."}, status=status.HTTP_404_NOT_FOUND)
 

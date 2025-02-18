@@ -5,7 +5,7 @@ from . import views
 
 router = DefaultRouter()
 router.register("features", views.FeatureViewSet)
-router.register("celllines", views.CellLineViewSet)
+router.register("nuclear", views.NuclearViewSet)
 
 urlpatterns = [
     path('', views.index, name=""),

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 import math
 
-from .models import Feature, CellLine, CELL_LINES
+from .models import Feature, Nuclear, CELL_LINES
 
 
 class FeatureSerializer(serializers.ModelSerializer):
@@ -10,11 +10,11 @@ class FeatureSerializer(serializers.ModelSerializer):
         fields = ['name', 'data_type']
 
 
-class CellLineSerializer(serializers.ModelSerializer):
+class NuclearSerializer(serializers.ModelSerializer):
     feature = FeatureSerializer()
 
     class Meta:
-        model = CellLine
+        model = Nuclear
         fields = ['feature', *[cellline for cellline in CELL_LINES]]
 
     # Custom serialization to handle NaN values

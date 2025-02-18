@@ -1,6 +1,6 @@
 import pandas as pd
 from django.core.management import BaseCommand
-from database.models import CellLine, Feature
+from database.models import Nuclear, Feature
 
 class Command(BaseCommand):
     help = "Reads in a CSV file and stores data to database"
@@ -36,7 +36,7 @@ class Command(BaseCommand):
 
             # Add to CellLine model
             cellline_data = {cellline_name: value for cellline_name, value in cellline_values.items()}
-            CellLine.objects.get_or_create(feature=feature_obj, defaults=cellline_data)
+            Nuclear.objects.get_or_create(feature=feature_obj, defaults=cellline_data)
 
 # class Command(BaseCommand):
 #     help = "Reads in a CSV file and stores data to database"
