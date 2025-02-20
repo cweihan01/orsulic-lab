@@ -27,6 +27,8 @@ function App() {
             .post(`${process.env.REACT_APP_API_ROOT}correlations/`, {
                 feature1: query.feature1,
                 feature2: query.feature2,
+                database1: query.database1,
+                database2: query.database2
             })
             .then((response) => {
                 console.log('Retrieved correlations:', response);
@@ -38,10 +40,12 @@ function App() {
     };
 
     // New function to handle scatter data request
-    const handleScatterRequest = (feature1, feature2) => {
+    const handleScatterRequest = (feature1, feature2, database1, database2) => {
         const scatterData = {
             feature1,
             feature2,
+            database1, 
+            database2
         };
 
         axios

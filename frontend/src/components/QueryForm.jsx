@@ -211,6 +211,9 @@ function MultiSelectDropdown({
 
 function QueryForm({ onSubmit }) {
     const [featureList, setFeatureList] = useState([]);
+    const [databaseList, setDatabaseList] = useState(["Nuclear", "Mole Global Chromatins"]); // Default values
+    const [selectedDatabase1, setSelectedDatabase1] = useState([]); // State for Database 1 selection
+    const [selectedDatabase2, setSelectedDatabase2] = useState([]); // State for Database 2 selection
     const [feature1, setFeature1] = useState('');
     const [feature2, setFeature2] = useState([]);
     const [minCorrelation, setMinCorrelation] = useState(0.0);
@@ -233,7 +236,14 @@ function QueryForm({ onSubmit }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const query = { feature1, feature2, minCorrelation, maxPValue };
+        const query = { 
+            feature1, 
+            feature2, 
+            minCorrelation, 
+            maxPValue,
+            database1: selectedDatabase1, // Include selected databases
+            database2: selectedDatabase2
+        };
         console.log('Query Parameters:', query); // Debugging query params
         onSubmit(query);
     };
@@ -242,6 +252,22 @@ function QueryForm({ onSubmit }) {
         <div className="max-w-4xl mx-auto rounded-lg drop-shadow-lg bg-white p-6 my-4 bg-gray-200">
             <h2 className="text-3xl font-semibold text-gray-800 mb-4">Query Form</h2>
             <form className="space-y-6" onSubmit={handleSubmit}>
+                {/* Database Dropdown 1 */}
+                <div className="flex flex-col md:flex-row items-center md:space-x-4">
+                    <label
+                        htmlFor="database1"
+                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
+                    >
+                        Database 1:
+                    </label>
+                    <MultiSelectDropdown
+                        formFieldName="database1"
+                        options={databaseList}
+                        onChange={(selected) => setSelectedDatabase1(selected)} // Update state for Database 1
+                        prompt="Select one or more databases"
+                    />
+                </div>
+
                 {/* Feature 1 */}
                 <div className="flex flex-col md:flex-row items-center md:space-x-4">
                     <label
@@ -255,6 +281,22 @@ function QueryForm({ onSubmit }) {
                         value={feature1}
                         onChange={(selected) => setFeature1(selected)}
                         placeholder="Select a feature"
+                    />
+                </div>
+
+                {/* Database Dropdown 2 */}
+                <div className="flex flex-col md:flex-row items-center md:space-x-4">
+                    <label
+                        htmlFor="database2"
+                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
+                    >
+                        Database 2:
+                    </label>
+                    <MultiSelectDropdown
+                        formFieldName="database2"
+                        options={databaseList}
+                        onChange={(selected) => setSelectedDatabase2(selected)} // Update state for Database 2
+                        prompt="Select one or more databases"
                     />
                 </div>
 

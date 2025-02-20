@@ -35,7 +35,9 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest }
                     <table className="correlation-result w-full">
                         <thead>
                             <tr>
+                                <th>Database 1</th>
                                 <th>Feature 1</th>
+                                <th>Database 2</th>
                                 <th>Feature 2</th>
                                 <th>Count</th>
                                 <th>Spearman Correlation</th>
@@ -46,7 +48,9 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest }
                         <tbody>
                             {filteredData.map((item, index) => (
                                 <tr key={index}>
+                                    <td>{item.database1}</td>
                                     <td>{item.feature1}</td>
+                                    <td>{item.database2}</td>
                                     <td>{item.feature2}</td>
                                     <td>{item.count}</td>
                                     <td style={{ color: getCorrelationColor(item.spearman_correlation) }}>
@@ -57,7 +61,7 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest }
                                     </td>
                                     <td>
                                         <button
-                                            onClick={() => onScatterRequest(item.feature1, item.feature2)}
+                                            onClick={() => onScatterRequest(item.feature1, item.feature2, item.database1, item.database2)}
                                             className="text-blue-500 hover:underline"
                                         >
                                             Get Scatter Data
