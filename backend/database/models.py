@@ -20,41 +20,38 @@ class Feature(models.Model):
     """
     name = models.CharField(max_length=100, primary_key=True)
     data_type = models.CharField(max_length=3, choices=[("num", "Numerical"), ("cat", "Categorical")], default="num")
-    # TODO:
-    # store type (image, clinical, etc)
-    # store data type (numerical or categorical)
-    # use id as primary key - features may have the same names
+    category = models.CharField(max_length=20, choices=[("Nuclear", "Nuclear"), 
+                                                        ("Molecular", "Molecular"), 
+                                                        ("Drug Screen", "Drug Screen")], 
+                                                        default="Molecular")
+    sub_category = models.CharField(max_length=100, default="NA")
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
-class Nuclear(models.Model):
+def create_model(model_name):
     """
-    Schema: First column is feature_name (primary key), 
-            subsequent columns correspond to each cell line
+    Create models dynamically.
+    Each model will have a feature as primary key and float fields for each cell line.
     """
-    feature = models.OneToOneField(Feature, on_delete=models.CASCADE, primary_key=True)
+    attrs = {
+        "__module__": __name__,
+        'feature': models.OneToOneField(Feature, on_delete=models.CASCADE, primary_key=True),
+    }
 
-    for cellline in CELL_LINES:
-        locals()[cellline] = models.FloatField(default=0)
+    for cell_line in CELL_LINES:
+        attrs[cell_line] = models.FloatField(null=True, blank=True)
 
-    def __str__(self):
-        return self.feature.name
-    
+    attrs['__str__'] = lambda self: self.feature.name
 
-class Mole_GlobalChromatin(models.Model):
-    """
-    Schema: First column is feature_name (primary key), 
-            subsequent columns correspond to each cell line
-    """
-    feature = models.OneToOneField(Feature, on_delete=models.CASCADE, primary_key=True)
+    return type(model_name, (models.Model,), attrs)
 
-    for cellline in CELL_LINES:
-        locals()[cellline] = models.FloatField(null = True, blank = True)
 
-    def __str__(self):
-        return self.feature.name
+# Create models
+Nuclear = create_model('Nuclear')
+Mole_GlobalChromatin = create_model('Mole_GlobalChromatin')
+Drug_GDSC1_AUC = create_model("Drug_GDSC1_AUC")
     
     
 class Correlation(models.Model):

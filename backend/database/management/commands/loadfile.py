@@ -1,6 +1,6 @@
 import pandas as pd
 from django.core.management import BaseCommand
-from database.models import Nuclear, Mole_GlobalChromatin, Feature, CELL_LINES
+from database.models import Feature, CELL_LINES, Nuclear, Mole_GlobalChromatin, Drug_GDSC1_AUC
 
 class Command(BaseCommand):
     help = "Reads in a CSV file and stores data to database"
@@ -20,17 +20,27 @@ class Command(BaseCommand):
             
             total_rows = len(df)
             self.stdout.write(self.style.SUCCESS(f"Successfully loaded {filepath}. {total_rows} rows received."))
+
+            model_name = filepath.split("/")[-1].replace(".csv", "")
+            model_class = globals().get(model_name)
+
+            if model_class is None:
+                self.stderr.write(self.style.ERROR(f"Model class {model_name} not found. Skipping file {filepath}."))
+                continue
             
             for idx, row in df.iterrows():
                 self.stdout.write(self.style.SUCCESS(f"Processing row {idx + 1} of {total_rows} in {filepath}"))
                 
                 feature_name = row.iloc[0]
                 data_type = row.iloc[1]
-                cellline_values = row.iloc[2:]
+                category = row.iloc[2]
+                sub_category = row.iloc[3]
+                cellline_values = row.iloc[4:]
 
                 cellline_values = cellline_values.where(pd.notna(cellline_values), None)
                 
-                feature_obj, created = Feature.objects.get_or_create(name=feature_name, defaults={"data_type": data_type})
+                feature_obj, created = Feature.objects.get_or_create(name=feature_name, category=category, 
+                                                                     sub_category=sub_category, defaults={"data_type": data_type})
                 
                 if not created:
                     feature_obj.data_type = data_type
@@ -38,8 +48,7 @@ class Command(BaseCommand):
                 
                 cellline_data = {cellline_name: value for cellline_name, value in cellline_values.items()}
                 
-                self.update_or_create_model(Nuclear, feature_obj, cellline_data)
-                self.update_or_create_model(Mole_GlobalChromatin, feature_obj, cellline_data)
+                self.update_or_create_model(model_class, feature_obj, cellline_data)
     
     def update_or_create_model(self, model_class, feature_obj, cellline_data):
         valid_cellline_data = {k: v for k, v in cellline_data.items() if k in CELL_LINES}
