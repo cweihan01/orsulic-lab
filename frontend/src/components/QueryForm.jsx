@@ -211,7 +211,7 @@ function MultiSelectDropdown({
 
 function QueryForm({ onSubmit }) {
     const [featureList, setFeatureList] = useState([]);
-    const [databaseList, setDatabaseList] = useState(["Nuclear", "Mole Global Chromatins"]); // Default values
+    const [databaseList, setDatabaseList] = useState(["Nuclear"]); // Default values
     const [selectedDatabase1, setSelectedDatabase1] = useState([]); // State for Database 1 selection
     const [selectedDatabase2, setSelectedDatabase2] = useState([]); // State for Database 2 selection
     const [feature1, setFeature1] = useState('');
@@ -219,11 +219,33 @@ function QueryForm({ onSubmit }) {
     const [minCorrelation, setMinCorrelation] = useState(0.0);
     const [maxPValue, setMaxPValue] = useState(1.0);
 
+    // Get list of Categories/Databases from API
+    useEffect(() => {
+        console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features/categories`);
+        axios
+            .get(`${process.env.REACT_APP_API_ROOT}features/categories`)
+            .then((response) => {
+                console.log('Retrieved response:');
+                console.log(response);
+                setDatabaseList(response.data.categories);
+            })
+            .catch((error) => {
+                console.error('Error fetching features:', error);
+            });
+    }, []);
+
     // Get list of features from API
     useEffect(() => {
         console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
         axios
-            .get(`${process.env.REACT_APP_API_ROOT}features/`)
+            .get(`${process.env.REACT_APP_API_ROOT}features/`, {
+                params: {
+                    databaseList: selectedDatabase1, // Pass selectedDatabase1 as query params
+                },
+                paramsSerializer: (params) => {
+                    return selectedDatabase1.map(db => `databaseList=${encodeURIComponent(db)}`).join('&');
+                },
+            })
             .then((response) => {
                 console.log('Retrieved response:');
                 console.log(response);
@@ -232,7 +254,7 @@ function QueryForm({ onSubmit }) {
             .catch((error) => {
                 console.error('Error fetching features:', error);
             });
-    }, []);
+    }, [databaseList, selectedDatabase1]);
 
     const handleSubmit = (e) => {
         e.preventDefault();

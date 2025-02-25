@@ -7,6 +7,9 @@ from rest_framework.response import Response
 from .models import Feature, Nuclear, Mole_GlobalChromatin, CELL_LINES, Correlation
 from .serializers import FeatureSerializer, NuclearSerializer, Mole_GlobalSerializer
 
+from rest_framework.decorators import action
+
+
 from .utils import correlations
 
 def index(request):
@@ -34,6 +37,23 @@ def corr(request):
 class FeatureViewSet(viewsets.ModelViewSet):
     queryset = Feature.objects.all()
     serializer_class = FeatureSerializer
+
+    # Get the categories with /api/features/categories/
+    @action(detail=False, methods=['get'])
+    def categories(self, request):
+        categories = Feature.objects.values_list('category', flat=True).distinct()
+        return Response({'categories': list(categories)})
+    
+    def list(self, request, *args, **kwargs):
+        # Get database list from query parameters
+        database_list = request.query_params.getlist('databaseList', [])
+
+        print(database_list)
+        # Check if database_list is provided
+        if database_list: 
+            self.queryset = self.queryset.filter(category__in=database_list)
+
+        return super().list(request, *args, **kwargs)
 
 
 class NuclearViewSet(viewsets.ModelViewSet):
@@ -94,14 +114,14 @@ class CorrelationView(APIView):
                 if db_name == "Nuclear":
                     f1_data["Nuclear"] = Nuclear.objects.filter(feature=feature1)
                 elif db_name == "Mole Global Chromatins":
-                    f1_data["mole_global_chromatin"] = Mole_GlobalChromatin.objects.filter(feature=feature1).values_list()
+                    f1_data["Mole Global Chromatins"] = Mole_GlobalChromatin.objects.filter(feature=feature1).values_list()
 
             f2_data = {}
             for db_name in db2_names:
                 if db_name == "Nuclear":
                     f2_data["Nuclear"] = Nuclear.objects.filter(feature__in=f2_objects)
                 elif db_name == "Mole Global Chromatins":
-                    f2_data["Mole Global Chromatin"] = Mole_GlobalChromatin.objects.filter(feature__in=f2_objects).values_list()
+                    f2_data["Mole Global Chromatins"] = Mole_GlobalChromatin.objects.filter(feature__in=f2_objects).values_list()
             
             f1_df = correlations.get_feature_values(f1_data, CELL_LINES)
             f2_df = correlations.get_feature_values(f2_data, CELL_LINES)
@@ -117,7 +137,7 @@ class CorrelationView(APIView):
             # Convert the results DataFrame to a JSON-compatible format
             results_json = results_df.to_dict(orient="records")
 
-            print("Results JSON:", results_json)
+            # print("Results JSON:", results_json)
 
             return Response({"correlations": results_json}, status=status.HTTP_200_OK)
 
@@ -128,6 +148,7 @@ class CorrelationView(APIView):
 
 class ScatterView(APIView): 
     def post(self, request, *args, **kwargs):
+        
         try:
             # Extract input features from the request body
             f1_name = request.data.get("feature1")
@@ -141,7 +162,7 @@ class ScatterView(APIView):
                 return Response({"error": "Feature 1 is required."}, status=status.HTTP_400_BAD_REQUEST)
             if not f2_name:  # Check for single value
                 return Response({"error": "Feature 2 is required."}, status=status.HTTP_400_BAD_REQUEST)
-
+            
             # Fetch Feature objects
             try:
                 feature1 = Feature.objects.get(name=f1_name)
@@ -155,7 +176,7 @@ class ScatterView(APIView):
 
             f1_data = None 
             f2_data = None
-
+            
             # Query CellLine table using the retrieved Features
             if db1_name == "Nuclear":
                 f1_data = Nuclear.objects.filter(feature=feature1)
@@ -168,6 +189,8 @@ class ScatterView(APIView):
                 f2_data = Mole_GlobalChromatin.objects.filter(feature=feature2)
 
             if not f1_data or not f2_data:
+                # print(f1_data.values_list())
+                print(f2_data)
                 return Response({"error": "No cell line data found for the specified features."}, status=status.HTTP_404_NOT_FOUND)
 
             # Convert CellLine data into dataframes
@@ -181,7 +204,7 @@ class ScatterView(APIView):
 
             # print("Merged DataFrame:")
             # print(merged_df.head(5))
-
+            
             # Transpose the merged DataFrame
             transposed_df = merged_df.T.reset_index()
             transposed_df.columns = ["cell_lines"] + [f"{f1_name}", f"{f2_name}"]  # Rename columns

@@ -7,7 +7,7 @@ from .models import Feature, Nuclear, Mole_GlobalChromatin, CELL_LINES
 class FeatureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feature
-        fields = ['name', 'data_type']
+        fields = ['name', 'data_type', 'category', 'sub_category']
 
 class Mole_GlobalSerializer(serializers.ModelSerializer):
     feature = FeatureSerializer()

@@ -48,6 +48,7 @@ function App() {
             database2
         };
 
+        console.log(scatterData)
         axios
             .post(`${process.env.REACT_APP_API_ROOT}scatter/`, scatterData)
             .then((response) => {
