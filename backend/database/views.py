@@ -48,7 +48,6 @@ class FeatureViewSet(viewsets.ModelViewSet):
         # Get database list from query parameters
         database_list = request.query_params.getlist('databaseList', [])
 
-        print(database_list)
         # Check if database_list is provided
         if database_list: 
             self.queryset = self.queryset.filter(category__in=database_list)

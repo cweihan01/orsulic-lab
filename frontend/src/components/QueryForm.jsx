@@ -5,7 +5,8 @@ import SearchableSelect from './SearchableSelect';
 import MultiSelectDropdown from './MultiSelectDropdown';
 
 function QueryForm({ onSubmit }) {
-    const [featureList, setFeatureList] = useState([]);
+    const [featureList1, setFeatureList1] = useState([]);
+    const [featureList2, setFeatureList2] = useState([]);
     const [databaseList, setDatabaseList] = useState(["Nuclear"]); // Default values
     const [selectedDatabase1, setSelectedDatabase1] = useState([]); // State for Database 1 selection
     const [selectedDatabase2, setSelectedDatabase2] = useState([]); // State for Database 2 selection
@@ -29,7 +30,7 @@ function QueryForm({ onSubmit }) {
             });
     }, []);
 
-    // Get list of features from API
+    // Get list of features from API for the first set of databases selected
     useEffect(() => {
         console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
         axios
@@ -44,12 +45,34 @@ function QueryForm({ onSubmit }) {
             .then((response) => {
                 console.log('Retrieved response:');
                 console.log(response);
-                setFeatureList(response.data.map((feature) => feature.name));
+                setFeatureList1(response.data.map((feature) => feature.name));
             })
             .catch((error) => {
                 console.error('Error fetching features:', error);
             });
     }, [databaseList, selectedDatabase1]);
+
+   // Get list of features from API for the second set of databases selected
+    useEffect(() => {
+        console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
+        axios
+            .get(`${process.env.REACT_APP_API_ROOT}features/`, {
+                params: {
+                    databaseList: selectedDatabase2, // Pass selectedDatabase1 as query params
+                },
+                paramsSerializer: (params) => {
+                    return selectedDatabase2.map(db => `databaseList=${encodeURIComponent(db)}`).join('&');
+                },
+            })
+            .then((response) => {
+                console.log('Retrieved response:');
+                console.log(response);
+                setFeatureList2(response.data.map((feature) => feature.name));
+            })
+            .catch((error) => {
+                console.error('Error fetching features:', error);
+            });
+    }, [databaseList, selectedDatabase2]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -94,7 +117,7 @@ function QueryForm({ onSubmit }) {
                         Feature 1:
                     </label>
                     <SearchableSelect
-                        options={featureList}
+                        options={featureList1}
                         value={feature1}
                         onChange={(selected) => setFeature1(selected)}
                         placeholder="Select a feature"
@@ -127,7 +150,7 @@ function QueryForm({ onSubmit }) {
                     </label>
                     <MultiSelectDropdown
                         formFieldName="feature2"
-                        options={featureList}
+                        options={featureList2}
                         onChange={(selected) => setFeature2(selected)}
                         prompt="Select one or more features"
                     />
