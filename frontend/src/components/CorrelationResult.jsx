@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 
 function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest }) {
     // Function to determine text color for correlation values
@@ -17,6 +18,48 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest }
         if (pValue < 0.05) return '#0288d1'; // Light blue for significant p-value
         return '#9e9e9e'; // Gray for non-significant p-value
     };
+
+// Button to download raw data, correlations only
+const handleDownloadData = async (feature1, feature2, database1, database2) => {
+    try {
+        const payload = {
+            feature1, feature2, database1, database2
+        };
+        const response = await axios.post(
+            process.env.REACT_APP_API_ROOT + 'scatter/',
+            payload
+        );
+        const scatterData = response.data.scatter_data;
+
+        // Building csv file
+        const csvRows = [];
+        if (scatterData.length === 0) {
+            alert("No data returned from server!");
+            return;
+        }
+        
+        // Extract headers from keys, add rows/map values
+        const headers = Object.keys(scatterData[0]);
+        csvRows.push(headers.join(','));
+        scatterData.forEach(obj => {
+            const row = headers.map(h => JSON.stringify(obj[h] ?? ""));
+            csvRows.push(row.join(','));
+        });
+
+        const csvString = csvRows.join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv'});
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${feature1}_vs_${feature2}_scatter.csv`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+
+        } catch (err) {
+        console.error("Error fetching scatter data for download:", err);
+        alert("Failed to download data. See console for details.");
+    }
+};
 
     // Filter and sort data
     const filteredData = data
@@ -43,6 +86,7 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest }
                                 <th>Spearman Correlation</th>
                                 <th>Spearman P-Value</th>
                                 <th>Scatterplot Link</th>
+                                <th>Download Data</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -64,7 +108,15 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest }
                                             onClick={() => onScatterRequest(item.feature1, item.feature2, item.database1, item.database2)}
                                             className="text-blue-500 hover:underline"
                                         >
-                                            Get Scatter Data
+                                            View Scatterplot
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button
+                                            onClick={() => handleDownloadData(item.feature1, item.feature2, item.database1, item.database2)}
+                                            className="text-blue-500 hover:underline"
+                                        >
+                                            Download Data
                                         </button>
                                     </td>
                                 </tr>
