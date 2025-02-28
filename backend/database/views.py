@@ -4,8 +4,8 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Feature, Nuclear, Mole_GlobalChromatin, CELL_LINES, Correlation
-from .serializers import FeatureSerializer, NuclearSerializer, Mole_GlobalSerializer
+from .models import Feature, Nuclear, Mole_GlobalChromatin, Drug_GDSC1_AUC, CELL_LINES, Correlation
+from .serializers import FeatureSerializer, NuclearSerializer, Mole_GlobalSerializer, Drug_GDSC1_AUCSerializer
 
 from rest_framework.decorators import action
 
@@ -63,6 +63,10 @@ class Mole_GlobalViewSet(viewsets.ModelViewSet):
     queryset = Mole_GlobalChromatin.objects.all()
     serializer_class = Mole_GlobalSerializer
 
+class Drug_GDSC1_AUCViewSet(viewsets.ModelViewSet):
+    queryset = Drug_GDSC1_AUC.objects.all()
+    serializer_class = Drug_GDSC1_AUCSerializer
+
 class CorrelationView(APIView):
     def post(self, request, *args, **kwargs):
         try:
@@ -112,16 +116,20 @@ class CorrelationView(APIView):
             for db_name in db1_names:
                 if db_name == "Nuclear":
                     f1_data["Nuclear"] = Nuclear.objects.filter(feature=feature1)
-                elif db_name == "Mole Global Chromatins":
-                    f1_data["Mole Global Chromatins"] = Mole_GlobalChromatin.objects.filter(feature=feature1).values_list()
+                elif db_name == "Molecular":
+                    f1_data["Molecular"] = Mole_GlobalChromatin.objects.filter(feature=feature1).values_list()
+                elif db_name == "Drug Screen":
+                    f1_data["Drug Screen"] = Drug_GDSC1_AUC.objects.filter(feature=feature1).values_list()
 
             f2_data = {}
             for db_name in db2_names:
                 if db_name == "Nuclear":
                     f2_data["Nuclear"] = Nuclear.objects.filter(feature__in=f2_objects)
-                elif db_name == "Mole Global Chromatins":
-                    f2_data["Mole Global Chromatins"] = Mole_GlobalChromatin.objects.filter(feature__in=f2_objects).values_list()
-            
+                elif db_name == "Molecular":
+                    f2_data["Molecular"] = Mole_GlobalChromatin.objects.filter(feature__in=f2_objects).values_list()
+                elif db_name == "Drug Screen":
+                    f2_data["Drug Screen"] = Drug_GDSC1_AUC.objects.filter(feature__in=f2_objects).values_list()
+
             f1_df = correlations.get_feature_values(f1_data, CELL_LINES)
             f2_df = correlations.get_feature_values(f2_data, CELL_LINES)
 
@@ -179,13 +187,18 @@ class ScatterView(APIView):
             # Query CellLine table using the retrieved Features
             if db1_name == "Nuclear":
                 f1_data = Nuclear.objects.filter(feature=feature1)
-            elif db1_name == "Mole Global Chromatin":
+            elif db1_name == "Molecular":
                 f1_data = Mole_GlobalChromatin.objects.filter(feature=feature1)
+            elif db1_name == "Drug Screen":
+                f1_data = Drug_GDSC1_AUC.objects.filter(feature=feature1)
 
             if db2_name == "Nuclear":
                 f2_data = Nuclear.objects.filter(feature=feature2)
-            elif db2_name == "Mole Global Chromatin":
+            elif db2_name == "Molecular":
                 f2_data = Mole_GlobalChromatin.objects.filter(feature=feature2)
+            elif db2_name == "Drug Screen":
+                f2_data = Drug_GDSC1_AUC.objects.filter(feature=feature2)
+
 
             if not f1_data or not f2_data:
                 # print(f1_data.values_list())
