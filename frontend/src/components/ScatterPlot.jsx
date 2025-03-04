@@ -16,7 +16,7 @@ const ScatterPlot = ({ data }) => {
     }
 
     return (
-        <div className="max-w-4xl mx-auto rounded-lg drop-shadow-lg bg-white p-6 my-4 bg-gray-200">
+        <div className="w-full flex-grow rounded-lg drop-shadow-lg bg-white p-6 my-4 bg-gray-200">
             <h2 className="text-3xl font-semibold text-gray-800 mb-4">Scatter Plot</h2>
             <Plot
                 data={[
@@ -35,6 +35,8 @@ const ScatterPlot = ({ data }) => {
                     xaxis: { title: xName },
                     yaxis: { title: yName },
                 }}
+                useResizeHandler={true}
+                style={{ width: "100%", height: "100%" }}
             />
         </div>
     );

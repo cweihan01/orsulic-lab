@@ -71,22 +71,22 @@ const handleDownloadData = async (feature1, feature2, database1, database2) => {
         .sort((a, b) => a.spearman_p_value - b.spearman_p_value); // Sort by p-value
 
     return (
-        <div className="max-w-4xl mx-auto rounded-lg drop-shadow-lg bg-white p-6 my-4 bg-gray-200">
+        <div className="w-full rounded-lg drop-shadow-lg bg-white p-6 my-4 bg-gray-200 overflow-x-auto">
             <h2 className="text-3xl font-semibold text-gray-800 mb-4">Correlation Results</h2>
             {filteredData.length > 0 ? (
                 <div className="overflow-x-auto">
                     <table className="correlation-result w-full">
                         <thead>
                             <tr>
-                                <th>Database 1</th>
-                                <th>Feature 1</th>
-                                <th>Database 2</th>
-                                <th>Feature 2</th>
-                                <th>Count</th>
-                                <th>Spearman Correlation</th>
-                                <th>Spearman P-Value</th>
-                                <th>Scatterplot Link</th>
-                                <th>Download Data</th>
+                                <th style={{ backgroundColor: '#6366f1'}}>Database 1</th>
+                                <th style={{ backgroundColor: '#6366f1'}}>Feature 1</th>
+                                <th style={{ backgroundColor: '#6366f1'}}>Database 2</th>
+                                <th style={{ backgroundColor: '#6366f1'}}>Feature 2</th>
+                                <th style={{ backgroundColor: '#6366f1'}}>Count</th>
+                                <th style={{ backgroundColor: '#6366f1'}}>Spearman Correlation</th>
+                                <th style={{ backgroundColor: '#6366f1'}}>Spearman P-Value</th>
+                                <th style={{ backgroundColor: '#6366f1'}}>Scatterplot Link</th>
+                                <th style={{ backgroundColor: '#6366f1'}}>Download Data</th>
                             </tr>
                         </thead>
                         <tbody>

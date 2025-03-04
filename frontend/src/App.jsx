@@ -69,38 +69,31 @@ function App() {
     return (
         <div className="min-h-screen bg-gray-50">
             <h1 className="bg-indigo-300 text-4xl text-bold py-3 text-center">Database Query Interface</h1>
-            <div className="grid grid-cols-3 gap-6 p-6">
-                {/* Left Column: QueryForm */}
-                <div className="col-span-1 bg-white shadow-md rounded-lg p-4">
+            <div className="grid grid-cols-7 gap-6 p-6">
+                {/* Left Column: QueryForm, Pop-up Button */}
+                <div className="col-span-3 bg-white shadow-md rounded-lg p-4">
                     <QueryForm onSubmit={handleQuery} />
                     <div className="mt-6">
-                        <h2 className="text-xl font-bold mb-4">Embedded PDF</h2>
-                        <iframe 
-                            src="/sample.pdf" 
-                            className="w-full h-[500px] border border-gray-300 rounded-lg"
-                            title="Sample PDF"
-                        ></iframe>
-                        {/* Button to open PDF in a popup */}
                         <button 
                             onClick={openModal} 
                             className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600"
                         >
-                            View PDF in Popup
+                            View Feature Names
                         </button>
                     </div>
                 </div>
     
-                {/* Right Column: ScatterPlot, CorrelationResult, Graph */}
-                <div className="col-span-2 bg-white shadow-md rounded-lg p-4">
+                {/* Right Column: ScatterPlot, CorrelationResult */}
+                <div className="col-span-4 bg-white shadow-md rounded-lg p-4">
+                    {scatterData.length > 0 && (
+                        <ScatterPlot data={scatterData} />
+                    )}
                     <CorrelationResult 
                         data={correlations} 
                         minCorrelation={minCorrelation} 
                         maxPValue={maxPValue} 
                         onScatterRequest={handleScatterRequest} 
                     />
-                    {scatterData.length > 0 && (
-                        <ScatterPlot data={scatterData} />
-                    )}
                 </div>
             </div>
 
