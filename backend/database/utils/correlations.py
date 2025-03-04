@@ -34,12 +34,14 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                 valid_data = pd.concat([f1_vals, f2_vals], axis=1).dropna()
                 count = valid_data.shape[0]  # Number of valid data points
 
-                if count > 1:
+                # Count of two or less returns a nan pvalue and correlation
+                if count > 2:
                     f1_valid = valid_data.iloc[:, 0]
                     f2_valid = valid_data.iloc[:, 1]
                     corr, p_value = spearmanr(f1_valid, f2_valid, nan_policy="omit")
+
                     # Reject null values
-                    if not np.isnan(corr):
+                    if not np.isnan(corr) and not np.isnan(p_value):
                         results.append([db1, f1_name, db2, f2_name, count, corr, p_value])
 
     # Convert the results into a DataFrame
