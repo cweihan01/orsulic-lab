@@ -61,19 +61,31 @@ function App() {
     };
 
     return (
-        <div className="text-center content-center">
-            <h1 className="bg-indigo-300 text-4xl text-bold py-3">Database Query Interface</h1>
-            <QueryForm onSubmit={handleQuery} />
-            {scatterData.length > 0 && <ScatterPlot data={scatterData} />} {/* Render the scatter plot only if data is available */}
-            <CorrelationResult 
-                data={correlations} 
-                minCorrelation={minCorrelation} 
-                maxPValue={maxPValue} 
-                onScatterRequest={handleScatterRequest} // Pass the function here
-            />
-            <Graph data={correlations} /> {/* Render the chart */}
+        <div className="min-h-screen bg-gray-50">
+            <h1 className="bg-indigo-300 text-4xl text-bold py-3 text-center">Database Query Interface</h1>
+            <div className="grid grid-cols-3 gap-6 p-6">
+                {/* Left Column: QueryForm */}
+                <div className="col-span-1 bg-white shadow-md rounded-lg p-4">
+                    <QueryForm onSubmit={handleQuery} />
+                </div>
+    
+                {/* Right Column: ScatterPlot, CorrelationResult, Graph */}
+                <div className="col-span-2 bg-white shadow-md rounded-lg p-4">
+                    <CorrelationResult 
+                        data={correlations} 
+                        minCorrelation={minCorrelation} 
+                        maxPValue={maxPValue} 
+                        onScatterRequest={handleScatterRequest} 
+                    />
+                    {scatterData.length > 0 && (
+                        <ScatterPlot data={scatterData} />
+                    )}
+                    <Graph data={correlations} />
+                </div>
+            </div>
         </div>
     );
+    
 }
 
 export default App;
