@@ -68,7 +68,25 @@ function App() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <h1 className="bg-indigo-300 text-4xl text-bold py-3 text-center">Database Query Interface</h1>
+            {/* Header Section */}
+        <header className="bg-white text-black py-3 flex items-center justify-between px-6 shadow-md w-full">
+            {/* Logo - Left Aligned */}
+            <img 
+                src="/UCLA_Orsulic_Lab_Logo.png" 
+                alt="UCLA Orsulic Lab Logo" 
+                className="h-12 w-auto"
+            />
+
+            {/* Title - Centered */}
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+                <h1 className="text-4xl font-bold text-center">
+                    Database Query Interface
+                </h1>
+            </div>
+
+            {/* Empty div for spacing balance */}
+            <div className="w-10"></div>
+        </header>
             <div className="grid grid-cols-7 gap-6 p-6">
                 {/* Left Column: QueryForm, Pop-up Button */}
                 <div className="col-span-3 bg-white shadow-md rounded-lg p-4">
