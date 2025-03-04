@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import QueryForm from "./components/QueryForm";
 import CorrelationResult from "./components/CorrelationResult";
 import ScatterPlot from "./components/ScatterPlot"; // Import ScatterPlot component
-import Graph from "./components/Graph"; // Import Graph component
 import axios from "axios";
 import "./App.css";
 import './index.js';
@@ -102,7 +101,6 @@ function App() {
                     {scatterData.length > 0 && (
                         <ScatterPlot data={scatterData} />
                     )}
-                    <Graph data={correlations} />
                 </div>
             </div>
 
@@ -112,7 +110,7 @@ function App() {
                     <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full relative">
                         <button 
                             onClick={closeModal} 
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full px-2 py-1 hover:bg-red-600"
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full px-3 py-1 hover:bg-red-600"
                         >
                             X
                         </button>
@@ -124,7 +122,7 @@ function App() {
                     </div>
                 </div>
             )}
-            
+
         </div>
     );
     
