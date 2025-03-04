@@ -12,6 +12,13 @@ function App() {
     const [scatterData, setScatterData] = useState([]); // State for scatter data
     const [minCorrelation, setMinCorrelation] = useState(0.0);  // Track min correlation
     const [maxPValue, setMaxPValue] = useState(1.0);            // Track max p-value
+    const [isModalOpen, setIsModalOpen] = useState(false);  // State for modal visibility
+
+    // Function to open modal
+    const openModal = () => setIsModalOpen(true);
+    
+    // Function to close modal
+    const closeModal = () => setIsModalOpen(false);
 
     // When query form submitted, make POST request to correlations API
     const handleQuery = (query) => {
@@ -67,6 +74,21 @@ function App() {
                 {/* Left Column: QueryForm */}
                 <div className="col-span-1 bg-white shadow-md rounded-lg p-4">
                     <QueryForm onSubmit={handleQuery} />
+                    <div className="mt-6">
+                        <h2 className="text-xl font-bold mb-4">Embedded PDF</h2>
+                        <iframe 
+                            src="/sample.pdf" 
+                            className="w-full h-[500px] border border-gray-300 rounded-lg"
+                            title="Sample PDF"
+                        ></iframe>
+                        {/* Button to open PDF in a popup */}
+                        <button 
+                            onClick={openModal} 
+                            className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600"
+                        >
+                            View PDF in Popup
+                        </button>
+                    </div>
                 </div>
     
                 {/* Right Column: ScatterPlot, CorrelationResult, Graph */}
@@ -83,6 +105,26 @@ function App() {
                     <Graph data={correlations} />
                 </div>
             </div>
+
+            {/* Modal for PDF */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full relative">
+                        <button 
+                            onClick={closeModal} 
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full px-2 py-1 hover:bg-red-600"
+                        >
+                            X
+                        </button>
+                        <iframe 
+                            src="/sample.pdf" 
+                            className="w-full h-[80vh] p-4"
+                            title="Popup PDF"
+                        ></iframe>
+                    </div>
+                </div>
+            )}
+            
         </div>
     );
     
