@@ -1,7 +1,7 @@
 import React from "react";
 import Plot from "react-plotly.js";
 
-const ScatterPlot = ({ data }) => {
+const ScatterPlot = ({ data, handleCloseGraph }) => {
     // Prepare data for Plotly
     const xValues = data.map(item => Object.values(item)[1]);
     let yValues = data.map(item => Object.values(item)[2]);
@@ -17,7 +17,10 @@ const ScatterPlot = ({ data }) => {
 
     return (
         <div className="w-full flex-grow rounded-lg drop-shadow-lg bg-white p-6 my-4 bg-gray-200">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-4">Scatter Plot</h2>
+            <div className="relative">
+                <h2 className="text-3xl font-semibold text-gray-800 mb-4">Scatter Plot</h2>
+                <button onClick={handleCloseGraph} className="absolute top-0 right-0 mt-2 mr-2 px-3 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Close Graph</button>
+            </div>
             <Plot
                 data={[
                     {

@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 
-function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest }) {
+function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, highlightedRow }) {
     // Function to determine text color for correlation values
     const getCorrelationColor = (correlation) => {
         if (correlation > 0.75) return '#2e7d32'; // Dark green for strong positive correlation
@@ -91,7 +91,9 @@ const handleDownloadData = async (feature1, feature2, database1, database2) => {
                         </thead>
                         <tbody>
                             {filteredData.map((item, index) => (
-                                <tr key={index}>
+                                <tr key={index}  className={`${
+                                    highlightedRow === index ? "border-red-400 border-2" : ""
+                                }`}>
                                     <td>{item.database1}</td>
                                     <td>{item.feature1}</td>
                                     <td>{item.database2}</td>
@@ -105,7 +107,7 @@ const handleDownloadData = async (feature1, feature2, database1, database2) => {
                                     </td>
                                     <td>
                                         <button
-                                            onClick={() => onScatterRequest(item.feature1, item.feature2, item.database1, item.database2)}
+                                            onClick={() => onScatterRequest(index, item.feature1, item.feature2, item.database1, item.database2)}
                                             className="text-blue-500 hover:underline"
                                         >
                                             View Scatterplot

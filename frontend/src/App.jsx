@@ -8,6 +8,7 @@ import './index.js';
 
 function App() {
     const [correlations, setCorrelations] = useState([]);
+    const [highlightedRow, setHighlightedRow] = useState(null);  // Highlight row whose graph is displayed
     const [scatterData, setScatterData] = useState([]); // State for scatter data
     const [minCorrelation, setMinCorrelation] = useState(0.0);  // Track min correlation
     const [maxPValue, setMaxPValue] = useState(1.0);            // Track max p-value
@@ -18,6 +19,12 @@ function App() {
     
     // Function to close modal
     const closeModal = () => setIsModalOpen(false);
+
+    // Function to close scatter plot
+    const handleCloseGraph = () => {
+        setHighlightedRow(null)
+        setScatterData([]);
+    };
 
     // When query form submitted, make POST request to correlations API
     const handleQuery = (query) => {
@@ -46,7 +53,8 @@ function App() {
     };
 
     // New function to handle scatter data request
-    const handleScatterRequest = (feature1, feature2, database1, database2) => {
+    const handleScatterRequest = (index, feature1, feature2, database1, database2) => {
+        setHighlightedRow(index);
         const scatterData = {
             feature1,
             feature2,
@@ -104,13 +112,14 @@ function App() {
                 {/* Right Column: ScatterPlot, CorrelationResult */}
                 <div className="col-span-4 bg-white shadow-md rounded-lg p-4">
                     {scatterData.length > 0 && (
-                        <ScatterPlot data={scatterData} />
+                        <ScatterPlot data={scatterData} handleCloseGraph={handleCloseGraph} />
                     )}
                     <CorrelationResult 
                         data={correlations} 
                         minCorrelation={minCorrelation} 
                         maxPValue={maxPValue} 
                         onScatterRequest={handleScatterRequest} 
+                        highlightedRow={highlightedRow}
                     />
                 </div>
             </div>
