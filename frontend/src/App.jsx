@@ -68,8 +68,8 @@ function App() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header Section */}
-        <header className="bg-white text-black py-3 flex items-center justify-between px-6 shadow-md w-full">
+        {/* Header Section */}
+        <header className="bg-[#a1cdf9] text-black py-3 flex items-center justify-between px-6 shadow-md w-full">
             {/* Logo - Left Aligned */}
             <img 
                 src="/UCLA_Orsulic_Lab_Logo.png" 
