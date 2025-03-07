@@ -7,14 +7,14 @@ export default function SearchableSelect({
     options,
     value,
     onChange,
-    placeholder = 'Select an option'
+    placeholder = 'Select an option',
 }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
     // Filter options based on search term
-    const filteredOptions = options.filter(option =>
+    const filteredOptions = options.filter((option) =>
         option.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -49,7 +49,7 @@ export default function SearchableSelect({
                     onFocus={() => setIsOpen(true)}
                 />
             </div>
-            
+
             {isOpen && filteredOptions.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
                     <ul className="max-h-60 overflow-auto">

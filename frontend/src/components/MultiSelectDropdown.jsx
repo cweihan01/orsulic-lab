@@ -16,7 +16,7 @@ export default function MultiSelectDropdown({
     const optionsListRef = useRef(null);
 
     // Filter options based on search term
-    const filteredOptions = options.filter(option =>
+    const filteredOptions = options.filter((option) =>
         option.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -50,7 +50,8 @@ export default function MultiSelectDropdown({
         onChange(newSelectedOptions);
     };
 
-    const isSelectAllEnabled = filteredOptions.length > 0 && selectedOptions.length < filteredOptions.length;
+    const isSelectAllEnabled =
+        filteredOptions.length > 0 && selectedOptions.length < filteredOptions.length;
     const isClearSelectionEnabled = selectedOptions.length > 0;
 
     const handleSelectAllClick = (e) => {
@@ -69,9 +70,7 @@ export default function MultiSelectDropdown({
 
     // this is a bit slow because of the .join() call
     // Change this, to another place holder if needed
-    const displayText = selectedOptions.length > 0 
-        ? selectedOptions.join(', ')
-        : prompt;
+    const displayText = selectedOptions.length > 0 ? selectedOptions.join(', ') : prompt;
 
     return (
         <div ref={dropdownRef} className="relative w-full md:w-1/2">
@@ -80,7 +79,7 @@ export default function MultiSelectDropdown({
                     <input
                         type="text"
                         className="w-full bg-transparent px-4 py-2 focus:outline-none"
-                        placeholder={isOpen ? "Search..." : displayText}
+                        placeholder={isOpen ? 'Search...' : displayText}
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
@@ -91,7 +90,7 @@ export default function MultiSelectDropdown({
                     <span className="pr-4 text-xs text-gray-500">▼</span>
                 </div>
             </div>
-            
+
             {isOpen && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
                     <ul className="border-b">

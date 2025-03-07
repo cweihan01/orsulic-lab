@@ -19,54 +19,52 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
         return '#9e9e9e'; // Gray for non-significant p-value
     };
 
-// Button to download raw data, correlations only
-const handleDownloadData = async (feature1, feature2, database1, database2) => {
-    try {
-        const payload = {
-            feature1, feature2, database1, database2
-        };
-        const response = await axios.post(
-            process.env.REACT_APP_API_ROOT + 'scatter/',
-            payload
-        );
-        const scatterData = response.data.scatter_data;
+    // Button to download raw data, correlations only
+    const handleDownloadData = async (feature1, feature2, database1, database2) => {
+        try {
+            const payload = {
+                feature1,
+                feature2,
+                database1,
+                database2,
+            };
+            const response = await axios.post(process.env.REACT_APP_API_ROOT + 'scatter/', payload);
+            const scatterData = response.data.scatter_data;
 
-        // Building csv file
-        const csvRows = [];
-        if (scatterData.length === 0) {
-            alert("No data returned from server!");
-            return;
-        }
-        
-        // Extract headers from keys, add rows/map values
-        const headers = Object.keys(scatterData[0]);
-        csvRows.push(headers.join(','));
-        scatterData.forEach(obj => {
-            const row = headers.map(h => JSON.stringify(obj[h] ?? ""));
-            csvRows.push(row.join(','));
-        });
+            // Building csv file
+            const csvRows = [];
+            if (scatterData.length === 0) {
+                alert('No data returned from server!');
+                return;
+            }
 
-        const csvString = csvRows.join('\n');
-        const blob = new Blob([csvString], { type: 'text/csv'});
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${feature1}_vs_${feature2}_scatter.csv`;
-        link.click();
-        window.URL.revokeObjectURL(url);
+            // Extract headers from keys, add rows/map values
+            const headers = Object.keys(scatterData[0]);
+            csvRows.push(headers.join(','));
+            scatterData.forEach((obj) => {
+                const row = headers.map((h) => JSON.stringify(obj[h] ?? ''));
+                csvRows.push(row.join(','));
+            });
 
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${feature1}_vs_${feature2}_scatter.csv`;
+            link.click();
+            window.URL.revokeObjectURL(url);
         } catch (err) {
-        console.error("Error fetching scatter data for download:", err);
-        alert("Failed to download data. See console for details.");
-    }
-};
+            console.error('Error fetching scatter data for download:', err);
+            alert('Failed to download data. See console for details.');
+        }
+    };
 
     // Filter and sort data
     const filteredData = data
         .filter(
-            (item) => 
-                item.spearman_correlation >= minCorrelation &&
-                item.spearman_p_value <= maxPValue
+            (item) =>
+                item.spearman_correlation >= minCorrelation && item.spearman_p_value <= maxPValue
         )
         .sort((a, b) => a.spearman_p_value - b.spearman_p_value); // Sort by p-value
 
@@ -78,28 +76,35 @@ const handleDownloadData = async (feature1, feature2, database1, database2) => {
                     <table className="correlation-result w-full">
                         <thead>
                             <tr>
-                                <th style={{ backgroundColor: '#6366f1'}}>Database 1</th>
-                                <th style={{ backgroundColor: '#6366f1'}}>Feature 1</th>
-                                <th style={{ backgroundColor: '#6366f1'}}>Database 2</th>
-                                <th style={{ backgroundColor: '#6366f1'}}>Feature 2</th>
-                                <th style={{ backgroundColor: '#6366f1'}}>Count</th>
-                                <th style={{ backgroundColor: '#6366f1'}}>Spearman Correlation</th>
-                                <th style={{ backgroundColor: '#6366f1'}}>Spearman P-Value</th>
-                                <th style={{ backgroundColor: '#6366f1'}}>Scatterplot Link</th>
-                                <th style={{ backgroundColor: '#6366f1'}}>Download Data</th>
+                                <th style={{ backgroundColor: '#6366f1' }}>Database 1</th>
+                                <th style={{ backgroundColor: '#6366f1' }}>Feature 1</th>
+                                <th style={{ backgroundColor: '#6366f1' }}>Database 2</th>
+                                <th style={{ backgroundColor: '#6366f1' }}>Feature 2</th>
+                                <th style={{ backgroundColor: '#6366f1' }}>Count</th>
+                                <th style={{ backgroundColor: '#6366f1' }}>Spearman Correlation</th>
+                                <th style={{ backgroundColor: '#6366f1' }}>Spearman P-Value</th>
+                                <th style={{ backgroundColor: '#6366f1' }}>Scatterplot Link</th>
+                                <th style={{ backgroundColor: '#6366f1' }}>Download Data</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredData.map((item, index) => (
-                                <tr key={index}  className={`${
-                                    highlightedRow === index ? "border-red-400 border-2" : ""
-                                }`}>
+                                <tr
+                                    key={index}
+                                    className={`${
+                                        highlightedRow === index ? 'border-red-400 border-2' : ''
+                                    }`}
+                                >
                                     <td>{item.database1}</td>
                                     <td>{item.feature1}</td>
                                     <td>{item.database2}</td>
                                     <td>{item.feature2}</td>
                                     <td>{item.count}</td>
-                                    <td style={{ color: getCorrelationColor(item.spearman_correlation) }}>
+                                    <td
+                                        style={{
+                                            color: getCorrelationColor(item.spearman_correlation),
+                                        }}
+                                    >
                                         {item.spearman_correlation}
                                     </td>
                                     <td style={{ color: getPValueColor(item.spearman_p_value) }}>
@@ -107,7 +112,15 @@ const handleDownloadData = async (feature1, feature2, database1, database2) => {
                                     </td>
                                     <td>
                                         <button
-                                            onClick={() => onScatterRequest(index, item.feature1, item.feature2, item.database1, item.database2)}
+                                            onClick={() =>
+                                                onScatterRequest(
+                                                    index,
+                                                    item.feature1,
+                                                    item.feature2,
+                                                    item.database1,
+                                                    item.database2
+                                                )
+                                            }
                                             className="text-blue-500 hover:underline"
                                         >
                                             View Scatterplot
@@ -115,7 +128,14 @@ const handleDownloadData = async (feature1, feature2, database1, database2) => {
                                     </td>
                                     <td>
                                         <button
-                                            onClick={() => handleDownloadData(item.feature1, item.feature2, item.database1, item.database2)}
+                                            onClick={() =>
+                                                handleDownloadData(
+                                                    item.feature1,
+                                                    item.feature2,
+                                                    item.database1,
+                                                    item.database2
+                                                )
+                                            }
                                             className="text-blue-500 hover:underline"
                                         >
                                             Download Data
@@ -134,4 +154,3 @@ const handleDownloadData = async (feature1, feature2, database1, database2) => {
 }
 
 export default CorrelationResult;
-

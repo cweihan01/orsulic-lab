@@ -8,7 +8,7 @@ import MultiSelectDropdown from './MultiSelectDropdown';
 function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
     const [featureList1, setFeatureList1] = useState([]);
     const [featureList2, setFeatureList2] = useState([]);
-    const [databaseList, setDatabaseList] = useState(["Nuclear"]); // Default values
+    const [databaseList, setDatabaseList] = useState(['Nuclear']); // Default values
     const [selectedDatabase1, setSelectedDatabase1] = useState([]); // State for Database 1 selection
     const [selectedDatabase2, setSelectedDatabase2] = useState([]); // State for Database 2 selection
     const [feature1, setFeature1] = useState('');
@@ -41,7 +41,9 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     databaseList: selectedDatabase1, // Pass selectedDatabase1 as query params
                 },
                 paramsSerializer: (params) => {
-                    return selectedDatabase1.map(db => `databaseList=${encodeURIComponent(db)}`).join('&');
+                    return selectedDatabase1
+                        .map((db) => `databaseList=${encodeURIComponent(db)}`)
+                        .join('&');
                 },
             })
             .then((response) => {
@@ -54,7 +56,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
             });
     }, [databaseList, selectedDatabase1]);
 
-   // Get list of features from API for the second set of databases selected
+    // Get list of features from API for the second set of databases selected
     useEffect(() => {
         console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
         axios
@@ -63,7 +65,9 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     databaseList: selectedDatabase2, // Pass selectedDatabase1 as query params
                 },
                 paramsSerializer: (params) => {
-                    return selectedDatabase2.map(db => `databaseList=${encodeURIComponent(db)}`).join('&');
+                    return selectedDatabase2
+                        .map((db) => `databaseList=${encodeURIComponent(db)}`)
+                        .join('&');
                 },
             })
             .then((response) => {
@@ -78,17 +82,17 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const query = { 
-            feature1, 
-            feature2, 
-            minCorrelation, 
+        const query = {
+            feature1,
+            feature2,
+            minCorrelation,
             maxPValue,
             database1: selectedDatabase1, // Include selected databases
-            database2: selectedDatabase2
+            database2: selectedDatabase2,
         };
         console.log('Query Parameters:', query); // Debugging query params
         onSubmit(query);
-        setIsCollapsible(true);  // Collapsible once submitted
+        setIsCollapsible(true); // Collapsible once submitted
     };
 
     // When collapsed, only display the header with an Expand button
@@ -111,14 +115,14 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
         <div className="max-w-4xl mx-auto bg-white py-4 my-2 bg-gray-200">
             <div className="relative">
                 <h2 className="text-3xl font-semibold text-gray-800 mb-4">Query Form</h2>
-                {isCollapsible && 
-                <button
-                onClick={toggleCollapse}
-                className="absolute top-0 right-0 px-2 py-1 bg-gray-300 rounded hover:bg-gray-400"
-                >
-                    Collapse
-                </button>
-                }
+                {isCollapsible && (
+                    <button
+                        onClick={toggleCollapse}
+                        className="absolute top-0 right-0 px-2 py-1 bg-gray-300 rounded hover:bg-gray-400"
+                    >
+                        Collapse
+                    </button>
+                )}
             </div>
             <form className="space-y-6" onSubmit={handleSubmit}>
                 {/* Database Dropdown 1 */}
@@ -126,7 +130,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     <label
                         htmlFor="database1"
                         className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
-                        >
+                    >
                         Database 1:
                     </label>
                     <MultiSelectDropdown
@@ -134,7 +138,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                         options={databaseList}
                         onChange={(selected) => setSelectedDatabase1(selected)} // Update state for Database 1
                         prompt="Select one or more databases"
-                        />
+                    />
                 </div>
 
                 {/* Feature 1 */}
