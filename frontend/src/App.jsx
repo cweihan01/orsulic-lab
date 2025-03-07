@@ -58,8 +58,8 @@ function App() {
     };
 
     // New function to handle scatter data request
-    const handleScatterRequest = (index, feature1, feature2, database1, database2) => {
-        setHighlightedRow(index);
+    const handleScatterRequest = (feature1, feature2, database1, database2) => {
+        setHighlightedRow(feature2); // assuming that feature2 is unique in each table
         const scatterData = {
             feature1,
             feature2,
