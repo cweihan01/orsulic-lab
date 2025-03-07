@@ -4,7 +4,8 @@ import axios from 'axios';
 import SearchableSelect from './SearchableSelect';
 import MultiSelectDropdown from './MultiSelectDropdown';
 
-function QueryForm({ onSubmit }) {
+// function QueryForm({ onSubmit }) {
+function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
     const [featureList1, setFeatureList1] = useState([]);
     const [featureList2, setFeatureList2] = useState([]);
     const [databaseList, setDatabaseList] = useState(["Nuclear"]); // Default values
@@ -14,6 +15,7 @@ function QueryForm({ onSubmit }) {
     const [feature2, setFeature2] = useState([]);
     const [minCorrelation, setMinCorrelation] = useState(0.0);
     const [maxPValue, setMaxPValue] = useState(1.0);
+    const [isCollapsible, setIsCollapsible] = useState(false);
 
     // Get list of Categories/Databases from API
     useEffect(() => {
@@ -86,18 +88,45 @@ function QueryForm({ onSubmit }) {
         };
         console.log('Query Parameters:', query); // Debugging query params
         onSubmit(query);
+        setIsCollapsible(true);  // Collapsible once submitted
     };
 
+    // When collapsed, only display the header with an Expand button
+    if (isCollapsed) {
+        return (
+            <div className="max-w-4xl mx-auto bg-white my-2">
+                <div className="flex justify-end">
+                    <button
+                        onClick={toggleCollapse}
+                        className="px-2 py-1 bg-gray-300 rounded hover:bg-gray-400 mx-auto"
+                    >
+                        &gt;
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="max-w-4xl mx-auto rounded-lg drop-shadow-lg bg-white p-6 my-4 bg-gray-200">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-4">Query Form</h2>
+        <div className="max-w-4xl mx-auto bg-white py-4 my-2 bg-gray-200">
+            <div className="relative">
+                <h2 className="text-3xl font-semibold text-gray-800 mb-4">Query Form</h2>
+                {isCollapsible && 
+                <button
+                onClick={toggleCollapse}
+                className="absolute top-0 right-0 px-2 py-1 bg-gray-300 rounded hover:bg-gray-400"
+                >
+                    Collapse
+                </button>
+                }
+            </div>
             <form className="space-y-6" onSubmit={handleSubmit}>
                 {/* Database Dropdown 1 */}
                 <div className="flex flex-col md:flex-row items-center md:space-x-4">
                     <label
                         htmlFor="database1"
                         className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
-                    >
+                        >
                         Database 1:
                     </label>
                     <MultiSelectDropdown
@@ -105,7 +134,7 @@ function QueryForm({ onSubmit }) {
                         options={databaseList}
                         onChange={(selected) => setSelectedDatabase1(selected)} // Update state for Database 1
                         prompt="Select one or more databases"
-                    />
+                        />
                 </div>
 
                 {/* Feature 1 */}

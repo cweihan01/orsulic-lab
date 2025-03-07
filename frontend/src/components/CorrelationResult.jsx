@@ -71,7 +71,7 @@ const handleDownloadData = async (feature1, feature2, database1, database2) => {
         .sort((a, b) => a.spearman_p_value - b.spearman_p_value); // Sort by p-value
 
     return (
-        <div className="w-full rounded-lg drop-shadow-lg bg-white p-6 my-4 bg-gray-200 overflow-x-auto">
+        <div className="w-full rounded-lg drop-shadow-lg bg-white p-4 my-2 bg-gray-200 overflow-x-auto">
             <h2 className="text-3xl font-semibold text-gray-800 mb-4">Correlation Results</h2>
             {filteredData.length > 0 ? (
                 <div className="overflow-x-auto">

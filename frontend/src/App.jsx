@@ -13,6 +13,7 @@ function App() {
     const [minCorrelation, setMinCorrelation] = useState(0.0);  // Track min correlation
     const [maxPValue, setMaxPValue] = useState(1.0);            // Track max p-value
     const [isModalOpen, setIsModalOpen] = useState(false);  // State for modal visibility
+    const [isQueryFormCollapsed, setIsQueryFormCollapsed] = useState(false); // Query form collapsibility
 
     // Function to open modal
     const openModal = () => setIsModalOpen(true);
@@ -25,6 +26,12 @@ function App() {
         setHighlightedRow(null)
         setScatterData([]);
     };
+
+    // Function to close query form
+    const handleCollapseQueryForm = () => {
+        if (!scatterData) setIsQueryFormCollapsed(false);
+        else setIsQueryFormCollapsed(!isQueryFormCollapsed);
+    }
 
     // When query form submitted, make POST request to correlations API
     const handleQuery = (query) => {
@@ -95,10 +102,13 @@ function App() {
             {/* Empty div for spacing balance */}
             <div className="w-10"></div>
         </header>
-            <div className="grid grid-cols-7 gap-6 p-6">
+            <div className="grid grid-cols-12 gap-6 p-6">
                 {/* Left Column: QueryForm, Pop-up Button */}
-                <div className="col-span-3 bg-white shadow-md rounded-lg p-4">
-                    <QueryForm onSubmit={handleQuery} />
+                <div className={isQueryFormCollapsed ? "col-span-1 bg-white shadow-md rounded-lg p-4" : "col-span-5 bg-white shadow-md rounded-lg p-4"}>
+                    <QueryForm onSubmit={handleQuery}
+                        isCollapsed={isQueryFormCollapsed}
+                        toggleCollapse={handleCollapseQueryForm} />
+                    {!isQueryFormCollapsed && (
                     <div className="mt-6">
                         <button 
                             onClick={openModal} 
@@ -106,11 +116,12 @@ function App() {
                         >
                             View Feature Names
                         </button>
-                    </div>
+                    </div>)}
                 </div>
     
                 {/* Right Column: ScatterPlot, CorrelationResult */}
-                <div className="col-span-4 bg-white shadow-md rounded-lg p-4">
+                {/* <div className="col-span-5 bg-white shadow-md rounded-lg p-4"> */}
+                <div className={isQueryFormCollapsed ? "col-span-11 bg-white shadow-md rounded-lg p-4" : "col-span-7 bg-white shadow-md rounded-lg p-4"}>
                     {scatterData.length > 0 && (
                         <ScatterPlot data={scatterData} handleCloseGraph={handleCloseGraph} />
                     )}
