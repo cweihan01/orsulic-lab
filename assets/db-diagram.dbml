@@ -1,0 +1,51 @@
+Table Feature {
+    name varchar(100) [pk]
+    data_type enum('num', 'cat') [default: 'num']
+    category enum('Nuclear', 'Molecular', 'Drug Screen') [default: 'Molecular']
+    sub_category varchar(100) [default: 'NA']
+}
+
+Table Nuclear {
+    feature_name varchar(100) [ref: > Feature.name, pk]
+    cell_line_1 float
+    cell_line_2 float
+    cell_line_3 float
+    cell_line_4 float
+    cell_line_5 float
+    // ... other cell lines
+    cell_line_50 float
+}
+
+Table Mole_GlobalChromatin {
+    feature_name varchar(100) [ref: > Feature.name, pk]
+    cell_line_1 float
+    cell_line_2 float
+    cell_line_3 float
+    cell_line_4 float
+    cell_line_5 float
+    // ... other cell lines
+    cell_line_50 float
+}
+
+Table Drug_GDSC1_AUC {
+    feature_name varchar(100) [ref: > Feature.name, pk]
+    cell_line_1 float
+    cell_line_2 float
+    cell_line_3 float
+    cell_line_4 float
+    cell_line_5 float
+    // ... other cell lines
+    cell_line_50 float
+}
+
+Table Correlation {
+    feature1_name varchar(100) [ref: > Feature.name]
+    feature2_name varchar(100) [ref: > Feature.name]
+    count int [default: 0]
+    spearman_corr float [default: 0]
+    spearman_pvalue float [default: 0]
+
+    indexes {
+        (feature1_name, feature2_name) [unique]
+    }
+}

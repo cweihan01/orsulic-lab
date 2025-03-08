@@ -1,8 +1,14 @@
 # Orsulic Lab
 
-*DataRes Consulting, Fall 2024*
+*DataRes Consulting, Fall 2024 - Winter 2025*
 
-## Installation instructions
+## Database Schema
+
+The current database schema is as follows:
+
+![Database Schema](./assets/db-diagram.png).
+
+## Installation Instructions
 
 ### Cloning the repository
 ```
@@ -14,6 +20,8 @@ cd orsulic-lab
 ```
 cd frontend
 ```
+
+Copy the provided `.env` file *into the `frontend` directory* (not the root directory). See `frontend/.env.example` for the required fields.
 
 We use `yarn` as our package manager. To install yarn:
 ```
