@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import axios from 'axios';
+import depMapToCellLineID from '../cellline_mapping.js';
 
 function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, highlightedRow }) {
     // Function to determine text color for correlation values
@@ -31,11 +32,31 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                 alert('No data returned from server!');
                 return;
             }
-
             const headers = Object.keys(scatterData[0]);
-            csvRows.push(headers.join(','));
+
+            const newHeaders = [];
+            headers.forEach(header => {
+                if(header == 'cell_lines'){
+                    newHeaders.push('DepMap ID');
+                } else {
+                    newHeaders.push(header);
+                }
+                if(header === 'cell_lines'){
+                    newHeaders.push('Cell Line ID');
+                }
+            });
+            csvRows.push(newHeaders.join(','));
+
             scatterData.forEach((obj) => {
-                const row = headers.map((h) => JSON.stringify(obj[h] ?? ''));
+                const row = [];
+                headers.forEach(header => {
+                    row.push(JSON.stringify(obj[header] ?? ''));
+                    if(header === 'cell_lines'){
+                        const depMapId = obj[header];
+                        const actualCellLineID = depMapToCellLineID[depMapId] || '';
+                        row.push(JSON.stringify(actualCellLineID));
+                    }
+                });
                 csvRows.push(row.join(','));
             });
 
