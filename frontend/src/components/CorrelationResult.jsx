@@ -120,8 +120,8 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                         bVal = b.count;
                         break;
                     case 'spearman_correlation':
-                        aVal = a.spearman_correlation;
-                        bVal = b.spearman_correlation;
+                        aVal = Math.abs(a.spearman_correlation);
+                        bVal = Math.abs(b.spearman_correlation);
                         break;
                     case 'spearman_p_value':
                         aVal = a.spearman_p_value;
