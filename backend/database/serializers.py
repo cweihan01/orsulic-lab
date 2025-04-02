@@ -1,7 +1,7 @@
 from rest_framework import serializers
 import math
 
-from .models import Feature, Nuclear, Mole_GlobalChromatin, Drug_GDSC1_AUC, CELL_LINES
+from .models import Feature, Nuclear, Molecular, DrugScreen, CELL_LINES
 
 
 class FeatureSerializer(serializers.ModelSerializer):
@@ -9,11 +9,11 @@ class FeatureSerializer(serializers.ModelSerializer):
         model = Feature
         fields = ['name', 'data_type', 'category', 'sub_category']
 
-class Mole_GlobalSerializer(serializers.ModelSerializer):
+class MolecularSerializer(serializers.ModelSerializer):
     feature = FeatureSerializer()
 
     class Meta:
-        model = Mole_GlobalChromatin
+        model = Molecular
         fields = ['feature', *[cellline for cellline in CELL_LINES]]
 
     # Custom serialization to handle NaN values
@@ -28,11 +28,11 @@ class Mole_GlobalSerializer(serializers.ModelSerializer):
 
 
 
-class Drug_GDSC1_AUCSerializer(serializers.ModelSerializer):
+class DrugScreenSerializer(serializers.ModelSerializer):
     feature = FeatureSerializer()
 
     class Meta:
-        model = Drug_GDSC1_AUC
+        model = DrugScreen
         fields = ['feature', *[cellline for cellline in CELL_LINES]]
 
     # Custom serialization to handle NaN values

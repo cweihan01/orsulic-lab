@@ -6,7 +6,8 @@ from . import views
 router = DefaultRouter()
 router.register("features", views.FeatureViewSet)
 router.register("nuclear", views.NuclearViewSet)
-router.register("mole_global", views.Mole_GlobalViewSet)
+router.register("molecular", views.MolecularViewSet)
+router.register("drugscreen", views.DrugScreenViewSet)
 
 urlpatterns = [
     path('', views.index, name=""),

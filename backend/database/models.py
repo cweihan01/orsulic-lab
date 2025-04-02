@@ -50,8 +50,8 @@ def create_model(model_name):
 
 # Create models
 Nuclear = create_model('Nuclear')
-Mole_GlobalChromatin = create_model('Mole_GlobalChromatin')
-Drug_GDSC1_AUC = create_model("Drug_GDSC1_AUC")
+Molecular = create_model('Molecular')
+DrugScreen = create_model("DrugScreen")
     
     
 class Correlation(models.Model):

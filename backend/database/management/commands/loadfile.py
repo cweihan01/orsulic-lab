@@ -1,6 +1,6 @@
 import pandas as pd
 from django.core.management import BaseCommand
-from database.models import Feature, CELL_LINES, Nuclear, Mole_GlobalChromatin, Drug_GDSC1_AUC
+from database.models import Feature, CELL_LINES, Nuclear, Molecular, DrugScreen
 
 class Command(BaseCommand):
     help = "Reads in a CSV file and stores data to database"
@@ -21,7 +21,7 @@ class Command(BaseCommand):
             total_rows = len(df)
             self.stdout.write(self.style.SUCCESS(f"Successfully loaded {filepath}. {total_rows} rows received."))
 
-            model_name = filepath.split("/")[-1].replace(".csv", "")
+            model_name = filepath.split("/")[-1].replace(".csv", "").split("_")[0]
             model_class = globals().get(model_name)
 
             if model_class is None:

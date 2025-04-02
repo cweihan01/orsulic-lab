@@ -4,8 +4,8 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Feature, Nuclear, Mole_GlobalChromatin, Drug_GDSC1_AUC, CELL_LINES, Correlation
-from .serializers import FeatureSerializer, NuclearSerializer, Mole_GlobalSerializer, Drug_GDSC1_AUCSerializer
+from .models import Feature, Nuclear, Molecular, DrugScreen, CELL_LINES, Correlation
+from .serializers import FeatureSerializer, NuclearSerializer, MolecularSerializer, DrugScreenSerializer
 
 from rest_framework.decorators import action
 
@@ -59,13 +59,13 @@ class NuclearViewSet(viewsets.ModelViewSet):
     queryset = Nuclear.objects.all()
     serializer_class = NuclearSerializer
 
-class Mole_GlobalViewSet(viewsets.ModelViewSet):
-    queryset = Mole_GlobalChromatin.objects.all()
-    serializer_class = Mole_GlobalSerializer
+class MolecularViewSet(viewsets.ModelViewSet):
+    queryset = Molecular.objects.all()
+    serializer_class = MolecularSerializer
 
-class Drug_GDSC1_AUCViewSet(viewsets.ModelViewSet):
-    queryset = Drug_GDSC1_AUC.objects.all()
-    serializer_class = Drug_GDSC1_AUCSerializer
+class DrugScreenViewSet(viewsets.ModelViewSet):
+    queryset = DrugScreen.objects.all()
+    serializer_class = DrugScreenSerializer
 
 class CorrelationView(APIView):
     def post(self, request, *args, **kwargs):
@@ -117,18 +117,18 @@ class CorrelationView(APIView):
                 if db_name == "Nuclear":
                     f1_data["Nuclear"] = Nuclear.objects.filter(feature=feature1)
                 elif db_name == "Molecular":
-                    f1_data["Molecular"] = Mole_GlobalChromatin.objects.filter(feature=feature1).values_list()
+                    f1_data["Molecular"] = Molecular.objects.filter(feature=feature1).values_list()
                 elif db_name == "Drug Screen":
-                    f1_data["Drug Screen"] = Drug_GDSC1_AUC.objects.filter(feature=feature1).values_list()
+                    f1_data["Drug Screen"] = DrugScreen.objects.filter(feature=feature1).values_list()
 
             f2_data = {}
             for db_name in db2_names:
                 if db_name == "Nuclear":
                     f2_data["Nuclear"] = Nuclear.objects.filter(feature__in=f2_objects)
                 elif db_name == "Molecular":
-                    f2_data["Molecular"] = Mole_GlobalChromatin.objects.filter(feature__in=f2_objects).values_list()
+                    f2_data["Molecular"] = Molecular.objects.filter(feature__in=f2_objects).values_list()
                 elif db_name == "Drug Screen":
-                    f2_data["Drug Screen"] = Drug_GDSC1_AUC.objects.filter(feature__in=f2_objects).values_list()
+                    f2_data["Drug Screen"] = DrugScreen.objects.filter(feature__in=f2_objects).values_list()
 
             f1_df = correlations.get_feature_values(f1_data, CELL_LINES)
             f2_df = correlations.get_feature_values(f2_data, CELL_LINES)
@@ -189,16 +189,16 @@ class ScatterView(APIView):
             if db1_name == "Nuclear":
                 f1_data = Nuclear.objects.filter(feature=feature1)
             elif db1_name == "Molecular":
-                f1_data = Mole_GlobalChromatin.objects.filter(feature=feature1)
+                f1_data = Molecular.objects.filter(feature=feature1)
             elif db1_name == "Drug Screen":
-                f1_data = Drug_GDSC1_AUC.objects.filter(feature=feature1)
+                f1_data = DrugScreen.objects.filter(feature=feature1)
 
             if db2_name == "Nuclear":
                 f2_data = Nuclear.objects.filter(feature=feature2)
             elif db2_name == "Molecular":
-                f2_data = Mole_GlobalChromatin.objects.filter(feature=feature2)
+                f2_data = Molecular.objects.filter(feature=feature2)
             elif db2_name == "Drug Screen":
-                f2_data = Drug_GDSC1_AUC.objects.filter(feature=feature2)
+                f2_data = DrugScreen.objects.filter(feature=feature2)
 
 
             if not f1_data or not f2_data:
