@@ -56,6 +56,8 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                 .catch((error) => {
                     console.error('Error fetching subcategories:', error);
                 });
+        } else {
+            setSubCategoryList1([]);
         }
     }, [selectedDatabase1]);
 
@@ -79,13 +81,15 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                 .catch((error) => {
                     console.error('Error fetching subcategories:', error);
                 });
+        } else {
+            setSubCategoryList2([]);
         }
     }, [selectedDatabase2]);
 
     // Get list of features from API for the first set of databases selected
     useEffect(() => {
         console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
-        if (selectedDatabase1.length > 0 && selectedSubCategories1.length > 1) {  // Only make request if databases are selected
+        if (selectedDatabase1.length > 0 && selectedSubCategories1.length > 0) {  // Only make request if databases are selected
             axios
                 .get(`${process.env.REACT_APP_API_ROOT}features/`, {
                     params: {
@@ -107,13 +111,15 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                 .catch((error) => {
                     console.error('Error fetching features:', error);
                 });
+        } else {
+            setFeatureList1([]);
         }
-    }, [selectedDatabase1, selectedSubCategories1]); // Added subCategoryList1 to dependencies
+    }, [selectedDatabase1, selectedSubCategories1]); 
 
     // Get list of features from API for the second set of databases selected
     useEffect(() => {
         console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
-        if (selectedDatabase2.length > 0) {  // Only make request if databases are selected
+        if (selectedDatabase2.length > 0 && selectedSubCategories2.length > 0) {  // Only make request if databases are selected
             axios
                 .get(`${process.env.REACT_APP_API_ROOT}features/`, {
                     params: {
@@ -135,8 +141,10 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                 .catch((error) => {
                     console.error('Error fetching features:', error);
                 });
+        } else {
+            setFeatureList2([]);
         }
-    }, [selectedDatabase2, selectedSubCategories2]); // Added subCategoryList2 to dependencies
+    }, [selectedDatabase2, selectedSubCategories2]); 
 
     const handleSubmit = (e) => {
         e.preventDefault();

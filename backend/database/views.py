@@ -72,6 +72,8 @@ class FeatureViewSet(viewsets.ModelViewSet):
         if sub_category_list:
             self.queryset = self.queryset.filter(sub_category__in=sub_category_list)
 
+        print(self.queryset)
+
         return super().list(request, *args, **kwargs)
 
 
