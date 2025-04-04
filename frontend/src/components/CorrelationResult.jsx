@@ -36,7 +36,7 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
 
             const newHeaders = [];
             headers.forEach(header => {
-                if(header == 'cell_lines'){
+                if(header === 'cell_lines'){
                     newHeaders.push('DepMap ID');
                 } else {
                     newHeaders.push(header);

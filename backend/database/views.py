@@ -44,13 +44,33 @@ class FeatureViewSet(viewsets.ModelViewSet):
         categories = Feature.objects.values_list('category', flat=True).distinct()
         return Response({'categories': list(categories)})
     
-    def list(self, request, *args, **kwargs):
-        # Get database list from query parameters
-        database_list = request.query_params.getlist('databaseList', [])
+    # Get subcategories for multiple categories with /api/features/subcategories/?categories=Nuclear&categories=Drug%20Screen
+    @action(detail=False, methods=['get'])
+    def subcategories(self, request):
+        categories = request.query_params.getlist('categories')
 
-        # Check if database_list is provided
-        if database_list: 
+        # print("Categories received:", categories)
+
+        if not categories:
+            return Response({'error': 'Categories parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        subcategories = Feature.objects.filter(category__in=categories)\
+            .values_list('sub_category', flat=True)\
+            .distinct()
+        
+        return Response({'subcategories': list(subcategories)})
+
+    def list(self, request, *args, **kwargs):
+        # Get database list and sub_category list from query parameters
+        database_list = request.query_params.getlist('databaseList', [])
+        sub_category_list = request.query_params.getlist('subCategoryList', [])
+
+        # Apply filters if parameters are provided
+        if database_list:
             self.queryset = self.queryset.filter(category__in=database_list)
+        
+        if sub_category_list:
+            self.queryset = self.queryset.filter(sub_category__in=sub_category_list)
 
         return super().list(request, *args, **kwargs)
 
@@ -203,7 +223,7 @@ class ScatterView(APIView):
 
             if not f1_data or not f2_data:
                 # print(f1_data.values_list())
-                print(f2_data)
+                # print(f2_data)
                 return Response({"error": "No cell line data found for the specified features."}, status=status.HTTP_404_NOT_FOUND)
 
             # Convert CellLine data into dataframes

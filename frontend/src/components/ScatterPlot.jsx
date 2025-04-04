@@ -16,7 +16,7 @@ const ScatterPlot = ({ data, handleCloseGraph }) => {
     }
 
     return (
-        <div className="w-full flex-grow rounded-lg drop-shadow-lg bg-white p-4 my-2 bg-gray-200">
+        <div className="w-full flex-grow rounded-lg drop-shadow-lg  p-4 my-2 bg-gray-200">
             <div className="relative">
                 <h2 className="text-3xl font-semibold text-gray-800 mb-4">Scatter Plot</h2>
                 <button

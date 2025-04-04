@@ -11,6 +11,10 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
     const [databaseList, setDatabaseList] = useState(['Nuclear']); // Default values
     const [selectedDatabase1, setSelectedDatabase1] = useState([]); // State for Database 1 selection
     const [selectedDatabase2, setSelectedDatabase2] = useState([]); // State for Database 2 selection
+    const [subCategoryList1, setSubCategoryList1] = useState([]); 
+    const [subCategoryList2, setSubCategoryList2] = useState([]); 
+    const [selectedSubCategories1, setSelectedSubCategories1] = useState([]);
+    const [selectedSubCategories2, setSelectedSubCategories2] = useState([]);
     const [feature1, setFeature1] = useState('');
     const [feature2, setFeature2] = useState([]);
     const [minCorrelation, setMinCorrelation] = useState(0.0);
@@ -32,53 +36,107 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
             });
     }, []);
 
+    // Get list of subcategories according to the selected categories
+    useEffect(() => {
+        if (selectedDatabase1.length > 0) {
+            axios
+                .get(`${process.env.REACT_APP_API_ROOT}features/subcategories/`, {
+                    params: {
+                        categories: selectedDatabase1
+                    },
+                    paramsSerializer: (params) => {
+                        return selectedDatabase1
+                            .map((db) => `categories=${encodeURIComponent(db)}`)
+                            .join('&');
+                    },
+                })
+                .then((response) => {
+                    setSubCategoryList1(response.data.subcategories);
+                })
+                .catch((error) => {
+                    console.error('Error fetching subcategories:', error);
+                });
+        }
+    }, [selectedDatabase1]);
+
+    // Get list of subcategories according to the selected categories
+    useEffect(() => {
+        if (selectedDatabase2.length > 0) {
+            axios
+                .get(`${process.env.REACT_APP_API_ROOT}features/subcategories/`, {
+                    params: {
+                        categories: selectedDatabase2
+                    },
+                    paramsSerializer: (params) => {
+                        return selectedDatabase2
+                            .map((db) => `categories=${encodeURIComponent(db)}`)
+                            .join('&');
+                    },
+                })
+                .then((response) => {
+                    setSubCategoryList2(response.data.subcategories);
+                })
+                .catch((error) => {
+                    console.error('Error fetching subcategories:', error);
+                });
+        }
+    }, [selectedDatabase2]);
+
     // Get list of features from API for the first set of databases selected
     useEffect(() => {
         console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
-        axios
-            .get(`${process.env.REACT_APP_API_ROOT}features/`, {
-                params: {
-                    databaseList: selectedDatabase1, // Pass selectedDatabase1 as query params
-                },
-                paramsSerializer: (params) => {
-                    return selectedDatabase1
-                        .map((db) => `databaseList=${encodeURIComponent(db)}`)
-                        .join('&');
-                },
-            })
-            .then((response) => {
-                console.log('Retrieved response:');
-                console.log(response);
-                setFeatureList1(response.data.map((feature) => feature.name));
-            })
-            .catch((error) => {
-                console.error('Error fetching features:', error);
-            });
-    }, [databaseList, selectedDatabase1]);
+        if (selectedDatabase1.length > 0 && selectedSubCategories1.length > 1) {  // Only make request if databases are selected
+            axios
+                .get(`${process.env.REACT_APP_API_ROOT}features/`, {
+                    params: {
+                        databaseList: selectedDatabase1,
+                        subCategoryList: selectedSubCategories1,
+                    },
+                    paramsSerializer: (params) => {
+                        const dbParams = selectedDatabase1
+                            .map((db) => `databaseList=${encodeURIComponent(db)}`);
+                        const subCatParams = selectedSubCategories1
+                            .map((subCat) => `subCategoryList=${encodeURIComponent(subCat)}`);
+                        return [...dbParams, ...subCatParams].join('&');
+                    },
+                })
+                .then((response) => {
+                    console.log('Retrieved response:', response);
+                    setFeatureList1(response.data.map((feature) => feature.name));
+                })
+                .catch((error) => {
+                    console.error('Error fetching features:', error);
+                });
+        }
+    }, [selectedDatabase1, selectedSubCategories1]); // Added subCategoryList1 to dependencies
 
     // Get list of features from API for the second set of databases selected
     useEffect(() => {
         console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
-        axios
-            .get(`${process.env.REACT_APP_API_ROOT}features/`, {
-                params: {
-                    databaseList: selectedDatabase2, // Pass selectedDatabase1 as query params
-                },
-                paramsSerializer: (params) => {
-                    return selectedDatabase2
-                        .map((db) => `databaseList=${encodeURIComponent(db)}`)
-                        .join('&');
-                },
-            })
-            .then((response) => {
-                console.log('Retrieved response:');
-                console.log(response);
-                setFeatureList2(response.data.map((feature) => feature.name));
-            })
-            .catch((error) => {
-                console.error('Error fetching features:', error);
-            });
-    }, [databaseList, selectedDatabase2]);
+        if (selectedDatabase2.length > 0) {  // Only make request if databases are selected
+            axios
+                .get(`${process.env.REACT_APP_API_ROOT}features/`, {
+                    params: {
+                        databaseList: selectedDatabase2,
+                        subCategoryList: selectedSubCategories2,
+                    },
+                    paramsSerializer: (params) => {
+                        const dbParams = selectedDatabase2
+                            .map((db) => `databaseList=${encodeURIComponent(db)}`);
+                        const subCatParams = selectedSubCategories2
+                            .map((subCat) => `subCategoryList=${encodeURIComponent(subCat)}`);
+                        return [...dbParams, ...subCatParams].join('&');
+                    },
+                })
+                .then((response) => {
+                    console.log('Retrieved response:', response);
+                    setFeatureList2(response.data.map((feature) => feature.name));
+                })
+                .catch((error) => {
+                    console.error('Error fetching features:', error);
+                });
+        }
+    }, [selectedDatabase2, selectedSubCategories2]); // Added subCategoryList2 to dependencies
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -112,7 +170,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
     }
 
     return (
-        <div className="max-w-4xl mx-auto bg-white py-4 my-2 bg-gray-200">
+        <div className="max-w-4xl mx-auto bg-white py-4 my-2">
             <div className="relative">
                 <h2 className="text-3xl font-semibold text-gray-800 mb-4">Query Form</h2>
                 {isCollapsible && (
@@ -136,8 +194,24 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     <MultiSelectDropdown
                         formFieldName="database1"
                         options={databaseList}
-                        onChange={(selected) => setSelectedDatabase1(selected)} // Update state for Database 1
+                        onChange={(selected) => setSelectedDatabase1(selected)}
                         prompt="Select one or more databases"
+                    />
+                </div>
+
+                {/* SubCategory Dropdown 1 */}
+                <div className="flex flex-col md:flex-row items-center md:space-x-4">
+                    <label
+                        htmlFor="subcategory1"
+                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
+                    >
+                        SubCategory 1:
+                    </label>
+                    <MultiSelectDropdown
+                        formFieldName="subcategory1"
+                        options={subCategoryList1}
+                        onChange={(selected) => setSelectedSubCategories1(selected)}
+                        prompt="Select one or more subcategories"
                     />
                 </div>
 
@@ -168,8 +242,24 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     <MultiSelectDropdown
                         formFieldName="database2"
                         options={databaseList}
-                        onChange={(selected) => setSelectedDatabase2(selected)} // Update state for Database 2
+                        onChange={(selected) => setSelectedDatabase2(selected)}
                         prompt="Select one or more databases"
+                    />
+                </div>
+
+                {/* SubCategory Dropdown 2 */}
+                <div className="flex flex-col md:flex-row items-center md:space-x-4">
+                    <label
+                        htmlFor="subcategory2"
+                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
+                    >
+                        SubCategory 2:
+                    </label>
+                    <MultiSelectDropdown
+                        formFieldName="subcategory2"
+                        options={subCategoryList2}
+                        onChange={(selected) => setSelectedSubCategories2(selected)}
+                        prompt="Select one or more subcategories"
                     />
                 </div>
 

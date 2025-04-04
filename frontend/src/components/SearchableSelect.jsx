@@ -1,6 +1,5 @@
 // QueryForm.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 
 // Add new SearchableSelect component
 export default function SearchableSelect({

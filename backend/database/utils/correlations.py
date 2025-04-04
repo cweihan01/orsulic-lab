@@ -58,7 +58,7 @@ def get_feature_values(db_dict: dict, CELL_LINES) -> pd.DataFrame:
     """
     df_list = []
 
-    print(db_dict.keys())
+    # print(db_dict.keys())
     for key in db_dict.keys():
         print(f"Key: {key}")
         tmp_queryset = db_dict[key].values_list()

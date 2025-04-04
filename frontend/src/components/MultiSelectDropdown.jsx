@@ -1,6 +1,5 @@
 // QueryForm.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 
 // Modify MultiSelectDropdown to include search
 export default function MultiSelectDropdown({
