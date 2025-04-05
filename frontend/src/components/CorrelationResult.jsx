@@ -76,7 +76,7 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
 
     // Filter data based on correlation and p-value
     const filteredData = data.filter(
-        (item) => item.spearman_correlation >= minCorrelation && item.spearman_p_value <= maxPValue
+        (item) => Math.abs(item.spearman_correlation) >= minCorrelation && item.spearman_p_value <= maxPValue
     );
 
     // Sorting state
