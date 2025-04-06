@@ -161,6 +161,32 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
         setIsCollapsible(true); // Collapsible once submitted
     };
 
+    // When database1 input is changed, clear subcategory1 and feature1 inputs
+    const handleChangeDatabase1 = (selected) => {
+        setSelectedDatabase1(selected);
+        setSelectedSubCategories1([]);
+        setFeature1('');
+    }
+    
+    // When subcategory1 input is changed, clear feature1 inputs
+    const handleChangeSubcategory1 = (selected) => {
+        setSelectedSubCategories1(selected);
+        setFeature1('');
+    }
+    
+    // When database2 input is changed, clear subcategory2 and feature2 inputs
+    const handleChangeDatabase2 =  (selected) => {
+        setSelectedDatabase2(selected);
+        setSelectedSubCategories2([]);
+        setFeature2([]);
+    }
+    
+    // When subcategory2 input is changed, clear feature2 inputs
+    const handleChangeSubcategory2 = (selected) => {
+        setSelectedSubCategories2(selected);
+        setFeature2([]);
+    }
+
     // When collapsed, only display the header with an Expand button
     if (isCollapsed) {
         return (
@@ -201,8 +227,9 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     </label>
                     <MultiSelectDropdown
                         formFieldName="database1"
+                        value={selectedDatabase1}
                         options={databaseList}
-                        onChange={(selected) => setSelectedDatabase1(selected)}
+                        onChange={(selected) => handleChangeDatabase1(selected)}
                         prompt="Select one or more databases"
                     />
                 </div>
@@ -217,8 +244,9 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     </label>
                     <MultiSelectDropdown
                         formFieldName="subcategory1"
+                        value={selectedSubCategories1}
                         options={subCategoryList1}
-                        onChange={(selected) => setSelectedSubCategories1(selected)}
+                        onChange={(selected) => handleChangeSubcategory1(selected)}
                         prompt="Select one or more subcategories"
                     />
                 </div>
@@ -249,8 +277,9 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     </label>
                     <MultiSelectDropdown
                         formFieldName="database2"
+                        value={selectedDatabase2}
                         options={databaseList}
-                        onChange={(selected) => setSelectedDatabase2(selected)}
+                        onChange={(selected) => handleChangeDatabase2(selected)}
                         prompt="Select one or more databases"
                     />
                 </div>
@@ -265,8 +294,9 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     </label>
                     <MultiSelectDropdown
                         formFieldName="subcategory2"
+                        value={selectedSubCategories2}
                         options={subCategoryList2}
-                        onChange={(selected) => setSelectedSubCategories2(selected)}
+                        onChange={(selected) => handleChangeSubcategory2(selected)}
                         prompt="Select one or more subcategories"
                     />
                 </div>
@@ -281,6 +311,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     </label>
                     <MultiSelectDropdown
                         formFieldName="feature2"
+                        value={feature2}
                         options={featureList2}
                         onChange={(selected) => setFeature2(selected)}
                         prompt="Select one or more features"

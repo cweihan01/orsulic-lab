@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 // Modify MultiSelectDropdown to include search
 export default function MultiSelectDropdown({
     formFieldName,
+    value,
     options,
     onChange,
     prompt = 'Select one or more options',
@@ -14,6 +15,11 @@ export default function MultiSelectDropdown({
     const dropdownRef = useRef(null);
     const optionsListRef = useRef(null);
 
+    // Listen for changes in the value prop
+    useEffect(() => {
+        setSelectedOptions(value || []);
+    }, [value]);
+    
     // Filter options based on search term
     const filteredOptions = options.filter((option) =>
         option.toLowerCase().includes(searchTerm.toLowerCase())
