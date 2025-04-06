@@ -91,13 +91,21 @@ function App() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-[#a1cdf9] text-black py-3 flex items-center justify-between px-6 shadow-md w-full">
-                <img src="/UCLA_Orsulic_Lab_Logo.png" alt="UCLA Orsulic Lab Logo" className="h-12 w-auto" />
-                <div className="absolute left-1/2 transform -translate-x-1/2">
+            {/* Header Section*/}
+            <header className="bg-[#a1cdf9] text-black py-3 md:flex items-center justify-between px-6 shadow-md w-full">
+                {/* Logo - left aligned */}
+                <div className="flex justify-center md:justify-start">
+                <img
+                    src="/UCLA_Orsulic_Lab_Logo.png"
+                    alt="UCLA Orsulic Lab Logo"
+                    className="h-12 w-auto sm:m-auto md:m-0"
+                />
+                </div>
+
+                {/* Title - centered or right aligned depending on screen size*/}
+                <div className="flex justify-center lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2">
                     <h1 className="text-4xl font-bold text-center">Database Query Interface</h1>
                 </div>
-                <div className="w-10"></div>
             </header>
 
             {/* 📊 Progress Bar */}
