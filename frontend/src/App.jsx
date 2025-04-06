@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import QueryForm from './components/QueryForm';
 import CorrelationResult from './components/CorrelationResult';
 import ScatterPlot from './components/ScatterPlot';
@@ -8,39 +8,52 @@ import './index.js';
 
 function App() {
     const [correlations, setCorrelations] = useState([]);
-    const [highlightedRow, setHighlightedRow] = useState(null); // Highlight row whose plot is displayed
-    const [scatterData, setScatterData] = useState([]); // Store scatter plot data
-    const [minCorrelation, setMinCorrelation] = useState(0.0); // Track min correlation
-    const [maxPValue, setMaxPValue] = useState(1.0); // Track max p-value
-    const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
-    const [isQueryFormCollapsed, setIsQueryFormCollapsed] = useState(false); // Query form collapsibility
+    const [highlightedRow, setHighlightedRow] = useState(null);
+    const [scatterData, setScatterData] = useState([]);
+    const [minCorrelation, setMinCorrelation] = useState(0.0);
+    const [maxPValue, setMaxPValue] = useState(1.0);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isQueryFormCollapsed, setIsQueryFormCollapsed] = useState(false);
+    const [progress, setProgress] = useState(0); // 💡 percent-based loading
+    const progressRef = useRef(null);
 
-    // Function to open, close modal
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
-
-    // Function to close scatter plot
     const handleCloseGraph = () => {
         setHighlightedRow(null);
         setScatterData([]);
     };
-
-    // Function to close query form
     const handleCollapseQueryForm = () => {
         if (!scatterData) setIsQueryFormCollapsed(false);
         else setIsQueryFormCollapsed(!isQueryFormCollapsed);
     };
 
-    // When query form submitted, make POST request to correlations API
+    const startProgressSimulation = () => {
+        setProgress(0);
+        if (progressRef.current) clearInterval(progressRef.current);
+        progressRef.current = setInterval(() => {
+            setProgress(prev => {
+                if (prev >= 95) return prev;
+                return prev + Math.random() * 3 + 1; // Simulate 1–4% increase
+            });
+        }, 100);
+    };
+
+    const stopProgressSimulation = () => {
+        clearInterval(progressRef.current);
+        setProgress(100); // Finish the bar
+        setTimeout(() => setProgress(0), 500); // Reset bar after short delay
+    };
+
+    // 🔄 Updated with percentage progress bar
     const handleQuery = (query) => {
         console.log('Handling POST query to /correlations/...');
         console.log('Query:', query);
 
-        // Update minCorrelation and maxPValue state
         setMinCorrelation(parseFloat(query.minCorrelation));
         setMaxPValue(parseFloat(query.maxPValue));
+        startProgressSimulation();
 
-        // Make the POST request
         axios
             .post(`${process.env.REACT_APP_API_ROOT}correlations/`, {
                 feature1: query.feature1,
@@ -54,25 +67,22 @@ function App() {
             })
             .catch((err) => {
                 console.error('Error fetching correlations:', err);
+            })
+            .finally(() => {
+                stopProgressSimulation();
             });
     };
 
-    // New function to handle scatter data request
     const handleScatterRequest = (feature1, feature2, database1, database2) => {
-        setHighlightedRow(feature2); // assuming that feature2 is unique in each table
-        const scatterData = {
-            feature1,
-            feature2,
-            database1,
-            database2,
-        };
+        setHighlightedRow(feature2);
+        const scatterData = { feature1, feature2, database1, database2 };
 
         console.log(scatterData);
         axios
             .post(`${process.env.REACT_APP_API_ROOT}scatter/`, scatterData)
             .then((response) => {
                 console.log('Scatter data:', response.data.scatter_data);
-                setScatterData(response.data.scatter_data); // Set scatter data
+                setScatterData(response.data.scatter_data);
             })
             .catch((error) => {
                 console.error('Error posting scatter data:', error);
@@ -81,26 +91,28 @@ function App() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header Section */}
+            {/* Header */}
             <header className="bg-[#a1cdf9] text-black py-3 flex items-center justify-between px-6 shadow-md w-full">
-                {/* Logo - Left Aligned */}
-                <img
-                    src="/UCLA_Orsulic_Lab_Logo.png"
-                    alt="UCLA Orsulic Lab Logo"
-                    className="h-12 w-auto"
-                />
-
-                {/* Title - Centered */}
+                <img src="/UCLA_Orsulic_Lab_Logo.png" alt="UCLA Orsulic Lab Logo" className="h-12 w-auto" />
                 <div className="absolute left-1/2 transform -translate-x-1/2">
                     <h1 className="text-4xl font-bold text-center">Database Query Interface</h1>
                 </div>
-
-                {/* Empty div for spacing balance */}
                 <div className="w-10"></div>
             </header>
 
+            {/* 📊 Progress Bar */}
+            {progress > 0 && (
+                <div className="w-full bg-gray-200 h-2">
+                    <div
+                        className="h-2 bg-indigo-500 transition-all duration-100 ease-linear"
+                        style={{ width: `${Math.min(progress, 100)}%` }}
+                    ></div>
+                </div>
+            )}
+
+            {/* Main Grid */}
             <div className="grid grid-cols-12 gap-6 p-6">
-                {/* Left Column: QueryForm, Pop-up Button */}
+                {/* Left Column */}
                 <div
                     className={
                         isQueryFormCollapsed
@@ -126,7 +138,7 @@ function App() {
                     )}
                 </div>
 
-                {/* Right Column: ScatterPlot, CorrelationResult */}
+                {/* Right Column */}
                 <div
                     className={
                         isQueryFormCollapsed
