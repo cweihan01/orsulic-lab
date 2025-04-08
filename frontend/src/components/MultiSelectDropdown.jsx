@@ -79,11 +79,11 @@ export default function MultiSelectDropdown({
 
     return (
         <div ref={dropdownRef} className="relative w-full md:w-1/2">
-            <div className="w-full bg-gray-100 border border-gray-300 rounded-lg text-gray-700">
+            <div className="w-full bg-gray-100 border border-gray-300 rounded-lg">
                 <div className="flex items-center">
                     <input
                         type="text"
-                        className="w-full bg-transparent px-4 py-2 focus:outline-none"
+                        className="placeholder-gray-600 w-full bg-transparent px-4 py-2 focus:outline-none"
                         placeholder={isOpen ? 'Search...' : displayText}
                         value={searchTerm}
                         onChange={(e) => {

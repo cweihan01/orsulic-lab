@@ -333,7 +333,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                         min="-1"
                         max="1"
                         step="0.01"
-                        className="w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:ring focus:ring-purple-100 focus:outline-none"
+                        className="w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 text-gray-600 focus:ring focus:ring-purple-100 focus:outline-none"
                         onChange={(e) => setMinCorrelation(e.target.value)}
                     />
                 </div>
@@ -353,7 +353,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                         min="0"
                         max="1"
                         step="0.01"
-                        className="w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:ring focus:ring-purple-100 focus:outline-none"
+                        className="w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 text-gray-600 focus:ring focus:ring-purple-100 focus:outline-none"
                         onChange={(e) => setMaxPValue(e.target.value)}
                     />
                 </div>

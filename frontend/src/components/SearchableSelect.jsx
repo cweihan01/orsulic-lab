@@ -35,10 +35,10 @@ export default function SearchableSelect({
 
     return (
         <div ref={dropdownRef} className="relative w-full md:w-1/2">
-            <div className="w-full bg-gray-100 border border-gray-300 rounded-lg text-gray-700">
+            <div className="w-full bg-gray-100 border border-gray-300 rounded-lg">
                 <input
                     type="text"
-                    className="w-full bg-transparent px-4 py-2 focus:outline-none"
+                    className="text-gray-600 placeholder-gray-600 w-full bg-transparent px-4 py-2 focus:outline-none"
                     placeholder={value || placeholder}
                     value={isOpen ? searchTerm : value || ''}
                     onChange={(e) => {
