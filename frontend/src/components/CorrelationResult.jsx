@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import axios from 'axios';
 import depMapToCellLineID from '../cellline_mapping.js';
 
-function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, highlightedRow }) {
+function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, highlightedRow, onRequery }) {
     const getCorrelationColor = (correlation) => {
         if (correlation > 0.75) return '#2e7d32';
         if (correlation > 0.5) return '#558b2f';
@@ -76,20 +76,19 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
             alert("No results to download.");
             return;
         }
-    
+
         const headers = Object.keys(sortedData[0]);
         const csvRows = [headers.join(',')];
-    
+
         sortedData.forEach(row => {
             const values = headers.map(h => JSON.stringify(row[h] ?? ''));
             csvRows.push(values.join(','));
         });
-    
-        // Dynamically use feature1 + timestamp
+
         const feature1 = sortedData[0]?.feature1 || 'correlation';
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const filename = `${feature1}_correlation_results_${timestamp}.csv`;
-    
+
         const csvString = csvRows.join('\n');
         const blob = new Blob([csvString], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -99,7 +98,6 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
         link.click();
         window.URL.revokeObjectURL(url);
     };
-    
 
     const filteredData = data.filter(
         (item) => Math.abs(item.spearman_correlation) >= minCorrelation && item.spearman_p_value <= maxPValue
@@ -211,7 +209,14 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                                         <td>{item.database1}</td>
                                         <td>{item.feature1}</td>
                                         <td>{item.database2}</td>
-                                        <td>{item.feature2}</td>
+                                        <td>
+                                            <button
+                                                onClick={() => onRequery(item.feature2)}
+                                                className="text-blue-600 font-semibold hover:underline"
+                                            >
+                                                {item.feature2}
+                                            </button>
+                                        </td>
                                         <td>{item.count}</td>
                                         <td style={{ color: getCorrelationColor(item.spearman_correlation) }}>
                                             {item.spearman_correlation}
@@ -253,4 +258,5 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
 }
 
 export default CorrelationResult;
+
 
