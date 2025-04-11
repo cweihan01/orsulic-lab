@@ -211,7 +211,7 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                                         <td>{item.database2}</td>
                                         <td>
                                             <button
-                                                onClick={() => onRequery(item.feature2)}
+                                                onClick={() => onRequery(item.feature2, item.database2)}
                                                 className="text-blue-600 font-semibold hover:underline"
                                             >
                                                 {item.feature2}

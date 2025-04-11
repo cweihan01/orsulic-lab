@@ -95,13 +95,17 @@ function App() {
     };
 
     // 🆕 Re-query using clicked Feature2
-    const handleRequery = (newFeature1) => {
+    const handleRequery = (newFeature1, newDatabase1) => {
         if (!previousQuery) return;
-        const query = {
+    
+        const updatedQuery = {
             ...previousQuery,
             feature1: newFeature1,
+            database1: [newDatabase1], // ✅ dynamically set database1 to match feature2's source
         };
-        handleQuery(query);
+    
+        console.log('Requerying with:', updatedQuery);
+        handleQuery(updatedQuery);
     };
 
     return (
