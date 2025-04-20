@@ -18,7 +18,7 @@ class Feature(models.Model):
     """
     Stores each feature.
     """
-    name = models.CharField(max_length=150, primary_key=True)
+    name = models.CharField(max_length=200, primary_key=True)
     data_type = models.CharField(max_length=3, choices=[("num", "Numerical"), ("cat", "Categorical")], default="num")
     category = models.CharField(max_length=20, choices=[("Nuclear", "Nuclear"), 
                                                         ("Molecular", "Molecular"), 
