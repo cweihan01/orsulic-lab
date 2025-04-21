@@ -53,10 +53,12 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                 f1_valid = valid_data.iloc[:, 0]
                 f2_valid = valid_data.iloc[:, 1]
 
+                spearman_corr = spearman_p_value = None
+                anova_p_value = None
+
                 # Case 1: Both numerical → Spearman
                 if f1_type == "num" and f2_type == "num":
                     spearman_corr, spearman_p_value = spearmanr(f1_valid, f2_valid, nan_policy = "omit")
-                    anova_p_value = None
 
                     # Reject null and nan values
                     if (spearman_corr is not None and math.isfinite(spearman_corr)) and (spearman_p_value is not None and math.isfinite(spearman_p_value)):
@@ -67,13 +69,11 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                     groups = [f2_valid[f1_valid == cat] for cat in f1_valid.unique()]
                     if len(groups) > 1:
                         _, anova_p_value = f_oneway(*groups)
-                        spearman_corr = spearman_p_value = None
 
                 elif f1_type == "num" and f2_type == "cat":
                     groups = [f1_valid[f2_valid == cat] for cat in f2_valid.unique()]
                     if len(groups) > 1:
                         _, anova_p_value = f_oneway(*groups)
-                        spearman_corr = spearman_p_value = None
                 
                 # Reject null and nan values
                 if anova_p_value is not None and math.isfinite(anova_p_value):
