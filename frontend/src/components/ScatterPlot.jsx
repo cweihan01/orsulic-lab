@@ -16,12 +16,17 @@ const ScatterPlot = ({ data, handleCloseGraph }) => {
     }
 
     return (
-        <div className="w-full flex-grow rounded-lg drop-shadow-lg  p-4 my-2 bg-gray-200">
+        <div
+            className="w-full flex-grow rounded-lg drop-shadow-lg p-4 my-2"
+            // style={{ background: 'linear-gradient(135deg, #bad7f7, #e6bef7)' }}
+            style={{ background: 'white' }}
+        >
             <div className="relative">
-                <h2 className="text-3xl font-semibold text-gray-800 mb-4">Scatter Plot</h2>
+                <h2 className="text-3xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'Futura' }}>Scatter Plot</h2>
                 <button
                     onClick={handleCloseGraph}
-                    className="absolute top-0 right-0 mt-2 mr-2 px-3 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                    style={{ backgroundColor: '#78aee8', fontFamily: 'Futura' }}
+                    className="absolute top-0 right-0 mt-2 mr-2 px-3 py-1 text-white rounded-lg hover:opacity-85"
                 >
                     Close Graph
                 </button>

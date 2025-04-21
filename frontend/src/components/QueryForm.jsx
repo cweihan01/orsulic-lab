@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import SearchableSelect from './SearchableSelect';
 import MultiSelectDropdown from './MultiSelectDropdown';
+import './QueryForm.css';
 
 // function QueryForm({ onSubmit }) {
 function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
@@ -190,13 +191,15 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
     // When collapsed, only display the header with an Expand button
     if (isCollapsed) {
         return (
-            <div className="max-w-4xl mx-auto bg-white my-2">
+            <div className="max-w-4xl mx-auto my-2">
                 <div className="flex justify-end">
                     <button
                         onClick={toggleCollapse}
-                        className="px-2 py-1 bg-gray-300 rounded hover:bg-gray-400 mx-auto"
+                        style={{ backgroundColor: '#78aee8' }}
+                        className="px-2 py-1 text-white rounded hover:opacity-85 mx-auto"
                     >
-                        &gt;
+                        {/* &gt; */}
+                        ▶
                     </button>
                 </div>
             </div>
@@ -204,166 +207,138 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
     }
 
     return (
-        <div className="max-w-4xl mx-auto bg-white py-4 my-2">
-            <div className="relative">
-                <h2 className="text-3xl font-semibold text-gray-800 mb-4">Query Form</h2>
+        <div className="queryform-container">
+            <div className="queryform-header">
+                <h2 className="queryform-title">Query Form</h2>
                 {isCollapsible && (
-                    <button
-                        onClick={toggleCollapse}
-                        className="absolute top-0 right-0 px-2 py-1 bg-gray-300 rounded hover:bg-gray-400"
-                    >
-                        Collapse
+                    <button onClick={toggleCollapse} className="collapse-button top-right">
+                        ◀
                     </button>
                 )}
             </div>
-            <form className="space-y-6" onSubmit={handleSubmit}>
-                {/* Database Dropdown 1 */}
-                <div className="flex flex-col md:flex-row items-center md:space-x-4">
-                    <label
-                        htmlFor="database1"
-                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
-                    >
-                        Database 1:
-                    </label>
-                    <MultiSelectDropdown
-                        formFieldName="database1"
-                        value={selectedDatabase1}
-                        options={databaseList}
-                        onChange={(selected) => handleChangeDatabase1(selected)}
-                        prompt="Select one or more databases"
-                    />
-                </div>
+            <form className="queryform-form" onSubmit={handleSubmit}>
+                {/* Same structure but replace classNames with these labels: */}
+                {[
+                    {
+                        id: 'database1',
+                        label: 'Database 1:',
+                        component: (
+                            <MultiSelectDropdown
+                                formFieldName="database1"
+                                value={selectedDatabase1}
+                                options={databaseList}
+                                onChange={handleChangeDatabase1}
+                                prompt="Select one or more databases"
+                            />
+                        ),
+                    },
+                    {
+                        id: 'subcategory1',
+                        label: 'SubCategory 1:',
+                        component: (
+                            <MultiSelectDropdown
+                                formFieldName="subcategory1"
+                                value={selectedSubCategories1}
+                                options={subCategoryList1}
+                                onChange={handleChangeSubcategory1}
+                                prompt="Select one or more subcategories"
+                            />
+                        ),
+                    },
+                    {
+                        id: 'feature1',
+                        label: 'Feature 1:',
+                        component: (
+                            <SearchableSelect
+                                options={featureList1}
+                                value={feature1}
+                                onChange={setFeature1}
+                                placeholder="Select a feature"
+                            />
+                        ),
+                    },
+                    {
+                        id: 'database2',
+                        label: 'Database 2:',
+                        component: (
+                            <MultiSelectDropdown
+                                formFieldName="database2"
+                                value={selectedDatabase2}
+                                options={databaseList}
+                                onChange={handleChangeDatabase2}
+                                prompt="Select one or more databases"
+                            />
+                        ),
+                    },
+                    {
+                        id: 'subcategory2',
+                        label: 'SubCategory 2:',
+                        component: (
+                            <MultiSelectDropdown
+                                formFieldName="subcategory2"
+                                value={selectedSubCategories2}
+                                options={subCategoryList2}
+                                onChange={handleChangeSubcategory2}
+                                prompt="Select one or more subcategories"
+                            />
+                        ),
+                    },
+                    {
+                        id: 'feature2',
+                        label: 'Feature 2:',
+                        component: (
+                            <MultiSelectDropdown
+                                formFieldName="feature2"
+                                value={feature2}
+                                options={featureList2}
+                                onChange={setFeature2}
+                                prompt="Select one or more features"
+                            />
+                        ),
+                    },
+                    {
+                        id: 'minCorrelation',
+                        label: 'Minimum Correlation:',
+                        component: (
+                            <input
+                                type="number"
+                                id="minCorrelation"
+                                value={minCorrelation}
+                                min="-1"
+                                max="1"
+                                step="0.01"
+                                onChange={(e) => setMinCorrelation(e.target.value)}
+                                className="queryform-input"
+                            />
+                        ),
+                    },
+                    {
+                        id: 'maxPValue',
+                        label: 'Maximum P-Value:',
+                        component: (
+                            <input
+                                type="number"
+                                id="maxPValue"
+                                value={maxPValue}
+                                min="0"
+                                max="1"
+                                step="0.01"
+                                onChange={(e) => setMaxPValue(e.target.value)}
+                                className="queryform-input"
+                            />
+                        ),
+                    },
+                ].map(({ id, label, component }) => (
+                    <div className="queryform-row" key={id}>
+                        <label htmlFor={id} className="queryform-label">
+                            {label}
+                        </label>
+                        {component}
+                    </div>
+                ))}
 
-                {/* SubCategory Dropdown 1 */}
-                <div className="flex flex-col md:flex-row items-center md:space-x-4">
-                    <label
-                        htmlFor="subcategory1"
-                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
-                    >
-                        SubCategory 1:
-                    </label>
-                    <MultiSelectDropdown
-                        formFieldName="subcategory1"
-                        value={selectedSubCategories1}
-                        options={subCategoryList1}
-                        onChange={(selected) => handleChangeSubcategory1(selected)}
-                        prompt="Select one or more subcategories"
-                    />
-                </div>
-
-                {/* Feature 1 */}
-                <div className="flex flex-col md:flex-row items-center md:space-x-4">
-                    <label
-                        htmlFor="feature1"
-                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
-                    >
-                        Feature 1:
-                    </label>
-                    <SearchableSelect
-                        options={featureList1}
-                        value={feature1}
-                        onChange={(selected) => setFeature1(selected)}
-                        placeholder="Select a feature"
-                    />
-                </div>
-
-                {/* Database Dropdown 2 */}
-                <div className="flex flex-col md:flex-row items-center md:space-x-4">
-                    <label
-                        htmlFor="database2"
-                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
-                    >
-                        Database 2:
-                    </label>
-                    <MultiSelectDropdown
-                        formFieldName="database2"
-                        value={selectedDatabase2}
-                        options={databaseList}
-                        onChange={(selected) => handleChangeDatabase2(selected)}
-                        prompt="Select one or more databases"
-                    />
-                </div>
-
-                {/* SubCategory Dropdown 2 */}
-                <div className="flex flex-col md:flex-row items-center md:space-x-4">
-                    <label
-                        htmlFor="subcategory2"
-                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
-                    >
-                        SubCategory 2:
-                    </label>
-                    <MultiSelectDropdown
-                        formFieldName="subcategory2"
-                        value={selectedSubCategories2}
-                        options={subCategoryList2}
-                        onChange={(selected) => handleChangeSubcategory2(selected)}
-                        prompt="Select one or more subcategories"
-                    />
-                </div>
-
-                {/* Feature 2 */}
-                <div className="flex flex-col md:flex-row items-center md:space-x-4">
-                    <label
-                        htmlFor="feature2"
-                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
-                    >
-                        Feature 2:
-                    </label>
-                    <MultiSelectDropdown
-                        formFieldName="feature2"
-                        value={feature2}
-                        options={featureList2}
-                        onChange={(selected) => setFeature2(selected)}
-                        prompt="Select one or more features"
-                    />
-                </div>
-
-                {/* Minimum Correlation */}
-                <div className="flex flex-col md:flex-row items-center md:space-x-4">
-                    <label
-                        htmlFor="minCorrelation"
-                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
-                    >
-                        Minimum Correlation:
-                    </label>
-                    <input
-                        type="number"
-                        id="minCorrelation"
-                        value={minCorrelation}
-                        min="-1"
-                        max="1"
-                        step="0.01"
-                        className="w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 text-gray-600 focus:ring focus:ring-purple-100 focus:outline-none"
-                        onChange={(e) => setMinCorrelation(e.target.value)}
-                    />
-                </div>
-
-                {/* Maximum P-Value */}
-                <div className="flex flex-col md:flex-row items-center md:space-x-4">
-                    <label
-                        htmlFor="maxPValue"
-                        className="w-full md:w-1/3 text-sm font-medium text-gray-700 md:text-right"
-                    >
-                        Maximum P-Value:
-                    </label>
-                    <input
-                        type="number"
-                        id="maxPValue"
-                        value={maxPValue}
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        className="w-full md:w-1/2 bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 text-gray-600 focus:ring focus:ring-purple-100 focus:outline-none"
-                        onChange={(e) => setMaxPValue(e.target.value)}
-                    />
-                </div>
-
-                {/* Submit Button */}
-                <div className="flex justify-center">
-                    <button
-                        type="submit"
-                        className="bg-indigo-500 text-white font-medium py-2 px-6 rounded-lg hover:bg-purple-600 focus:ring focus:ring-purple-100 focus:outline-none"
-                    >
+                <div className="submit-button-container">
+                    <button type="submit" className="submit-button">
                         Query Database
                     </button>
                 </div>

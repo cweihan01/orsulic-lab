@@ -110,12 +110,12 @@ function App() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="bg-[#a1cdf9] text-black py-3 md:flex items-center justify-between px-6 shadow-md w-full">
-                <div className="flex justify-center md:justify-start">
-                    <img src="/UCLA_Orsulic_Lab_Logo.png" alt="UCLA Orsulic Lab Logo" className="h-12 w-auto sm:m-auto md:m-0" />
+            <header className="custom-header">
+                <div className="logo-container">
+                    <img src="/UCLA_Orsulic_Lab_Logo.png" alt="UCLA Orsulic Lab Logo" className="logo-img" />
                 </div>
-                <div className="flex justify-center lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2">
-                    <h1 className="text-4xl font-bold text-center">Database Query Interface</h1>
+                <div className="title-container">
+                    <h1 className="header-title">Database Query Interface</h1>
                 </div>
             </header>
 
@@ -128,8 +128,8 @@ function App() {
                 </div>
             )}
 
-            <div className="grid grid-cols-12 gap-6 p-6">
-                <div className={isQueryFormCollapsed ? 'col-span-1 bg-white shadow-md rounded-lg p-4' : 'col-span-5 bg-white shadow-md rounded-lg p-4'}>
+            <div className="main-grid">
+                <div className={`panel ${isQueryFormCollapsed ? 'left-panel-collapsed' : 'left-panel-expanded'}`}>
                     <QueryForm
                         onSubmit={handleQuery}
                         isCollapsed={isQueryFormCollapsed}
@@ -140,7 +140,8 @@ function App() {
                             <div className="mt-6">
                                 <button
                                     onClick={openModal}
-                                    className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600"
+                                    style={{ backgroundColor: '#78aee8', fontFamily: 'Futura' }}
+                                    className="mt-4 px-4 py-2 text-white rounded-lg hover:opacity-85"
                                 >
                                     View Feature Names
                                 </button>
@@ -154,7 +155,7 @@ function App() {
                     )}
                 </div>
 
-                <div className={isQueryFormCollapsed ? 'col-span-11 bg-white shadow-md rounded-lg p-4' : 'col-span-7 bg-white shadow-md rounded-lg p-4'}>
+                <div className={`panel ${isQueryFormCollapsed ? 'right-panel-collapsed' : 'right-panel-expanded'}`}>
                     {scatterData.length > 0 && <ScatterPlot data={scatterData} handleCloseGraph={handleCloseGraph} />}
                     <CorrelationResult
                         data={correlations}
@@ -166,6 +167,7 @@ function App() {
                     />
                 </div>
             </div>
+
 
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

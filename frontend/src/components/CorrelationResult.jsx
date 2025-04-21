@@ -176,13 +176,19 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
 
     return (
         <div className="w-full rounded-lg drop-shadow-lg bg-white p-4 my-2 bg-gray-200 overflow-x-auto">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-4">Correlation Results</h2>
+            <h2 
+                className="text-3xl font-semibold text-gray-800 mb-4"
+                style={{ fontFamily: 'Futura' }}
+            >
+                Correlation Results
+            </h2>
             {sortedData.length > 0 ? (
                 <>
                     <div className="flex justify-end mb-2">
                         <button
                             onClick={handleDownloadTable}
-                            className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600"
+                            style={{ backgroundColor: '#78aee8', fontFamily: 'Futura' }}
+                            className="text-white px-4 py-2 rounded hover:opacity-85"
                         >
                             Download Table as CSV
                         </button>
@@ -191,28 +197,28 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                         <table className="correlation-result w-full">
                             <thead>
                                 <tr>
-                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#6366f1' }}>Database 1</th>
-                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#6366f1' }}>Feature 1</th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#6366f1' }} onClick={() => requestSort('database2')}>
+                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#78aee8' }}>Database 1</th>
+                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#78aee8' }}>Feature 1</th>
+                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('database2')}>
                                         Database 2 <span className="ml-1">{getSortArrow('database2')}</span>
                                     </th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#6366f1' }} onClick={() => requestSort('feature2')}>
+                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('feature2')}>
                                         Feature 2 <span className="ml-1">{getSortArrow('feature2')}</span>
                                     </th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#6366f1' }} onClick={() => requestSort('count')}>
+                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('count')}>
                                         Count <span className="ml-1">{getSortArrow('count')}</span>
                                     </th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#6366f1' }} onClick={() => requestSort('spearman_correlation')}>
+                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('spearman_correlation')}>
                                         Spearman Correlation <span className="ml-1">{getSortArrow('spearman_correlation')}</span>
                                     </th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#6366f1' }} onClick={() => requestSort('spearman_p_value')}>
+                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('spearman_p_value')}>
                                         Spearman P-Value <span className="ml-1">{getSortArrow('spearman_p_value')}</span>
                                     </th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#6366f1' }} onClick={() => requestSort('anova_p_value')}>
+                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('anova_p_value')}>
                                         ANOVA P-Value <span className="ml-1">{getSortArrow('anova_p_value')}</span>
                                     </th>
-                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#6366f1' }}>Scatterplot Link</th>
-                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#6366f1' }}>Download Data</th>
+                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#78aee8' }}>Scatterplot Link</th>
+                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#78aee8' }}>Download Data</th>
                                 </tr>
                             </thead>
                             <tbody>

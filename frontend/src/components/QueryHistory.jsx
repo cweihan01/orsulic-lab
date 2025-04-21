@@ -11,9 +11,15 @@ function QueryHistory({ history, onSelect, onClear }) {
     return (
         <div className="bg-white shadow-md rounded-lg p-4 mt-4">
             <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-semibold">Query History</h3>
+                <h3 
+                    className="text-lg font-semibold" 
+                    style={{ fontFamily: 'Futura' }}
+                >
+                    Query History
+                </h3>
                 <button
                     onClick={onClear}
+                    style={{ fontFamily: 'Futura' }}
                     className="text-sm text-red-500 hover:underline"
                 >
                     Clear History

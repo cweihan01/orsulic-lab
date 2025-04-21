@@ -91,8 +91,8 @@ export default function MultiSelectDropdown({
   );
 
   return (
-    <div ref={dropdownRef} className="relative w-full md:w-1/2">
-      <div className="w-full bg-gray-100 border border-gray-300 rounded-lg">
+    <div ref={dropdownRef} className="relative w-full">
+      <div className="w-full bg-gray-100 rounded-lg">
         <div className="flex items-center">
           <input
             type="text"
