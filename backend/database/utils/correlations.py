@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
-from scipy.stats import spearmanr
+import math
+from scipy.stats import spearmanr, f_oneway
+from database.models import Feature
 import warnings
 
 def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
@@ -25,27 +27,61 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
     df1 = df1.set_index(["Database", "Feature"])
     df2 = df2.set_index(["Database", "Feature"])
 
+    feature_type_map = {
+        feature.name: feature.data_type
+        for feature in Feature.objects.all()
+    }
+
     results = []
     # Compute Spearman correlations for each unique pair of features across databases
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         for (db1, f1_name), f1_vals in df1.iterrows():
             for (db2, f2_name), f2_vals in df2.iterrows():
+                f1_type = feature_type_map.get(f1_name)
+                f2_type = feature_type_map.get(f2_name)
+                
+                if f1_type == "cat" and f2_type == "cat":
+                    continue
+
                 valid_data = pd.concat([f1_vals, f2_vals], axis=1).dropna()
                 count = valid_data.shape[0]  # Number of valid data points
 
-                # Count of two or less returns a nan pvalue and correlation
-                if count > 2:
-                    f1_valid = valid_data.iloc[:, 0]
-                    f2_valid = valid_data.iloc[:, 1]
-                    corr, p_value = spearmanr(f1_valid, f2_valid, nan_policy="omit")
+                if count < 3:
+                    continue
 
-                    # Reject null values
-                    if not np.isnan(corr) and not np.isnan(p_value):
-                        results.append([db1, f1_name, db2, f2_name, count, corr, p_value])
+                f1_valid = valid_data.iloc[:, 0]
+                f2_valid = valid_data.iloc[:, 1]
+
+                # Case 1: Both numerical → Spearman
+                if f1_type == "num" and f2_type == "num":
+                    spearman_corr, spearman_p_value = spearmanr(f1_valid, f2_valid, nan_policy = "omit")
+                    anova_p_value = None
+
+                    # Reject null and nan values
+                    if (spearman_corr is not None and math.isfinite(spearman_corr)) and (spearman_p_value is not None and math.isfinite(spearman_p_value)):
+                        results.append([db1, f1_name, db2, f2_name, count, spearman_corr, spearman_p_value, anova_p_value])
+
+                # Case 2: One categorical, one numerical → ANOVA
+                elif f1_type == "cat" and f2_type == "num":
+                    groups = [f2_valid[f1_valid == cat] for cat in f1_valid.unique()]
+                    if len(groups) > 1:
+                        _, anova_p_value = f_oneway(*groups)
+                        spearman_corr = spearman_p_value = None
+
+                elif f1_type == "num" and f2_type == "cat":
+                    groups = [f1_valid[f2_valid == cat] for cat in f2_valid.unique()]
+                    if len(groups) > 1:
+                        _, anova_p_value = f_oneway(*groups)
+                        spearman_corr = spearman_p_value = None
+                
+                # Reject null and nan values
+                if anova_p_value is not None and math.isfinite(anova_p_value):
+                    results.append([db1, f1_name, db2, f2_name, count, spearman_corr, spearman_p_value, anova_p_value])
 
     # Convert the results into a DataFrame
-    return pd.DataFrame(results, columns=["database1", "feature1",  "database2", "feature2", "count", "spearman_correlation", "spearman_p_value"])
+    return pd.DataFrame(results, columns=["database1", "feature1",  "database2", "feature2", "count", 
+                                          "spearman_correlation", "spearman_p_value", "anova_p_value"])
 
 # 
 def get_feature_values(db_dict: dict, CELL_LINES) -> pd.DataFrame: 

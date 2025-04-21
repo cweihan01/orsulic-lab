@@ -100,8 +100,18 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
     };
 
     const filteredData = data.filter(
-        (item) => Math.abs(item.spearman_correlation) >= minCorrelation && item.spearman_p_value <= maxPValue
-    );
+        (item) => {
+            const hasValidSpearman =
+                item.spearman_correlation !== null &&
+                Math.abs(item.spearman_correlation) >= minCorrelation &&
+                item.spearman_p_value <= maxPValue;
+        
+            const hasValidAnova =
+                item.spearman_correlation == null &&
+                item.anova_p_value <= maxPValue;
+        
+            return hasValidSpearman || hasValidAnova;
+    });
 
     const [sortConfig, setSortConfig] = useState({
         key: 'spearman_correlation',
@@ -146,8 +156,12 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                         bVal = Math.abs(b.spearman_correlation);
                         break;
                     case 'spearman_p_value':
-                        aVal = a.spearman_p_value;
-                        bVal = b.spearman_p_value;
+                        aVal = Math.abs(a.spearman_p_value);
+                        bVal = Math.abs(b.spearman_p_value);
+                        break;
+                    case 'anova_p_value':
+                        aVal = a.anova_p_value;
+                        bVal = b.anova_p_value;
                         break;
                     default:
                         return 0;
@@ -194,6 +208,9 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                                     <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#6366f1' }} onClick={() => requestSort('spearman_p_value')}>
                                         Spearman P-Value <span className="ml-1">{getSortArrow('spearman_p_value')}</span>
                                     </th>
+                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#6366f1' }} onClick={() => requestSort('anova_p_value')}>
+                                        ANOVA P-Value <span className="ml-1">{getSortArrow('anova_p_value')}</span>
+                                    </th>
                                     <th className="whitespace-nowrap" style={{ backgroundColor: '#6366f1' }}>Scatterplot Link</th>
                                     <th className="whitespace-nowrap" style={{ backgroundColor: '#6366f1' }}>Download Data</th>
                                 </tr>
@@ -223,6 +240,9 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                                         </td>
                                         <td style={{ color: getPValueColor(item.spearman_p_value) }}>
                                             {item.spearman_p_value}
+                                        </td>
+                                        <td style={{ color: getPValueColor(item.anova_p_value) }}>
+                                            {item.anova_p_value}
                                         </td>
                                         <td>
                                             <button
