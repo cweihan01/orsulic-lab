@@ -115,7 +115,7 @@ function App() {
                     <img src="/UCLA_Orsulic_Lab_Logo.png" alt="UCLA Orsulic Lab Logo" className="logo-img" />
                 </div>
                 <div className="title-container">
-                    <h1 className="header-title">Database Query Interface</h1>
+                    <h1 className="header-title">Cell Line Database</h1>
                 </div>
             </header>
 

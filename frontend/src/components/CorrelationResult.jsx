@@ -105,13 +105,14 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                 item.spearman_correlation !== null &&
                 Math.abs(item.spearman_correlation) >= minCorrelation &&
                 item.spearman_p_value <= maxPValue;
-        
+
             const hasValidAnova =
                 item.spearman_correlation == null &&
                 item.anova_p_value <= maxPValue;
-        
+
             return hasValidSpearman || hasValidAnova;
-    });
+        }
+    );
 
     const [sortConfig, setSortConfig] = useState({
         key: 'spearman_correlation',
@@ -284,5 +285,4 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
 }
 
 export default CorrelationResult;
-
 

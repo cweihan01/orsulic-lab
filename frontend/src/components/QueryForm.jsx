@@ -221,7 +221,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                 {[
                     {
                         id: 'database1',
-                        label: 'Database 1:',
+                        label: 'Category 1:',
                         component: (
                             <MultiSelectDropdown
                                 formFieldName="database1"
@@ -259,7 +259,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     },
                     {
                         id: 'database2',
-                        label: 'Database 2:',
+                        label: 'Category 2:',
                         component: (
                             <MultiSelectDropdown
                                 formFieldName="database2"
