@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
-from scipy.stats import spearmanr, f_oneway
+from scipy.stats import spearmanr, f_oneway, chi2_contingency
 from database.models import Feature
 import warnings
 
@@ -32,7 +32,10 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
         for feature in Feature.objects.all()
     }
 
-    results = []
+    spearman_results = []
+    anova_results = []
+    chisq_results = []
+
     # Compute Spearman correlations for each unique pair of features across databases
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -53,35 +56,59 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                 f1_valid = valid_data.iloc[:, 0]
                 f2_valid = valid_data.iloc[:, 1]
 
-                spearman_corr = spearman_p_value = None
-                anova_p_value = None
+                spearman_corr = spearman_pvalue = None
+                anova_pvalue = None
+                chisq_pvalue = None
 
-                # Case 1: Both numerical → Spearman
+                # Spearman: both numerical
                 if f1_type == "num" and f2_type == "num":
-                    spearman_corr, spearman_p_value = spearmanr(f1_valid, f2_valid, nan_policy = "omit")
+                    spearman_corr, spearman_pvalue = spearmanr(f1_valid, f2_valid, nan_policy = "omit")
 
                     # Reject null and nan values
-                    if (spearman_corr is not None and math.isfinite(spearman_corr)) and (spearman_p_value is not None and math.isfinite(spearman_p_value)):
-                        results.append([db1, f1_name, db2, f2_name, count, spearman_corr, spearman_p_value, anova_p_value])
+                    if (spearman_corr is not None and math.isfinite(spearman_corr)) and (spearman_pvalue is not None and math.isfinite(spearman_pvalue)):
+                        spearman_results.append([db1, f1_name, db2, f2_name, count, spearman_corr, spearman_pvalue])
 
-                # Case 2: One categorical, one numerical → ANOVA
-                elif f1_type == "cat" and f2_type == "num":
-                    groups = [f2_valid[f1_valid == cat] for cat in f1_valid.unique()]
+                # ANOVA: one categorical, one numerical
+                elif (f1_type == "cat" and f2_type == "num") or (f1_type == "num" and f2_type == "cat"):
+                    if f1_type == "cat":
+                        groups = [f2_valid[f1_valid == cat] for cat in f1_valid.unique()]
+                    else:
+                        groups = [f1_valid[f2_valid == cat] for cat in f2_valid.unique()]
+
                     if len(groups) > 1:
-                        _, anova_p_value = f_oneway(*groups)
+                        try:
+                            _, anova_pvalue = f_oneway(*groups)
+                            if anova_pvalue is not None and math.isfinite(anova_pvalue):
+                                anova_results.append([db1, f1_name, db2, f2_name, count, anova_pvalue])
+                        except:
+                            continue
 
-                elif f1_type == "num" and f2_type == "cat":
-                    groups = [f1_valid[f2_valid == cat] for cat in f2_valid.unique()]
-                    if len(groups) > 1:
-                        _, anova_p_value = f_oneway(*groups)
-                
-                # Reject null and nan values
-                if anova_p_value is not None and math.isfinite(anova_p_value):
-                    results.append([db1, f1_name, db2, f2_name, count, spearman_corr, spearman_p_value, anova_p_value])
+                # Chi-squared: both categorical
+                elif f1_type == "cat" and f2_type == "cat":
+                    contingency_table = pd.crosstab(f1_valid, f2_valid)
+                    if contingency_table.shape[0] > 1 and contingency_table.shape[1] > 1:
+                        try:
+                            _, chisq_pvalue, _, _ = chi2_contingency(contingency_table)
+                            if chisq_pvalue is not None and math.isfinite(chisq_pvalue):
+                                chisq_results.append([db1, f1_name, db2, f2_name, count, chisq_pvalue])
+                        except:
+                            continue
 
-    # Convert the results into a DataFrame
-    return pd.DataFrame(results, columns=["database1", "feature1",  "database2", "feature2", "count", 
-                                          "spearman_correlation", "spearman_p_value", "anova_p_value"])
+    return {
+        "spearman": pd.DataFrame(
+            spearman_results,
+            columns=["database_1", "feature_1", "database_2", "feature_2", "count",
+                     "spearman_correlation", "spearman_pvalue"]
+        ),
+        "anova": pd.DataFrame(
+            anova_results,
+            columns=["database_1", "feature_1", "database_2", "feature_2", "count", "anova_pvalue"]
+        ),
+        "chisquared": pd.DataFrame(
+            chisq_results,
+            columns=["database_1", "feature_1", "database_2", "feature_2", "count", "chisq_pvalue"]
+        )
+    }
 
 # 
 def get_feature_values(db_dict: dict, CELL_LINES) -> pd.DataFrame: 
