@@ -43,6 +43,7 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
             for (db2, f2_name), f2_vals in df2.iterrows():
                 f1_type = feature_type_map.get(f1_name)
                 f2_type = feature_type_map.get(f2_name)
+
                 
 
                 valid_data = pd.concat([f1_vals, f2_vals], axis=1).dropna()
