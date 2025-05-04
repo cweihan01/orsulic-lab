@@ -44,8 +44,6 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                 f1_type = feature_type_map.get(f1_name)
                 f2_type = feature_type_map.get(f2_name)
                 
-                if f1_type == "cat" and f2_type == "cat":
-                    continue
 
                 valid_data = pd.concat([f1_vals, f2_vals], axis=1).dropna()
                 count = valid_data.shape[0]  # Number of valid data points
