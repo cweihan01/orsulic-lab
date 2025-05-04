@@ -2,49 +2,71 @@ import React, { useState, useMemo } from 'react';
 import axios from 'axios';
 import depMapToCellLineID from '../cellline_mapping.js';
 
-function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, highlightedRow, onRequery }) {
-    const getCorrelationColor = (correlation) => {
-        if (correlation > 0.75) return '#2e7d32';
-        if (correlation > 0.5) return '#558b2f';
-        if (correlation > 0.25) return '#f9a825';
-        if (correlation > -0.25) return '#fbc02d';
-        if (correlation > -0.5) return '#e64a19';
+function CorrelationResult({
+    data,
+    minCorrelation,
+    maxPValue,
+    onScatterRequest,
+    highlightedRow,
+    onRequery
+}) {
+    // 1) find the real metric columns in your data
+    const { correlationKey, pValueKey } = useMemo(() => {
+        if (!data || data.length === 0) {
+            return { correlationKey: null, pValueKey: null };
+        }
+        const cols = Object.keys(data[0]);
+        // correlation only exists for spearman
+        const correlationKey = cols.find(k => k.endsWith('_correlation'));
+        // p-value can be spearman_pvalue or anova_pvalue or chisq_pvalue
+        const pValueKey =
+            cols.find(k => k.toLowerCase().endsWith('pvalue')) || null;
+        return { correlationKey, pValueKey };
+    }, [data]);
+
+    // 2) color helpers
+    const getCorrelationColor = c => {
+        if (c > 0.75) return '#2e7d32';
+        if (c > 0.5) return '#558b2f';
+        if (c > 0.25) return '#f9a825';
+        if (c > -0.25) return '#fbc02d';
+        if (c > -0.5) return '#e64a19';
         return '#b71c1c';
     };
-
-    const getPValueColor = (pValue) => {
-        if (pValue < 0.01) return '#1565c0';
-        if (pValue < 0.05) return '#0288d1';
+    const getPValueColor = p => {
+        if (p < 0.01) return '#1565c0';
+        if (p < 0.05) return '#0288d1';
         return '#9e9e9e';
     };
 
+    // 3) your original download-scatter handler (verbatim)
+    //      TODO: I want to change these variable names to category1, category2, but it breaks this function
     const handleDownloadData = async (feature1, feature2, database1, database2) => {
         try {
             const payload = { feature1, feature2, database1, database2 };
-            const response = await axios.post(process.env.REACT_APP_API_ROOT + 'scatter/', payload);
+            const response = await axios.post(
+                process.env.REACT_APP_API_ROOT + 'scatter/',
+                payload
+            );
             const scatterData = response.data.scatter_data;
-
-            const csvRows = [];
             if (scatterData.length === 0) {
                 alert('No data returned from server!');
                 return;
             }
+            const csvRows = [];
             const headers = Object.keys(scatterData[0]);
-
             const newHeaders = [];
             headers.forEach(header => {
                 if (header === 'cell_lines') {
                     newHeaders.push('DepMap ID');
-                } else {
-                    newHeaders.push(header);
                 }
+                newHeaders.push(header);
                 if (header === 'cell_lines') {
                     newHeaders.push('Cell Line ID');
                 }
             });
             csvRows.push(newHeaders.join(','));
-
-            scatterData.forEach((obj) => {
+            scatterData.forEach(obj => {
                 const row = [];
                 headers.forEach(header => {
                     row.push(JSON.stringify(obj[header] ?? ''));
@@ -56,7 +78,6 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                 });
                 csvRows.push(row.join(','));
             });
-
             const csvString = csvRows.join('\n');
             const blob = new Blob([csvString], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
@@ -71,24 +92,21 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
         }
     };
 
+    // 4) your original download-table handler (verbatim)
     const handleDownloadTable = () => {
         if (sortedData.length === 0) {
-            alert("No results to download.");
+            alert('No results to download.');
             return;
         }
-
         const headers = Object.keys(sortedData[0]);
         const csvRows = [headers.join(',')];
-
         sortedData.forEach(row => {
             const values = headers.map(h => JSON.stringify(row[h] ?? ''));
             csvRows.push(values.join(','));
         });
-
         const feature1 = sortedData[0]?.feature1 || 'correlation';
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const filename = `${feature1}_correlation_results_${timestamp}.csv`;
-
         const csvString = csvRows.join('\n');
         const blob = new Blob([csvString], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -99,90 +117,68 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
         window.URL.revokeObjectURL(url);
     };
 
-    const filteredData = data.filter(
-        (item) => {
-            const hasValidSpearman =
-                item.spearman_correlation !== null &&
-                Math.abs(item.spearman_correlation) >= minCorrelation &&
-                item.spearman_p_value <= maxPValue;
+    // 5) filter rows by thresholds; if no correlationKey, just use pValue
+    const filteredData = useMemo(() => {
+        if (!pValueKey) return [];
+        return data.filter(item => {
+            const p = item[pValueKey];
+            const c = correlationKey ? item[correlationKey] : null;
+            const passCorr = correlationKey
+                ? Math.abs(c) >= minCorrelation
+                : true;
+            return passCorr && p <= maxPValue;
+        });
+    }, [data, correlationKey, pValueKey, minCorrelation, maxPValue]);
 
-            const hasValidAnova =
-                item.spearman_correlation == null &&
-                item.anova_p_value <= maxPValue;
-
-            return hasValidSpearman || hasValidAnova;
-        }
-    );
-
+    // 6) sorting
+    const defaultKey = correlationKey || pValueKey || 'count';
     const [sortConfig, setSortConfig] = useState({
-        key: 'spearman_correlation',
-        direction: 'descending',
+        key: defaultKey,
+        direction: 'descending'
     });
-
-    const requestSort = (key) => {
+    const requestSort = key => {
         let direction = 'ascending';
-        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
             direction = 'descending';
         }
         setSortConfig({ key, direction });
     };
-
-    const getSortArrow = (key) => {
-        if (sortConfig.key === key) {
-            return sortConfig.direction === 'ascending' ? '▲' : '▼';
-        }
-        return '';
-    };
+    const getSortArrow = key =>
+        sortConfig.key === key
+            ? sortConfig.direction === 'ascending'
+                ? '▲'
+                : '▼'
+            : '';
 
     const sortedData = useMemo(() => {
-        let sortableItems = [...filteredData];
-        if (sortConfig !== null) {
-            sortableItems.sort((a, b) => {
-                let aVal, bVal;
-                switch (sortConfig.key) {
-                    case 'database2':
-                        aVal = a.database2.toLowerCase();
-                        bVal = b.database2.toLowerCase();
-                        break;
-                    case 'feature2':
-                        aVal = a.feature2.toLowerCase();
-                        bVal = b.feature2.toLowerCase();
-                        break;
-                    case 'count':
-                        aVal = a.count;
-                        bVal = b.count;
-                        break;
-                    case 'spearman_correlation':
-                        aVal = Math.abs(a.spearman_correlation);
-                        bVal = Math.abs(b.spearman_correlation);
-                        break;
-                    case 'spearman_p_value':
-                        aVal = Math.abs(a.spearman_p_value);
-                        bVal = Math.abs(b.spearman_p_value);
-                        break;
-                    case 'anova_p_value':
-                        aVal = a.anova_p_value;
-                        bVal = b.anova_p_value;
-                        break;
-                    default:
-                        return 0;
-                }
-                if (aVal < bVal) return sortConfig.direction === 'ascending' ? -1 : 1;
-                if (aVal > bVal) return sortConfig.direction === 'ascending' ? 1 : -1;
-                return 0;
-            });
-        }
-        return sortableItems;
+        const items = [...filteredData];
+        items.sort((a, b) => {
+            const aVal = a[sortConfig.key];
+            const bVal = b[sortConfig.key];
+            if (typeof aVal === 'number' && typeof bVal === 'number') {
+                return sortConfig.direction === 'ascending'
+                    ? aVal - bVal
+                    : bVal - aVal;
+            }
+            const aStr = String(aVal).toLowerCase();
+            const bStr = String(bVal).toLowerCase();
+            if (aStr < bStr) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (aStr > bStr) return sortConfig.direction === 'ascending' ? 1 : -1;
+            return 0;
+        });
+        return items;
     }, [filteredData, sortConfig]);
 
+    // 7) render
     return (
         <div className="w-full rounded-lg drop-shadow-lg bg-white p-4 my-2 bg-gray-200 overflow-x-auto">
-            <h2 
+            <h2
                 className="text-3xl font-semibold text-gray-800 mb-4"
                 style={{ fontFamily: 'Futura' }}
             >
                 Correlation Results
             </h2>
+
             {sortedData.length > 0 ? (
                 <>
                     <div className="flex justify-end mb-2">
@@ -194,67 +190,115 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                             Download Table as CSV
                         </button>
                     </div>
+
                     <div className="overflow-x-auto">
                         <table className="correlation-result w-full">
                             <thead>
                                 <tr>
-                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#78aee8' }}>Database 1</th>
-                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#78aee8' }}>Feature 1</th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('database2')}>
-                                        Database 2 <span className="ml-1">{getSortArrow('database2')}</span>
+                                    <th style={{ backgroundColor: '#78aee8' }}>Category 1</th>
+                                    <th style={{ backgroundColor: '#78aee8' }}>Feature 1</th>
+                                    <th
+                                        className="cursor-pointer"
+                                        style={{ backgroundColor: '#78aee8' }}
+                                        onClick={() => requestSort('category2')}
+                                    >
+                                        Category 2 {getSortArrow('category2')}
                                     </th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('feature2')}>
-                                        Feature 2 <span className="ml-1">{getSortArrow('feature2')}</span>
+                                    <th
+                                        className="cursor-pointer"
+                                        style={{ backgroundColor: '#78aee8' }}
+                                        onClick={() => requestSort('feature2')}
+                                    >
+                                        Feature 2 {getSortArrow('feature2')}
                                     </th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('count')}>
-                                        Count <span className="ml-1">{getSortArrow('count')}</span>
+                                    <th
+                                        className="cursor-pointer"
+                                        style={{ backgroundColor: '#78aee8' }}
+                                        onClick={() => requestSort('count')}
+                                    >
+                                        Count {getSortArrow('count')}
                                     </th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('spearman_correlation')}>
-                                        Spearman Correlation <span className="ml-1">{getSortArrow('spearman_correlation')}</span>
+
+                                    {/* correlation column only if present */}
+                                    {correlationKey && (
+                                        <th
+                                            className="cursor-pointer"
+                                            style={{ backgroundColor: '#78aee8' }}
+                                            onClick={() => requestSort(correlationKey)}
+                                        >
+                                            {correlationKey.replace(/_/g, ' ')}{' '}
+                                            {getSortArrow(correlationKey)}
+                                        </th>
+                                    )}
+
+                                    {/* always show the p-value column */}
+                                    <th
+                                        className="cursor-pointer"
+                                        style={{ backgroundColor: '#78aee8' }}
+                                        onClick={() => requestSort(pValueKey)}
+                                    >
+                                        {pValueKey.replace(/_/g, ' ')} {getSortArrow(pValueKey)}
                                     </th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('spearman_p_value')}>
-                                        Spearman P-Value <span className="ml-1">{getSortArrow('spearman_p_value')}</span>
+
+                                    <th style={{ backgroundColor: '#78aee8' }}>
+                                        Scatterplot Link
                                     </th>
-                                    <th className="whitespace-nowrap cursor-pointer" style={{ backgroundColor: '#78aee8' }} onClick={() => requestSort('anova_p_value')}>
-                                        ANOVA P-Value <span className="ml-1">{getSortArrow('anova_p_value')}</span>
+                                    <th style={{ backgroundColor: '#78aee8' }}>
+                                        Download Data
                                     </th>
-                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#78aee8' }}>Scatterplot Link</th>
-                                    <th className="whitespace-nowrap" style={{ backgroundColor: '#78aee8' }}>Download Data</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {sortedData.map((item, index) => (
+                                {sortedData.map((item, idx) => (
                                     <tr
-                                        key={index}
-                                        className={`${
-                                            highlightedRow === item.feature2 ? 'border-red-400 border-2' : ''
-                                        }`}
+                                        key={idx}
+                                        className={
+                                            highlightedRow === item.feature2
+                                                ? 'border-red-400 border-2'
+                                                : ''
+                                        }
                                     >
-                                        <td>{item.database1}</td>
-                                        <td>{item.feature1}</td>
-                                        <td>{item.database2}</td>
-                                        <td>
-                                            <button
-                                                onClick={() => onRequery(item.feature2, item.database2)}
-                                                className="text-blue-600 font-semibold hover:underline"
-                                            >
-                                                {item.feature2}
-                                            </button>
-                                        </td>
-                                        <td>{item.count}</td>
-                                        <td style={{ color: getCorrelationColor(item.spearman_correlation) }}>
-                                            {item.spearman_correlation}
-                                        </td>
-                                        <td style={{ color: getPValueColor(item.spearman_p_value) }}>
-                                            {item.spearman_p_value}
-                                        </td>
-                                        <td style={{ color: getPValueColor(item.anova_p_value) }}>
-                                            {item.anova_p_value}
-                                        </td>
+                                        <td>{item.database_1}</td>
+                                        <td>{item.feature_1}</td>
+                                        <td>{item.database_2}</td>
                                         <td>
                                             <button
                                                 onClick={() =>
-                                                    onScatterRequest(item.feature1, item.feature2, item.database1, item.database2)
+                                                    onRequery(item.feature_2, item.database_2)
+                                                }
+                                                className="text-blue-600 font-semibold hover:underline"
+                                            >
+                                                {item.feature_2}
+                                            </button>
+                                        </td>
+                                        <td>{item.count}</td>
+
+                                        {correlationKey && (
+                                            <td
+                                                style={{
+                                                    color: getCorrelationColor(item[correlationKey])
+                                                }}
+                                            >
+                                                {item[correlationKey]}
+                                            </td>
+                                        )}
+                                        <td
+                                            style={{
+                                                color: getPValueColor(item[pValueKey])
+                                            }}
+                                        >
+                                            {item[pValueKey]}
+                                        </td>
+
+                                        <td>
+                                            <button
+                                                onClick={() =>
+                                                    onScatterRequest(
+                                                        item.feature_1,
+                                                        item.feature_2,
+                                                        item.database_1,
+                                                        item.database_2
+                                                    )
                                                 }
                                                 className="text-blue-500 hover:underline"
                                             >
@@ -264,7 +308,12 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
                                         <td>
                                             <button
                                                 onClick={() =>
-                                                    handleDownloadData(item.feature1, item.feature2, item.database1, item.database2)
+                                                    handleDownloadData(
+                                                        item.feature_1,
+                                                        item.feature_2,
+                                                        item.database_1,
+                                                        item.database_2
+                                                    )
                                                 }
                                                 className="text-blue-500 hover:underline"
                                             >
@@ -285,4 +334,3 @@ function CorrelationResult({ data, minCorrelation, maxPValue, onScatterRequest, 
 }
 
 export default CorrelationResult;
-

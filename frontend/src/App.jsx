@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import QueryForm from './components/QueryForm';
 import CorrelationResult from './components/CorrelationResult';
 import ScatterPlot from './components/ScatterPlot';
@@ -8,7 +8,7 @@ import './App.css';
 import './index.js';
 
 function App() {
-    const [correlations, setCorrelations] = useState([]);
+    const [correlationsMap, setCorrelationsMap] = useState({});
     const [highlightedRow, setHighlightedRow] = useState(null);
     const [scatterData, setScatterData] = useState([]);
     const [minCorrelation, setMinCorrelation] = useState(0.0);
@@ -16,8 +16,8 @@ function App() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isQueryFormCollapsed, setIsQueryFormCollapsed] = useState(false);
     const [progress, setProgress] = useState(0);
-    const [previousQuery, setPreviousQuery] = useState(null); // 🆕
-    const [queryHistory, setQueryHistory] = useState([]);     // 🆕
+    const [previousQuery, setPreviousQuery] = useState(null); 
+    const [queryHistory, setQueryHistory] = useState([]);    
     const progressRef = useRef(null);
 
     const openModal = () => setIsModalOpen(true);
@@ -68,7 +68,7 @@ function App() {
             })
             .then((response) => {
                 console.log('Retrieved correlations:', response);
-                setCorrelations(response.data.correlations);
+                setCorrelationsMap(response.data.correlations);
             })
             .catch((err) => {
                 console.error('Error fetching correlations:', err);
@@ -158,7 +158,25 @@ function App() {
                 <div className={`panel ${isQueryFormCollapsed ? 'right-panel-collapsed' : 'right-panel-expanded'}`}>
                     {scatterData.length > 0 && <ScatterPlot data={scatterData} handleCloseGraph={handleCloseGraph} />}
                     <CorrelationResult
-                        data={correlations}
+                        data={correlationsMap.spearman}
+                        minCorrelation={minCorrelation}
+                        maxPValue={maxPValue}
+                        onScatterRequest={handleScatterRequest}
+                        highlightedRow={highlightedRow}
+                        onRequery={handleRequery}
+                    />
+
+                    <CorrelationResult
+                        data={correlationsMap.anova}
+                        minCorrelation={minCorrelation}
+                        maxPValue={maxPValue}
+                        onScatterRequest={handleScatterRequest}
+                        highlightedRow={highlightedRow}
+                        onRequery={handleRequery}
+                    />
+
+                    <CorrelationResult
+                        data={correlationsMap.chisquared}
                         minCorrelation={minCorrelation}
                         maxPValue={maxPValue}
                         onScatterRequest={handleScatterRequest}

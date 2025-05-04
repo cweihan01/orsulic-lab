@@ -161,13 +161,13 @@ class CorrelationView(APIView):
             # print(f2_df)
 
             # Call the updated calculate_correlations function
-            results_df = correlations.calculate_correlations(f1_df, f2_df)
-            # print(results_df.head(1))
+            results_df_dict = correlations.calculate_correlations(f1_df, f2_df)
 
-            # Convert the results DataFrame to a JSON-compatible format
-            results_json = results_df.to_dict(orient="records")
-
-            # print("Results JSON:", results_json)
+            # Convert each DataFrame in the dict to a list of records
+            results_json = {
+                key: df.to_dict(orient="records")
+                for key, df in results_df_dict.items()
+            }
 
             return Response({"correlations": results_json}, status=status.HTTP_200_OK)
 
