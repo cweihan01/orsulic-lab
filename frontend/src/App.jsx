@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import QueryForm from './components/QueryForm';
 import CorrelationResult from './components/CorrelationResult';
 import ScatterPlot from './components/ScatterPlot';
-import QueryHistory from './components/QueryHistory'; // ✅ NEW
+import QueryHistory from './components/QueryHistory';
 import axios from 'axios';
 import './App.css';
 import './index.js';
@@ -18,6 +18,8 @@ function App() {
     const [progress, setProgress] = useState(0);
     const [previousQuery, setPreviousQuery] = useState(null); 
     const [queryHistory, setQueryHistory] = useState([]);    
+    const [selectedTab, setSelectedTab] = useState("spearman");
+    const [plotType, setPlotType] = useState("spearman");
     const progressRef = useRef(null);
 
     const openModal = () => setIsModalOpen(true);
@@ -49,13 +51,10 @@ function App() {
     };
 
     const handleQuery = (query) => {
-        console.log('Handling POST query to /correlations/...');
-        console.log('Query:', query);
-
         setMinCorrelation(parseFloat(query.minCorrelation));
         setMaxPValue(parseFloat(query.maxPValue));
-        setPreviousQuery(query); // 🆕
-        setQueryHistory(prev => [query, ...prev.slice(0, 19)]); // 🆕 add to top, limit to 20
+        setPreviousQuery(query);
+        setQueryHistory(prev => [query, ...prev.slice(0, 19)]);
 
         startProgressSimulation();
 
@@ -67,8 +66,11 @@ function App() {
                 database2: query.database2,
             })
             .then((response) => {
-                console.log('Retrieved correlations:', response);
                 setCorrelationsMap(response.data.correlations);
+                const firstNonEmpty = ['spearman', 'anova', 'chisquared'].find(
+                    key => response.data.correlations[key]?.length > 0
+                );
+                setSelectedTab(firstNonEmpty || 'spearman');
             })
             .catch((err) => {
                 console.error('Error fetching correlations:', err);
@@ -78,15 +80,18 @@ function App() {
             });
     };
 
-    const handleScatterRequest = (feature1, feature2, database1, database2) => {
+
+    
+    const handleScatterRequest = (feature1, feature2, database1, database2, plotTypeOverride) => {
         setHighlightedRow(feature2);
+        setPlotType(plotTypeOverride);  // ← now actually uses the correct type
+        
+
         const scatterData = { feature1, feature2, database1, database2 };
 
-        console.log(scatterData);
         axios
             .post(`${process.env.REACT_APP_API_ROOT}scatter/`, scatterData)
             .then((response) => {
-                console.log('Scatter data:', response.data.scatter_data);
                 setScatterData(response.data.scatter_data);
             })
             .catch((error) => {
@@ -94,19 +99,23 @@ function App() {
             });
     };
 
-    // 🆕 Re-query using clicked Feature2
     const handleRequery = (newFeature1, newDatabase1) => {
         if (!previousQuery) return;
-    
         const updatedQuery = {
             ...previousQuery,
             feature1: newFeature1,
-            database1: [newDatabase1], // ✅ dynamically set database1 to match feature2's source
+            database1: [newDatabase1],
         };
-    
-        console.log('Requerying with:', updatedQuery);
         handleQuery(updatedQuery);
     };
+
+    const tabTitleMap = {
+        spearman: 'Spearman Correlation Results',
+        anova: 'ANOVA Correlation Results',
+        chisquared: 'Chi-Square Correlation Results',
+    };
+
+    const currentData = correlationsMap[selectedTab] || [];
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -149,48 +158,61 @@ function App() {
                             <QueryHistory
                                 history={queryHistory}
                                 onSelect={handleQuery}
-                                onClear={() => setQueryHistory([])} // 🧼 Clears history
+                                onClear={() => setQueryHistory([])}
                             />
                         </>
                     )}
                 </div>
 
                 <div className={`panel ${isQueryFormCollapsed ? 'right-panel-collapsed' : 'right-panel-expanded'}`}>
-                    {scatterData.length > 0 && <ScatterPlot data={scatterData} handleCloseGraph={handleCloseGraph} />}
-                    <CorrelationResult
-                        data={correlationsMap.spearman}
-                        minCorrelation={minCorrelation}
-                        maxPValue={maxPValue}
-                        onScatterRequest={handleScatterRequest}
-                        highlightedRow={highlightedRow}
-                        onRequery={handleRequery}
-                    />
+                    {scatterData.length > 0 && (
+                        <ScatterPlot data={scatterData} handleCloseGraph={handleCloseGraph} plotType={plotType} />
+                    )}
 
-                    <CorrelationResult
-                        data={correlationsMap.anova}
-                        minCorrelation={minCorrelation}
-                        maxPValue={maxPValue}
-                        onScatterRequest={handleScatterRequest}
-                        highlightedRow={highlightedRow}
-                        onRequery={handleRequery}
-                    />
+                    {/* Tabs */}
+                    <div className="flex justify-center mt-4 space-x-4">
+                        {['spearman', 'anova', 'chisquared'].map(key => (
+                            <button
+                                key={key}
+                                onClick={() => setSelectedTab(key)}
+                                className={`px-4 py-2 rounded ${
+                                    selectedTab === key ? 'bg-blue-600 text-white' : 'bg-gray-300'
+                                }`}
+                            >
+                                {key === 'spearman'
+                                    ? 'Spearman'
+                                    : key === 'anova'
+                                    ? 'ANOVA'
+                                    : 'Chi-Square'}
+                            </button>
+                        ))}
+                    </div>
 
-                    <CorrelationResult
-                        data={correlationsMap.chisquared}
-                        minCorrelation={minCorrelation}
-                        maxPValue={maxPValue}
-                        onScatterRequest={handleScatterRequest}
-                        highlightedRow={highlightedRow}
-                        onRequery={handleRequery}
-                    />
+                    {currentData.length > 0 ? (
+                        <CorrelationResult
+                            data={currentData}
+                            title={tabTitleMap[selectedTab]}
+                            minCorrelation={minCorrelation}
+                            maxPValue={maxPValue}
+                            onScatterRequest={handleScatterRequest}
+                            highlightedRow={highlightedRow}
+                            onRequery={handleRequery}
+                        />
+                    ) : (
+                        <p className="text-center text-gray-600 mt-4">
+                            No results found for {tabTitleMap[selectedTab]}.
+                        </p>
+                    )}
                 </div>
             </div>
-
 
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full relative">
-                        <button onClick={closeModal} className="absolute top-2 right-2 bg-red-500 text-white rounded-full px-3 py-1 hover:bg-red-600">
+                        <button
+                            onClick={closeModal}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full px-3 py-1 hover:bg-red-600"
+                        >
                             X
                         </button>
                         <iframe src="/sample.pdf" className="w-full h-[80vh] p-4" title="Popup PDF"></iframe>

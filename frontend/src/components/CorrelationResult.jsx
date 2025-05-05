@@ -292,18 +292,19 @@ function CorrelationResult({
 
                                         <td>
                                             <button
-                                                onClick={() =>
+                                                 onClick={() =>
                                                     onScatterRequest(
-                                                        item.feature_1,
-                                                        item.feature_2,
-                                                        item.database_1,
-                                                        item.database_2
+                                                      item.feature_1,
+                                                      item.feature_2,
+                                                      item.database_1,
+                                                      item.database_2,
+                                                      pValueKey.includes('anova') ? 'anova' : pValueKey.includes('chisq') ? 'chisq' : 'spearman'
                                                     )
                                                 }
                                                 className="text-blue-500 hover:underline"
-                                            >
-                                                View Scatterplot
-                                            </button>
+                                            > 
+                                                {pValueKey.includes('anova') ? 'View Boxplot' : pValueKey.includes('chisq') ? 'View Barplot' : 'View Scatterplot'}
+                                            </button>   
                                         </td>
                                         <td>
                                             <button
