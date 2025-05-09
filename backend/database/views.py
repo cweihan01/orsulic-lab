@@ -1,16 +1,19 @@
+import json
+import hashlib
 import pandas as pd
 import traceback
+
 from django.shortcuts import render
+from django.core.cache import cache
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Feature, Nuclear, Molecular, DrugScreen, CELL_LINES, Correlation
-from .serializers import FeatureSerializer, NuclearSerializer, MolecularSerializer, DrugScreenSerializer
-
 from rest_framework.decorators import action
 
-
+from .models import Feature, Nuclear, Molecular, DrugScreen, CELL_LINES, Correlation
+from .serializers import FeatureSerializer, NuclearSerializer, MolecularSerializer, DrugScreenSerializer
 from .utils import correlations
+
 
 def index(request):
     return render(request, 'database/index.html')
@@ -89,6 +92,7 @@ class DrugScreenViewSet(viewsets.ModelViewSet):
     queryset = DrugScreen.objects.all()
     serializer_class = DrugScreenSerializer
 
+
 class CorrelationView(APIView):
     def post(self, request, *args, **kwargs):
         try:
@@ -123,6 +127,20 @@ class CorrelationView(APIView):
             if isinstance(db2_names, str):
                 db2_names = [db2_names]
 
+            # Prepare key for cache
+            key_data = {
+                "f1": f1_name,
+                "f2": sorted(f2_names),
+                "db1": sorted(db1_names),
+                "db2": sorted(db2_names),
+            }
+            key_json = json.dumps(key_data, separators=(",", ":"), sort_keys=True)
+            cache_key = "corr:" + hashlib.md5(key_json.encode("utf-8")).hexdigest()
+
+            # Retrieve correlation from cache if possible
+            cached_result = cache.get(cache_key)
+            if cached_result is not None:
+                return Response({"correlations": cached_result}, status=status.HTTP_200_OK)
             
             # Fetch Feature objects
             try:
@@ -168,7 +186,9 @@ class CorrelationView(APIView):
                 key: df.to_dict(orient="records")
                 for key, df in results_df_dict.items()
             }
-
+            
+            # Save results to cache for 1 hour
+            cache.set(cache_key, results_json, timeout=3600)
             return Response({"correlations": results_json}, status=status.HTTP_200_OK)
 
         except Exception as e:
