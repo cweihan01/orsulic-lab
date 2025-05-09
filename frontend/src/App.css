@@ -2,11 +2,8 @@
 .custom-header {
   /* background: linear-gradient(135deg, #bad7f7, #e6bef7); */
   /* background-image: linear-gradient(to top, #e6dee9 0%, #bdc2e8 99%, #bdc2e8 100%); */
-  /* background-image: linear-gradient(-225deg, #5D9FFF 0%, #e6d4ec 48%, #6BBBFF 100%); */
-  /* background-image: linear-gradient(-225deg, #bad7f7 0%, #8881f0 48%, #bad7f7 100%); */
   /* background-image: linear-gradient(-225deg, #bad7f7 0%, #EACCF8 48%, #9285f1 100%); */
-  /* background-image: linear-gradient(43deg, #94a1ea 0%, #ebb0e7 46%, #f0cb8a 100%); */
-  background-image: radial-gradient( circle 641px at 15% 20%,  rgb(195, 149, 236) 0%, rgb(165, 210, 255) 90% );
+  background-image: radial-gradient( circle 641px at 15% 20%,  rgb(195, 149, 236) 0%, rgb(157, 200, 244) 90% );
 
   color: white;
   padding: 24px 24px;
@@ -139,6 +136,7 @@
   grid-template-columns: repeat(20, minmax(0, 1fr));
   gap: 1.5rem;
   padding: 1.5rem;
+  align-items: start;
 }
 
 /* Shared panel style */
@@ -167,4 +165,36 @@
 }
 .right-panel-expanded {
   grid-column: span 13 / span 13;
+}
+
+/* Tabs */
+
+.tab-buttons-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  border-bottom: 2px solid #e5e7eb;
+  font-family: 'Futura', sans-serif;
+}
+
+.tab-button {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.tab-button:hover {
+  color: #374151;
+}
+
+.tab-button.active {
+  border-bottom: 3px solid #78aee8;
+  color: #1f2937;
+  font-weight: 700;
 }

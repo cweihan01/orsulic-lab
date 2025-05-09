@@ -170,14 +170,13 @@ function App() {
                     )}
 
                     {/* Tabs */}
-                    <div className="flex justify-center mt-4 space-x-4">
-                        {['spearman', 'anova', 'chisquared'].map(key => (
+
+                    <div className="tab-buttons-container">
+                        {['spearman', 'anova', 'chisquared'].map((key) => (
                             <button
                                 key={key}
                                 onClick={() => setSelectedTab(key)}
-                                className={`px-4 py-2 rounded ${
-                                    selectedTab === key ? 'bg-blue-600 text-white' : 'bg-gray-300'
-                                }`}
+                                className={`tab-button ${selectedTab === key ? 'active' : ''}`}
                             >
                                 {key === 'spearman'
                                     ? 'Spearman'
