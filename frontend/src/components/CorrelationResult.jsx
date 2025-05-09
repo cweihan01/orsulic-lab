@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
 import depMapToCellLineID from '../cellline_mapping.js';
 
@@ -131,11 +131,17 @@ function CorrelationResult({
     }, [data, correlationKey, pValueKey, minCorrelation, maxPValue]);
 
     // 6) sorting
-    const defaultKey = correlationKey || pValueKey || 'count';
-    const [sortConfig, setSortConfig] = useState({
-        key: defaultKey,
-        direction: 'descending'
-    });
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+
+    useEffect(() => {
+        if (!pValueKey && !correlationKey) return;
+    
+        const defaultKey = correlationKey || pValueKey || 'count';
+        const defaultDirection = correlationKey ? 'descending' : 'ascending';
+    
+        setSortConfig({ key: defaultKey, direction: defaultDirection });
+    }, [correlationKey, pValueKey]);
+    
     const requestSort = key => {
         let direction = 'ascending';
         if (sortConfig.key === key && sortConfig.direction === 'ascending') {
