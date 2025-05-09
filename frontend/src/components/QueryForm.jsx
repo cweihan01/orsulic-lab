@@ -145,7 +145,18 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
         } else {
             setFeatureList2([]);
         }
-    }, [selectedDatabase2, selectedSubCategories2]); 
+    }, [selectedDatabase2, selectedSubCategories2]);
+
+    const isFormValid = () => {
+        return (
+            selectedDatabase1.length > 0 &&
+            selectedSubCategories1.length > 0 &&
+            feature1 !== '' &&
+            selectedDatabase2.length > 0 &&
+            selectedSubCategories2.length > 0 &&
+            feature2.length > 0
+        );
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -338,7 +349,12 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                 ))}
 
                 <div className="submit-button-container">
-                    <button type="submit" className="submit-button">
+                    <button
+                        type="submit"
+                        className="submit-button"
+                        disabled={!isFormValid()}
+                        style={{ opacity: isFormValid() ? 1 : 0.5, cursor: isFormValid() ? 'pointer' : 'not-allowed' }}
+                    >
                         Query Database
                     </button>
                 </div>
