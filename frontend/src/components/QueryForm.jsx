@@ -149,6 +149,29 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
 
     const sortOptions = (arr) => [...arr].sort((a, b) => a.localeCompare(b));
 
+    const nuclearFeatureSort = (features) => {
+        const fRegex = /_F(\d{1,2})$/;
+
+        const fNumbered = [];
+        const others = [];
+
+        features.forEach((name) => {
+            const match = name.match(fRegex);
+            if (match) {
+                fNumbered.push({ name, num: parseInt(match[1], 10) });
+            } else {
+                others.push(name);
+            }
+        });
+
+        fNumbered.sort((a, b) => a.num - b.num);
+
+        return [
+            ...fNumbered.map((item) => item.name),
+            ...others.sort((a, b) => a.localeCompare(b)),
+        ];
+    };
+
     const isFormValid = () => {
         return (
             selectedDatabase1.length > 0 &&
@@ -263,7 +286,11 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                         label: 'Feature 1:',
                         component: (
                             <SearchableSelect
-                                options={sortOptions(featureList1)}
+                                options={
+                                    selectedSubCategories1.includes('Nuclear')
+                                    ? nuclearFeatureSort(featureList1)
+                                    : sortOptions(featureList1)
+                                }
                                 value={feature1}
                                 onChange={setFeature1}
                                 placeholder="Select a feature"
@@ -303,7 +330,11 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                             <MultiSelectDropdown
                                 formFieldName="feature2"
                                 value={feature2}
-                                options={sortOptions(featureList2)}
+                                options={
+                                    selectedSubCategories2.includes('Nuclear')
+                                    ? nuclearFeatureSort(featureList2)
+                                    : sortOptions(featureList2)
+                                }
                                 onChange={setFeature2}
                                 prompt="Select one or more features"
                             />
