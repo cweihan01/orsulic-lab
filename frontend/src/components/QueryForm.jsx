@@ -147,6 +147,8 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
         }
     }, [selectedDatabase2, selectedSubCategories2]);
 
+    const sortOptions = (arr) => [...arr].sort((a, b) => a.localeCompare(b));
+
     const isFormValid = () => {
         return (
             selectedDatabase1.length > 0 &&
@@ -237,7 +239,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                             <MultiSelectDropdown
                                 formFieldName="database1"
                                 value={selectedDatabase1}
-                                options={databaseList}
+                                options={sortOptions(databaseList)}
                                 onChange={handleChangeDatabase1}
                                 prompt="Select one or more databases"
                             />
@@ -250,7 +252,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                             <MultiSelectDropdown
                                 formFieldName="subcategory1"
                                 value={selectedSubCategories1}
-                                options={subCategoryList1}
+                                options={sortOptions(subCategoryList1)}
                                 onChange={handleChangeSubcategory1}
                                 prompt="Select one or more subcategories"
                             />
@@ -261,7 +263,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                         label: 'Feature 1:',
                         component: (
                             <SearchableSelect
-                                options={featureList1}
+                                options={sortOptions(featureList1)}
                                 value={feature1}
                                 onChange={setFeature1}
                                 placeholder="Select a feature"
@@ -275,7 +277,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                             <MultiSelectDropdown
                                 formFieldName="database2"
                                 value={selectedDatabase2}
-                                options={databaseList}
+                                options={sortOptions(databaseList)}
                                 onChange={handleChangeDatabase2}
                                 prompt="Select one or more databases"
                             />
@@ -288,7 +290,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                             <MultiSelectDropdown
                                 formFieldName="subcategory2"
                                 value={selectedSubCategories2}
-                                options={subCategoryList2}
+                                options={sortOptions(subCategoryList2)}
                                 onChange={handleChangeSubcategory2}
                                 prompt="Select one or more subcategories"
                             />
@@ -301,7 +303,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                             <MultiSelectDropdown
                                 formFieldName="feature2"
                                 value={feature2}
-                                options={featureList2}
+                                options={sortOptions(featureList2)}
                                 onChange={setFeature2}
                                 prompt="Select one or more features"
                             />
