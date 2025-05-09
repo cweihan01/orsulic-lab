@@ -14,52 +14,96 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
 
     const title =
         plotType === 'anova'
-            ? `Boxplot of ${yKey} grouped by ${xKey}`
+            ? `Boxplot of ${xKey} vs ${yKey}`
             : plotType === 'chisq'
             ? `Grouped Bar Plot of ${xKey} and ${yKey}`
             : `Scatter Plot of ${xKey} vs ${yKey}`;
 
     const layout = {
         title,
-        xaxis: { title: xKey },
+        xaxis: { title: xKey, tickangle: -30 },
         yaxis: { title: yKey },
         autosize: true,
+        font: { family: 'Futura', size: 14 },
     };
 
     let plotData;
 
     if (plotType === 'anova') {
-        const groups = [...new Set(xValues)];
-        plotData = groups.map(group => ({
+        const isCategorical = v =>
+            typeof v === 'string' || typeof v === 'boolean' ||
+            (typeof v === 'number' && Number.isInteger(v) && v < 20);
+
+        const xIsCat = isCategorical(xValues[0]);
+        const yIsCat = isCategorical(yValues[0]);
+
+        let catKey, numKey;
+        if (xIsCat && !yIsCat) {
+            catKey = xKey;
+            numKey = yKey;
+        } else if (!xIsCat && yIsCat) {
+            catKey = yKey;
+            numKey = xKey;
+        } else {
+            return (
+                <div className="w-full p-4 my-2 rounded bg-white text-red-600">
+                    <h2 className="text-xl font-bold mb-2">Invalid ANOVA plot</h2>
+                    <p>Exactly one variable must be categorical and one must be numeric.</p>
+                </div>
+            );
+        }
+
+        const categories = [...new Set(data.map(d => d[catKey]))];
+        plotData = categories.map(cat => ({
             type: 'box',
-            y: data.filter(d => d[xKey] === group).map(d => d[yKey]),
-            name: group,
+            y: data.filter(d => d[catKey] === cat).map(d => d[numKey]),
+            name: cat,
             boxpoints: 'all',
             jitter: 0.4,
-            pointpos: -1.5,
+            pointpos: 0,
         }));
     } else if (plotType === 'chisq') {
-    // Create grouped counts
-    const groupMap = {};
-    data.forEach(d => {
-        const xCat = d[xKey];
-        const yCat = d[yKey];
-        if (!groupMap[yCat]) groupMap[yCat] = {};
-        groupMap[yCat][xCat] = (groupMap[yCat][xCat] || 0) + 1;
-    });
+        // Grouped bar plot for cat vs cat
+        const groupMap = {};
+        data.forEach(d => {
+            const xCat = d[xKey];
+            const yCat = d[yKey];
+            if (!groupMap[yCat]) groupMap[yCat] = {};
+            groupMap[yCat][xCat] = (groupMap[yCat][xCat] || 0) + 1;
+        });
 
-    const xCategories = [...new Set(data.map(d => d[xKey]))];
-    const yCategories = Object.keys(groupMap);
+        const xCategories = [...new Set(data.map(d => d[xKey]))];
+        const yCategories = Object.keys(groupMap);
 
-    plotData = yCategories.map(yCat => ({
-        x: xCategories,
-        y: xCategories.map(xCat => groupMap[yCat][xCat] || 0),
-        name: yCat,
-        type: 'bar',
-    }));
+        const colors = [
+            'rgba(66, 165, 245, 0.6)',   // blue
+            'rgba(239, 83, 80, 0.6)',    // red
+            'rgba(102, 187, 106, 0.6)',  // green
+            'rgba(255, 202, 40, 0.6)',   // yellow
+            'rgba(171, 71, 188, 0.6)',   // purple
+            'rgba(255, 112, 67, 0.6)',   // orange
+        ];
 
-    layout.barmode = 'group';
-} else {
+        plotData = yCategories.map((yCat, idx) => ({
+            x: xCategories,
+            y: xCategories.map(xCat => groupMap[yCat][xCat] || 0),
+            name: yCat,
+            type: 'bar',
+            marker: {
+                color: colors[idx % colors.length],
+                line: {
+                    color: 'rgba(0, 0, 0, 0.3)',
+                    width: 1,
+                },
+            },
+            text: xCategories.map(xCat => groupMap[yCat][xCat] || 0),
+            textposition: 'auto',
+            hovertemplate: '%{x}<br>%{y} counts<br>Group: %{name}<extra></extra>',
+        }));
+
+        layout.barmode = 'group';
+        layout.yaxis.title = 'Count';
+    } else {
         plotData = [
             {
                 x: xValues,
@@ -77,7 +121,7 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
         <div className="w-full flex-grow rounded-lg drop-shadow-lg p-4 my-2" style={{ background: 'white' }}>
             <div className="relative">
                 <h2 className="text-3xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'Futura' }}>
-                    {title}
+                    {layout.title}
                 </h2>
                 <button
                     onClick={handleCloseGraph}
@@ -87,7 +131,12 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
                     Close Graph
                 </button>
             </div>
-            <Plot data={plotData} layout={layout} useResizeHandler={true} style={{ width: '100%', height: '100%' }} />
+            <Plot
+                data={plotData}
+                layout={layout}
+                useResizeHandler={true}
+                style={{ width: '100%', height: '100%' }}
+            />
         </div>
     );
 };

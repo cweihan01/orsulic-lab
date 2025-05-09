@@ -169,6 +169,7 @@ function CorrelationResult({
         return items;
     }, [filteredData, sortConfig]);
 
+
     // 7) render
     return (
         <div className="w-full rounded-lg drop-shadow-lg bg-white p-4 my-2 bg-gray-200 overflow-x-auto">
@@ -241,7 +242,7 @@ function CorrelationResult({
                                     </th>
 
                                     <th style={{ backgroundColor: '#78aee8' }}>
-                                        Scatterplot Link
+                                        Plot Link
                                     </th>
                                     <th style={{ backgroundColor: '#78aee8' }}>
                                         Download Data
