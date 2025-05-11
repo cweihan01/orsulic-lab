@@ -1,5 +1,5 @@
 // QueryForm.jsx
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import SearchableSelect from './SearchableSelect';
 import MultiSelectDropdown from './MultiSelectDropdown';
 import { sortOptions, nuclearFeatureSort, validateQueryForm } from '../utils/formUtils';
@@ -34,16 +34,17 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
     const { features: featureList1 } = useFeatureData(selectedDatabase1, selectedSubCategories1, openDropdowns.subcategory1);
     const { features: featureList2 } = useFeatureData(selectedDatabase2, selectedSubCategories2, openDropdowns.subcategory2);
 
-    // Function to handle dropdown open state changes
-    const handleDropdownOpenState = (dropdownName, isOpen) => {
-        setOpenDropdowns(prev => ({
-            ...prev,
-            [dropdownName]: isOpen
-        }));
-        
-        // You can also perform any other actions when a dropdown opens/closes
-        console.log(`Dropdown ${dropdownName} is now ${isOpen ? 'open' : 'closed'}`);
-    };
+    // Memoize the handleDropdownOpenState function to prevent it from being recreated on every render
+    const handleDropdownOpenState = useCallback((dropdownName, isOpen) => {
+        setOpenDropdowns(prev => {
+            // Only update if the state actually changed to prevent unnecessary re-renders
+            if (prev[dropdownName] === isOpen) return prev;
+            return {
+                ...prev,
+                [dropdownName]: isOpen
+            };
+        });
+    }, []);
 
     const isFormValid = () => {
         return validateQueryForm({
