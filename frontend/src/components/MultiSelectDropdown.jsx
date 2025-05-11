@@ -8,6 +8,7 @@ export default function MultiSelectDropdown({
   options,
   onChange,
   prompt = 'Select one or more options',
+  onOpenStateChange = () => {}
 }) {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,6 +18,10 @@ export default function MultiSelectDropdown({
   useEffect(() => {
     setSelectedOptions(value || []);
   }, [value]);
+
+  useEffect(() => {
+    onOpenStateChange(isOpen);
+  }, [isOpen, onOpenStateChange]);
 
   const filteredOptions = options.filter((option) =>
     option.toLowerCase().includes(searchTerm.toLowerCase())
@@ -87,7 +92,7 @@ export default function MultiSelectDropdown({
         </div>
       );
     },
-    [filteredOptions, selectedOptions, formFieldName]
+    [filteredOptions, selectedOptions, handleChange, formFieldName]
   );
 
   return (

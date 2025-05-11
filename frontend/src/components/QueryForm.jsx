@@ -23,6 +23,26 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
     const [maxPValue, setMaxPValue] = useState(1.0);
     const [isCollapsible, setIsCollapsible] = useState(false);
 
+    // Add new state to track which dropdowns are open
+    const [openDropdowns, setOpenDropdowns] = useState({
+        database1: false,
+        subcategory1: false,
+        database2: false,
+        subcategory2: false,
+        feature2: false
+    });
+
+    // Function to handle dropdown open state changes
+    const handleDropdownOpenState = (dropdownName, isOpen) => {
+        setOpenDropdowns(prev => ({
+            ...prev,
+            [dropdownName]: isOpen
+        }));
+        
+        // You can also perform any other actions when a dropdown opens/closes
+        console.log(`Dropdown ${dropdownName} is now ${isOpen ? 'open' : 'closed'}`);
+    };
+
     // Get list of Categories/Databases from API
     useEffect(() => {
         console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features/categories`);
@@ -40,7 +60,8 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
 
     // Get list of subcategories according to the selected categories
     useEffect(() => {
-        if (selectedDatabase1.length > 0) {
+        if (selectedDatabase1.length > 0 && !openDropdowns.database1) {
+            console.log(`Fetching subcategories for database1 since dropdown is closed`);
             axios
                 .get(`${process.env.REACT_APP_API_ROOT}features/subcategories/`, {
                     params: {
@@ -59,13 +80,16 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     console.error('Error fetching subcategories:', error);
                 });
         } else {
-            setSubCategoryList1([]);
+            if (selectedDatabase1.length === 0) {
+                setSubCategoryList1([]);
+            }
         }
-    }, [selectedDatabase1]);
+    }, [selectedDatabase1, openDropdowns.database1]);
 
     // Get list of subcategories according to the selected categories
     useEffect(() => {
-        if (selectedDatabase2.length > 0) {
+        if (selectedDatabase2.length > 0 && !openDropdowns.database2) {
+            console.log(`Fetching subcategories for database2 since dropdown is closed`);
             axios
                 .get(`${process.env.REACT_APP_API_ROOT}features/subcategories/`, {
                     params: {
@@ -84,14 +108,17 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     console.error('Error fetching subcategories:', error);
                 });
         } else {
-            setSubCategoryList2([]);
+            if (selectedDatabase2.length === 0) {
+                setSubCategoryList2([]);
+            }
         }
-    }, [selectedDatabase2]);
+    }, [selectedDatabase2, openDropdowns.database2]);
 
     // Get list of features from API for the first set of databases selected
     useEffect(() => {
         console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
-        if (selectedDatabase1.length > 0 && selectedSubCategories1.length > 0) {  // Only make request if databases are selected
+        if (selectedDatabase1.length > 0 && selectedSubCategories1.length > 0 && !openDropdowns.subcategory1) {
+            console.log(`Fetching features for subcategory1 since dropdown is closed`);
             axios
                 .get(`${process.env.REACT_APP_API_ROOT}features/`, {
                     params: {
@@ -114,14 +141,17 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     console.error('Error fetching features:', error);
                 });
         } else {
-            setFeatureList1([]);
+            if (selectedDatabase1.length === 0 || selectedSubCategories1.length === 0) {
+                setFeatureList1([]);
+            }
         }
-    }, [selectedDatabase1, selectedSubCategories1]); 
+    }, [selectedDatabase1, selectedSubCategories1, openDropdowns.subcategory1]); 
 
     // Get list of features from API for the second set of databases selected
     useEffect(() => {
         console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
-        if (selectedDatabase2.length > 0 && selectedSubCategories2.length > 0) {  // Only make request if databases are selected
+        if (selectedDatabase2.length > 0 && selectedSubCategories2.length > 0 && !openDropdowns.subcategory2) {
+            console.log(`Fetching features for subcategory2 since dropdown is closed`);
             axios
                 .get(`${process.env.REACT_APP_API_ROOT}features/`, {
                     params: {
@@ -144,9 +174,11 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     console.error('Error fetching features:', error);
                 });
         } else {
-            setFeatureList2([]);
+            if (selectedDatabase2.length === 0 || selectedSubCategories2.length === 0) {
+                setFeatureList2([]);
+            }
         }
-    }, [selectedDatabase2, selectedSubCategories2]);
+    }, [selectedDatabase2, selectedSubCategories2, openDropdowns.subcategory2]);
 
     const isFormValid = () => {
         return validateQueryForm({
@@ -241,6 +273,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                                 options={sortOptions(databaseList)}
                                 onChange={handleChangeDatabase1}
                                 prompt="Select one or more databases"
+                                onOpenStateChange={(isOpen) => handleDropdownOpenState('database1', isOpen)}
                             />
                         ),
                     },
@@ -254,6 +287,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                                 options={sortOptions(subCategoryList1)}
                                 onChange={handleChangeSubcategory1}
                                 prompt="Select one or more subcategories"
+                                onOpenStateChange={(isOpen) => handleDropdownOpenState('subcategory1', isOpen)}
                             />
                         ),
                     },
@@ -283,6 +317,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                                 options={sortOptions(databaseList)}
                                 onChange={handleChangeDatabase2}
                                 prompt="Select one or more databases"
+                                onOpenStateChange={(isOpen) => handleDropdownOpenState('database2', isOpen)}
                             />
                         ),
                     },
@@ -296,6 +331,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                                 options={sortOptions(subCategoryList2)}
                                 onChange={handleChangeSubcategory2}
                                 prompt="Select one or more subcategories"
+                                onOpenStateChange={(isOpen) => handleDropdownOpenState('subcategory2', isOpen)}
                             />
                         ),
                     },
@@ -313,6 +349,7 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                                 }
                                 onChange={setFeature2}
                                 prompt="Select one or more features"
+                                onOpenStateChange={(isOpen) => handleDropdownOpenState('feature2', isOpen)}
                             />
                         ),
                     },
@@ -357,6 +394,11 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                     </div>
                 ))}
 
+                {/* You can use the open state information here if needed */}
+                {openDropdowns.database1 && (
+                    <div className="text-sm text-blue-500">Database 1 dropdown is open</div>
+                )}
+                
                 <div className="submit-button-container">
                     <button
                         type="submit"
