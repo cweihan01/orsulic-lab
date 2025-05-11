@@ -1,5 +1,5 @@
 // QueryForm.jsx
-import React, { useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import SearchableSelect from './SearchableSelect';
 import MultiSelectDropdown from './MultiSelectDropdown';
 import { sortOptions, nuclearFeatureSort, validateQueryForm } from '../utils/formUtils';
@@ -7,7 +7,7 @@ import { useCategoryData } from '../hooks/useCategoryData';
 import { useSubcategoryData, useFeatureData } from '../hooks/useFeatureData';
 import './QueryForm.css';
 
-function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
+function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
     const [selectedDatabase1, setSelectedDatabase1] = useState([]);
     const [selectedDatabase2, setSelectedDatabase2] = useState([]);
     const [selectedSubCategories1, setSelectedSubCategories1] = useState([]);
@@ -26,6 +26,18 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
         subcategory2: false,
         feature2: false
     });
+
+    useEffect(() => {
+        if (!lastQuery) return;
+        setSelectedDatabase1(lastQuery.database1 || []);
+        setSelectedSubCategories1(lastQuery.subcategory1 || []);
+        setFeature1(lastQuery.feature1 || '');
+        setSelectedDatabase2(lastQuery.database2 || []);
+        setSelectedSubCategories2(lastQuery.subcategory2 || []);
+        setFeature2(lastQuery.feature2 || []);
+        setMinCorrelation(lastQuery.minCorrelation || 0.0);
+        setMaxPValue(lastQuery.maxPValue || 1.0);
+   }, [lastQuery]);
 
     // Use custom hooks for data fetching - destructure only what we need
     const { categories: databaseList } = useCategoryData();
@@ -63,6 +75,8 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
             feature1,
             feature2,
             minCorrelation,
+            subcategory1: selectedSubCategories1,
+            subcategory2: selectedSubCategories2,
             maxPValue,
             database1: selectedDatabase1, // Include selected databases
             database2: selectedDatabase2,
@@ -99,31 +113,31 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
     }
 
     // When collapsed, only display the header with an Expand button
-    if (isCollapsed) {
-        return (
-            <div className="max-w-4xl mx-auto my-2">
-                <div className="flex justify-end">
-                    <button
-                        onClick={toggleCollapse}
-                        style={{ backgroundColor: '#78aee8' }}
-                        className="px-2 py-1 text-white rounded hover:opacity-85 mx-auto"
-                    >
-                        ▶
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    // if (isCollapsed) {
+    //     return (
+    //         <div className="max-w-4xl mx-auto my-2">
+    //             <div className="flex justify-end">
+    //                 <button
+    //                     onClick={toggleCollapse}
+    //                     style={{ backgroundColor: '#78aee8' }}
+    //                     className="px-2 py-1 text-white rounded hover:opacity-85 mx-auto"
+    //                 >
+    //                     ▶
+    //                 </button>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
     return (
         <div className="queryform-container">
             <div className="queryform-header">
                 <h2 className="queryform-title">Query Form</h2>
-                {isCollapsible && (
+                {/* {isCollapsible && (
                     <button onClick={toggleCollapse} className="collapse-button top-right">
                         ◀
                     </button>
-                )}
+                )} */}
             </div>
             <form className="queryform-form" onSubmit={handleSubmit}>
                 {[
