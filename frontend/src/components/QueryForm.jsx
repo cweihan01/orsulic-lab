@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import SearchableSelect from './SearchableSelect';
 import MultiSelectDropdown from './MultiSelectDropdown';
+import { sortOptions, nuclearFeatureSort, validateQueryForm } from '../utils/formUtils';
 import './QueryForm.css';
 
 // function QueryForm({ onSubmit }) {
@@ -147,40 +148,15 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
         }
     }, [selectedDatabase2, selectedSubCategories2]);
 
-    const sortOptions = (arr) => [...arr].sort((a, b) => a.localeCompare(b));
-
-    const nuclearFeatureSort = (features) => {
-        const fRegex = /_F(\d{1,2})$/;
-
-        const fNumbered = [];
-        const others = [];
-
-        features.forEach((name) => {
-            const match = name.match(fRegex);
-            if (match) {
-                fNumbered.push({ name, num: parseInt(match[1], 10) });
-            } else {
-                others.push(name);
-            }
-        });
-
-        fNumbered.sort((a, b) => a.num - b.num);
-
-        return [
-            ...fNumbered.map((item) => item.name),
-            ...others.sort((a, b) => a.localeCompare(b)),
-        ];
-    };
-
     const isFormValid = () => {
-        return (
-            selectedDatabase1.length > 0 &&
-            selectedSubCategories1.length > 0 &&
-            feature1 !== '' &&
-            selectedDatabase2.length > 0 &&
-            selectedSubCategories2.length > 0 &&
-            feature2.length > 0
-        );
+        return validateQueryForm({
+            selectedDatabase1,
+            selectedSubCategories1,
+            feature1,
+            selectedDatabase2,
+            selectedSubCategories2,
+            feature2
+        });
     };
 
     const handleSubmit = (e) => {
