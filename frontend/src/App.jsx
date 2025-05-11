@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import QueryForm from './components/QueryForm';
 import CorrelationResult from './components/CorrelationResult';
 import ScatterPlot from './components/ScatterPlot';

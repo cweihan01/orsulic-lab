@@ -1,20 +1,15 @@
 // QueryForm.jsx
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import SearchableSelect from './SearchableSelect';
 import MultiSelectDropdown from './MultiSelectDropdown';
 import { sortOptions, nuclearFeatureSort, validateQueryForm } from '../utils/formUtils';
+import { useCategoryData } from '../hooks/useCategoryData';
+import { useSubcategoryData, useFeatureData } from '../hooks/useFeatureData';
 import './QueryForm.css';
 
-// function QueryForm({ onSubmit }) {
 function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
-    const [featureList1, setFeatureList1] = useState([]);
-    const [featureList2, setFeatureList2] = useState([]);
-    const [databaseList, setDatabaseList] = useState(['Nuclear']); // Default values
-    const [selectedDatabase1, setSelectedDatabase1] = useState([]); // State for Database 1 selection
-    const [selectedDatabase2, setSelectedDatabase2] = useState([]); // State for Database 2 selection
-    const [subCategoryList1, setSubCategoryList1] = useState([]); 
-    const [subCategoryList2, setSubCategoryList2] = useState([]); 
+    const [selectedDatabase1, setSelectedDatabase1] = useState([]);
+    const [selectedDatabase2, setSelectedDatabase2] = useState([]);
     const [selectedSubCategories1, setSelectedSubCategories1] = useState([]);
     const [selectedSubCategories2, setSelectedSubCategories2] = useState([]);
     const [feature1, setFeature1] = useState('');
@@ -32,6 +27,13 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
         feature2: false
     });
 
+    // Use custom hooks for data fetching - destructure only what we need
+    const { categories: databaseList } = useCategoryData();
+    const { subcategories: subCategoryList1 } = useSubcategoryData(selectedDatabase1, openDropdowns.database1);
+    const { subcategories: subCategoryList2 } = useSubcategoryData(selectedDatabase2, openDropdowns.database2);
+    const { features: featureList1 } = useFeatureData(selectedDatabase1, selectedSubCategories1, openDropdowns.subcategory1);
+    const { features: featureList2 } = useFeatureData(selectedDatabase2, selectedSubCategories2, openDropdowns.subcategory2);
+
     // Function to handle dropdown open state changes
     const handleDropdownOpenState = (dropdownName, isOpen) => {
         setOpenDropdowns(prev => ({
@@ -42,143 +44,6 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
         // You can also perform any other actions when a dropdown opens/closes
         console.log(`Dropdown ${dropdownName} is now ${isOpen ? 'open' : 'closed'}`);
     };
-
-    // Get list of Categories/Databases from API
-    useEffect(() => {
-        console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features/categories`);
-        axios
-            .get(`${process.env.REACT_APP_API_ROOT}features/categories`)
-            .then((response) => {
-                console.log('Retrieved response:');
-                console.log(response);
-                setDatabaseList(response.data.categories);
-            })
-            .catch((error) => {
-                console.error('Error fetching features:', error);
-            });
-    }, []);
-
-    // Get list of subcategories according to the selected categories
-    useEffect(() => {
-        if (selectedDatabase1.length > 0 && !openDropdowns.database1) {
-            console.log(`Fetching subcategories for database1 since dropdown is closed`);
-            axios
-                .get(`${process.env.REACT_APP_API_ROOT}features/subcategories/`, {
-                    params: {
-                        categories: selectedDatabase1
-                    },
-                    paramsSerializer: (params) => {
-                        return selectedDatabase1
-                            .map((db) => `categories=${encodeURIComponent(db)}`)
-                            .join('&');
-                    },
-                })
-                .then((response) => {
-                    setSubCategoryList1(response.data.subcategories);
-                })
-                .catch((error) => {
-                    console.error('Error fetching subcategories:', error);
-                });
-        } else {
-            if (selectedDatabase1.length === 0) {
-                setSubCategoryList1([]);
-            }
-        }
-    }, [selectedDatabase1, openDropdowns.database1]);
-
-    // Get list of subcategories according to the selected categories
-    useEffect(() => {
-        if (selectedDatabase2.length > 0 && !openDropdowns.database2) {
-            console.log(`Fetching subcategories for database2 since dropdown is closed`);
-            axios
-                .get(`${process.env.REACT_APP_API_ROOT}features/subcategories/`, {
-                    params: {
-                        categories: selectedDatabase2
-                    },
-                    paramsSerializer: (params) => {
-                        return selectedDatabase2
-                            .map((db) => `categories=${encodeURIComponent(db)}`)
-                            .join('&');
-                    },
-                })
-                .then((response) => {
-                    setSubCategoryList2(response.data.subcategories);
-                })
-                .catch((error) => {
-                    console.error('Error fetching subcategories:', error);
-                });
-        } else {
-            if (selectedDatabase2.length === 0) {
-                setSubCategoryList2([]);
-            }
-        }
-    }, [selectedDatabase2, openDropdowns.database2]);
-
-    // Get list of features from API for the first set of databases selected
-    useEffect(() => {
-        console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
-        if (selectedDatabase1.length > 0 && selectedSubCategories1.length > 0 && !openDropdowns.subcategory1) {
-            console.log(`Fetching features for subcategory1 since dropdown is closed`);
-            axios
-                .get(`${process.env.REACT_APP_API_ROOT}features/`, {
-                    params: {
-                        databaseList: selectedDatabase1,
-                        subCategoryList: selectedSubCategories1,
-                    },
-                    paramsSerializer: (params) => {
-                        const dbParams = selectedDatabase1
-                            .map((db) => `databaseList=${encodeURIComponent(db)}`);
-                        const subCatParams = selectedSubCategories1
-                            .map((subCat) => `subCategoryList=${encodeURIComponent(subCat)}`);
-                        return [...dbParams, ...subCatParams].join('&');
-                    },
-                })
-                .then((response) => {
-                    console.log('Retrieved response:', response);
-                    setFeatureList1(response.data.map((feature) => feature.name));
-                })
-                .catch((error) => {
-                    console.error('Error fetching features:', error);
-                });
-        } else {
-            if (selectedDatabase1.length === 0 || selectedSubCategories1.length === 0) {
-                setFeatureList1([]);
-            }
-        }
-    }, [selectedDatabase1, selectedSubCategories1, openDropdowns.subcategory1]); 
-
-    // Get list of features from API for the second set of databases selected
-    useEffect(() => {
-        console.log(`Making request with: ${process.env.REACT_APP_API_ROOT}features`);
-        if (selectedDatabase2.length > 0 && selectedSubCategories2.length > 0 && !openDropdowns.subcategory2) {
-            console.log(`Fetching features for subcategory2 since dropdown is closed`);
-            axios
-                .get(`${process.env.REACT_APP_API_ROOT}features/`, {
-                    params: {
-                        databaseList: selectedDatabase2,
-                        subCategoryList: selectedSubCategories2,
-                    },
-                    paramsSerializer: (params) => {
-                        const dbParams = selectedDatabase2
-                            .map((db) => `databaseList=${encodeURIComponent(db)}`);
-                        const subCatParams = selectedSubCategories2
-                            .map((subCat) => `subCategoryList=${encodeURIComponent(subCat)}`);
-                        return [...dbParams, ...subCatParams].join('&');
-                    },
-                })
-                .then((response) => {
-                    console.log('Retrieved response:', response);
-                    setFeatureList2(response.data.map((feature) => feature.name));
-                })
-                .catch((error) => {
-                    console.error('Error fetching features:', error);
-                });
-        } else {
-            if (selectedDatabase2.length === 0 || selectedSubCategories2.length === 0) {
-                setFeatureList2([]);
-            }
-        }
-    }, [selectedDatabase2, selectedSubCategories2, openDropdowns.subcategory2]);
 
     const isFormValid = () => {
         return validateQueryForm({
@@ -242,7 +107,6 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                         style={{ backgroundColor: '#78aee8' }}
                         className="px-2 py-1 text-white rounded hover:opacity-85 mx-auto"
                     >
-                        {/* &gt; */}
                         ▶
                     </button>
                 </div>
@@ -261,7 +125,6 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                 )}
             </div>
             <form className="queryform-form" onSubmit={handleSubmit}>
-                {/* Same structure but replace classNames with these labels: */}
                 {[
                     {
                         id: 'database1',
@@ -393,11 +256,6 @@ function QueryForm({ onSubmit, isCollapsed, toggleCollapse }) {
                         {component}
                     </div>
                 ))}
-
-                {/* You can use the open state information here if needed */}
-                {openDropdowns.database1 && (
-                    <div className="text-sm text-blue-500">Database 1 dropdown is open</div>
-                )}
                 
                 <div className="submit-button-container">
                     <button
