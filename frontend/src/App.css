@@ -166,35 +166,3 @@
 .right-panel-expanded {
   grid-column: span 13 / span 13;
 }
-
-/* Tabs */
-
-.tab-buttons-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-  border-bottom: 2px solid #e5e7eb;
-  font-family: 'Futura', sans-serif;
-}
-
-.tab-button {
-  padding: 0.75rem 1.5rem;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  font-weight: 600;
-  color: #6b7280;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.tab-button:hover {
-  color: #374151;
-}
-
-.tab-button.active {
-  border-bottom: 3px solid #78aee8;
-  color: #1f2937;
-  font-weight: 700;
-}

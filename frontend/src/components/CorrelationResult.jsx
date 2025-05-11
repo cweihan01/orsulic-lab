@@ -1,15 +1,41 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
 import depMapToCellLineID from '../cellline_mapping.js';
+import './CorrelationResult.css';
+
+const TAB_KEYS = ['spearman','anova','chisquared'];
+const TAB_TITLES = {
+    spearman: 'Spearman Correlation Results',
+    anova:    'ANOVA Correlation Results',
+    chisquared:'Chi-Square Correlation Results',
+};
+const TAB_DISPLAY_NAMES = {
+    spearman: 'Spearman',
+    anova: 'ANOVA',
+    chisquared: 'Chi-Square',
+}
 
 function CorrelationResult({
-    data,
+    correlationsMap,
     minCorrelation,
     maxPValue,
     onScatterRequest,
     highlightedRow,
-    onRequery
+    onRequery,
+    isLoading,
+    onCancel
 }) {
+    const [selectedTab, setSelectedTab] = useState('spearman');
+    const data = correlationsMap[selectedTab] || [];
+
+    // Find first tab with actual rows
+    useEffect(() => {
+        const firstNonEmpty = TAB_KEYS.find(key => 
+            Array.isArray(correlationsMap[key]) && correlationsMap[key].length > 0
+        );
+        setSelectedTab(firstNonEmpty || 'spearman');
+    }, [correlationsMap]);
+
     // 1) find the real metric columns in your data
     const { correlationKey, pValueKey } = useMemo(() => {
         if (!data || data.length === 0) {
@@ -178,13 +204,38 @@ function CorrelationResult({
 
     // 7) render
     return (
+        <>
+        {/* Loading icon */}
+        {isLoading && (
+            <div className="flex items-center justify-center mb-4 space-x-3">
+            <div className="loader w-6 h-6"></div>
+            <span className="text-gray-600">Loading query results…</span>
+                <button
+                    onClick={onCancel}
+                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                    Cancel
+                </button>
+            </div>
+        )}
+
         <div className="w-full rounded-lg drop-shadow-lg bg-white p-4 my-2 bg-gray-200 overflow-x-auto">
-            <h2
-                className="text-3xl font-semibold text-gray-800 mb-4"
-                style={{ fontFamily: 'Futura' }}
-            >
-                Correlation Results
+            <h2 className="text-3xl font-semibold text-gray-800 mb-2" style={{fontFamily:'Futura'}}>
+                {TAB_TITLES[selectedTab]}
             </h2>
+
+            {/* 3) Tab buttons */}
+            <div className="tab-buttons-container">
+                {TAB_KEYS.map((key) => (
+                    <button
+                        key={key}
+                        onClick={() => setSelectedTab(key)}
+                        className={`tab-button ${selectedTab === key ? 'active' : ''}`}
+                    >
+                        {TAB_DISPLAY_NAMES[[key]]}
+                    </button>
+                ))}
+            </div>
 
             {sortedData.length > 0 ? (
                 <>
@@ -338,6 +389,7 @@ function CorrelationResult({
                 <p>No results found</p>
             )}
         </div>
+        </>
     );
 }
 

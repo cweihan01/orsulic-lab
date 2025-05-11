@@ -18,8 +18,9 @@ function App() {
     const [progress, setProgress] = useState(0);
     const [previousQuery, setPreviousQuery] = useState(null); 
     const [queryHistory, setQueryHistory] = useState([]);    
-    const [selectedTab, setSelectedTab] = useState("spearman");
     const [plotType, setPlotType] = useState("spearman");
+    const [isLoading, setIsLoading] = useState(false);
+    const abortControllerRef = useRef(null);
     const progressRef = useRef(null);
 
     const openModal = () => setIsModalOpen(true);
@@ -51,12 +52,22 @@ function App() {
     };
 
     const handleQuery = (query) => {
+        // Cancel any previous request
+        abortControllerRef.current?.abort();
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+        setIsLoading(true);
+        
+        handleCloseGraph();
+        
         setMinCorrelation(parseFloat(query.minCorrelation));
         setMaxPValue(parseFloat(query.maxPValue));
         setPreviousQuery(query);
         setQueryHistory(prev => [query, ...prev.slice(0, 19)]);
-
+        
+        // Scroll to top
         startProgressSimulation();
+        window.scrollTo({top: 0, behavior: 'smooth'});
 
         axios
             .post(`${process.env.REACT_APP_API_ROOT}correlations/`, {
@@ -64,18 +75,21 @@ function App() {
                 feature2: query.feature2,
                 database1: query.database1,
                 database2: query.database2,
+            }, {
+                signal: controller.signal
             })
             .then((response) => {
                 setCorrelationsMap(response.data.correlations);
-                const firstNonEmpty = ['spearman', 'anova', 'chisquared'].find(
-                    key => response.data.correlations[key]?.length > 0
-                );
-                setSelectedTab(firstNonEmpty || 'spearman');
             })
             .catch((err) => {
-                console.error('Error fetching correlations:', err);
+                if (err.name === 'CanceledError' || err.message === 'canceled') {
+                    console.log('Query was cancelled by user');
+                } else {
+                    console.error('Error fetching correlations:', err);
+                }
             })
             .finally(() => {
+                setIsLoading(false);
                 stopProgressSimulation();
             });
     };
@@ -108,14 +122,6 @@ function App() {
         };
         handleQuery(updatedQuery);
     };
-
-    const tabTitleMap = {
-        spearman: 'Spearman Correlation Results',
-        anova: 'ANOVA Correlation Results',
-        chisquared: 'Chi-Square Correlation Results',
-    };
-
-    const currentData = correlationsMap[selectedTab] || [];
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -169,39 +175,16 @@ function App() {
                         <ScatterPlot data={scatterData} handleCloseGraph={handleCloseGraph} plotType={plotType} />
                     )}
 
-                    {/* Tabs */}
-
-                    <div className="tab-buttons-container">
-                        {['spearman', 'anova', 'chisquared'].map((key) => (
-                            <button
-                                key={key}
-                                onClick={() => setSelectedTab(key)}
-                                className={`tab-button ${selectedTab === key ? 'active' : ''}`}
-                            >
-                                {key === 'spearman'
-                                    ? 'Spearman'
-                                    : key === 'anova'
-                                    ? 'ANOVA'
-                                    : 'Chi-Square'}
-                            </button>
-                        ))}
-                    </div>
-
-                    {currentData.length > 0 ? (
-                        <CorrelationResult
-                            data={currentData}
-                            title={tabTitleMap[selectedTab]}
-                            minCorrelation={minCorrelation}
-                            maxPValue={maxPValue}
-                            onScatterRequest={handleScatterRequest}
-                            highlightedRow={highlightedRow}
-                            onRequery={handleRequery}
-                        />
-                    ) : (
-                        <p className="text-center text-gray-600 mt-4">
-                            No results found for {tabTitleMap[selectedTab]}.
-                        </p>
-                    )}
+                    <CorrelationResult
+                        correlationsMap={correlationsMap}
+                        minCorrelation={minCorrelation}
+                        maxPValue={maxPValue}
+                        onScatterRequest={handleScatterRequest}
+                        highlightedRow={highlightedRow}
+                        onRequery={handleRequery}
+                        isLoading={isLoading}
+                        onCancel={() => abortControllerRef.current?.abort()}
+                    />
                 </div>
             </div>
 

@@ -1,0 +1,44 @@
+/* Tabs */
+.tab-buttons-container {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0;
+  border-bottom: 2px solid #e5e7eb;
+  font-family: 'Futura', sans-serif;
+}
+
+.tab-button {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.tab-button:hover {
+  color: #374151;
+}
+
+.tab-button.active {
+  border-bottom: 3px solid #78aee8;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+/* Loading icon */
+.loader {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #4F46E5; /* indigo-600 */
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
