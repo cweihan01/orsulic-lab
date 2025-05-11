@@ -183,23 +183,35 @@ function CorrelationResult({
             : '';
 
     const sortedData = useMemo(() => {
-        const items = [...filteredData];
-        items.sort((a, b) => {
-            const aVal = a[sortConfig.key];
-            const bVal = b[sortConfig.key];
-            if (typeof aVal === 'number' && typeof bVal === 'number') {
-                return sortConfig.direction === 'ascending'
-                    ? aVal - bVal
-                    : bVal - aVal;
-            }
-            const aStr = String(aVal).toLowerCase();
-            const bStr = String(bVal).toLowerCase();
-            if (aStr < bStr) return sortConfig.direction === 'ascending' ? -1 : 1;
-            if (aStr > bStr) return sortConfig.direction === 'ascending' ? 1 : -1;
-            return 0;
-        });
-        return items;
-    }, [filteredData, sortConfig]);
+    const items = [...filteredData];
+
+    items.sort((a, b) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+
+        // Sort Spearman correlation by absolute value
+        const isSpearman = selectedTab === 'spearman' && sortConfig.key === correlationKey;
+        if (isSpearman && typeof aVal === 'number' && typeof bVal === 'number') {
+            aVal = Math.abs(aVal);
+            bVal = Math.abs(bVal);
+        }
+
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+            return sortConfig.direction === 'ascending'
+                ? aVal - bVal
+                : bVal - aVal;
+        }
+
+        const aStr = String(aVal).toLowerCase();
+        const bStr = String(bVal).toLowerCase();
+        if (aStr < bStr) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (aStr > bStr) return sortConfig.direction === 'ascending' ? 1 : -1;
+        return 0;
+    });
+
+    return items;
+}, [filteredData, sortConfig, selectedTab, correlationKey]);
+
 
 
     // 7) render
