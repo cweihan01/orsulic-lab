@@ -18,7 +18,6 @@ export default function QueryContainer({
                         onSubmit={onQuery}
                         isCollapsed={isCollapsed}
                         lastQuery={queryHistory[0]}
-                        // toggleCollapse={handleCollapseQueryForm}
                     />
                     <div className="mt-6">
                         <button
