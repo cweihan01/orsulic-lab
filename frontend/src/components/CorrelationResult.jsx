@@ -3,144 +3,153 @@ import axios from 'axios';
 import depMapToCellLineID from '../cellline_mapping.js';
 import './CorrelationResult.css';
 
-const TAB_KEYS = ['spearman','anova','chisquared'];
+const TAB_KEYS = ['spearman', 'anova', 'chisquared'];
 const TAB_TITLES = {
-    spearman: 'Spearman Correlation Results',
-    anova:    'ANOVA Correlation Results',
-    chisquared:'Chi-Square Correlation Results',
+  spearman: 'Spearman Correlation Results',
+  anova: 'ANOVA Correlation Results',
+  chisquared: 'Chi-Square Correlation Results',
 };
 const TAB_DISPLAY_NAMES = {
-    spearman: 'Spearman',
-    anova: 'ANOVA',
-    chisquared: 'Chi-Square',
-}
+  spearman: 'Spearman',
+  anova: 'ANOVA',
+  chisquared: 'Chi-Square',
+};
 
 function CorrelationResult({
-    correlationsMap,
-    minCorrelation,
-    maxPValue,
-    onScatterRequest,
-    highlightedRow,
-    onRequery,
-    isLoading,
-    onCancel
+  correlationsMap,
+  minCorrelation,
+  maxPValue,
+  onScatterRequest,
+  highlightedRow,
+  onRequery,
+  isLoading,
+  onCancel
 }) {
-    const [selectedTab, setSelectedTab] = useState('spearman');
-    const [visibleCount, setVisibleCount] = useState(100);
-    const RESULTS_INCREMENT = 100;
+  const [selectedTab, setSelectedTab] = useState('spearman');
+  const [visibleCount, setVisibleCount] = useState(100);
+  const RESULTS_INCREMENT = 100;
 
-    const data = correlationsMap[selectedTab] || [];
+  const data = correlationsMap[selectedTab] || [];
 
-    // Find first tab with actual rows
-    useEffect(() => {
-        const firstNonEmpty = TAB_KEYS.find(key => 
-            Array.isArray(correlationsMap[key]) && correlationsMap[key].length > 0
+  useEffect(() => {
+    const firstNonEmpty = TAB_KEYS.find(key =>
+      Array.isArray(correlationsMap[key]) && correlationsMap[key].length > 0
+    );
+    setSelectedTab(firstNonEmpty || 'spearman');
+  }, [correlationsMap]);
+
+  useEffect(() => {
+    setVisibleCount(100);
+  }, [selectedTab, minCorrelation, maxPValue]);
+
+  const { correlationKey, pValueKey } = useMemo(() => {
+    if (!data || data.length === 0) {
+      return { correlationKey: null, pValueKey: null };
+    }
+    const cols = Object.keys(data[0]);
+    const correlationKey = cols.find(k => k.endsWith('_correlation'));
+    const pValueKey = cols.find(k => k.toLowerCase().endsWith('pvalue')) || null;
+    return { correlationKey, pValueKey };
+  }, [data]);
+
+  const getCorrelationColor = c => {
+    if (c > 0.75) return '#2e7d32';
+    if (c > 0.5) return '#558b2f';
+    if (c > 0.25) return '#f9a825';
+    if (c > -0.25) return '#fbc02d';
+    if (c > -0.5) return '#e64a19';
+    return '#b71c1c';
+  };
+
+  const getPValueColor = p => {
+    if (p < 0.01) return '#1565c0';
+    if (p < 0.05) return '#0288d1';
+    return '#9e9e9e';
+  };
+
+  const handleDownloadData = async (feature1, feature2, database1, database2, plotType) => {
+    try {
+      const payload = { feature1, feature2, database1, database2, plotType };
+      const response = await axios.post(
+        process.env.REACT_APP_API_ROOT + 'scatter/',
+        payload
+      );
+
+      const scatterData = response.data.scatter_data;
+      if (!scatterData || scatterData.length === 0) {
+        alert('No data returned from server!');
+        return;
+      }
+
+      const csvRows = [];
+      const headers = Object.keys(scatterData[0]);
+      const isSpearman = plotType === 'spearman';
+
+      let headerRow;
+      if (isSpearman && headers.includes('cell_lines')) {
+        headerRow = headers.flatMap(header =>
+          header === 'cell_lines'
+            ? ['DepMap ID', header, 'Cell Line ID']
+            : [header]
         );
-        setSelectedTab(firstNonEmpty || 'spearman');
-    }, [correlationsMap]);
+      } else {
+        headerRow = headers;
+      }
+      csvRows.push(headerRow.join(','));
 
-    useEffect(() => {
-        setVisibleCount(100);
-    }, [selectedTab, minCorrelation, maxPValue]);
-    
+      scatterData.forEach(obj => {
+        const row = [];
+        headers.forEach(header => {
+          const val = obj[header] ?? '';
+          if (isSpearman && header === 'cell_lines') {
+            const depMapId = val;
+            const actualCellLineID = depMapToCellLineID[depMapId] || '';
+            row.push(JSON.stringify(depMapId));
+            row.push(JSON.stringify(val));
+            row.push(JSON.stringify(actualCellLineID));
+          } else {
+            row.push(JSON.stringify(val));
+          }
+        });
+        csvRows.push(row.join(','));
+      });
 
-    // 1) find the real metric columns in your data
-    const { correlationKey, pValueKey } = useMemo(() => {
-        if (!data || data.length === 0) {
-            return { correlationKey: null, pValueKey: null };
-        }
-        const cols = Object.keys(data[0]);
-        // correlation only exists for spearman
-        const correlationKey = cols.find(k => k.endsWith('_correlation'));
-        // p-value can be spearman_pvalue or anova_pvalue or chisq_pvalue
-        const pValueKey =
-            cols.find(k => k.toLowerCase().endsWith('pvalue')) || null;
-        return { correlationKey, pValueKey };
-    }, [data]);
+      const csvString = csvRows.join('\n');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `${feature1}_vs_${feature2}_${plotType}_data_${timestamp}.csv`;
 
-    // 2) color helpers
-    const getCorrelationColor = c => {
-        if (c > 0.75) return '#2e7d32';
-        if (c > 0.5) return '#558b2f';
-        if (c > 0.25) return '#f9a825';
-        if (c > -0.25) return '#fbc02d';
-        if (c > -0.5) return '#e64a19';
-        return '#b71c1c';
-    };
-    const getPValueColor = p => {
-        if (p < 0.01) return '#1565c0';
-        if (p < 0.05) return '#0288d1';
-        return '#9e9e9e';
-    };
-
-    // 3) your original download-scatter handler (verbatim)
-    //      TODO: I want to change these variable names to category1, category2, but it breaks this function
-    const handleDownloadData = async (feature1, feature2, database1, database2) => {
-        try {
-            const payload = { feature1, feature2, database1, database2 };
-            const response = await axios.post(
-                process.env.REACT_APP_API_ROOT + 'scatter/',
-                payload
-            );
-            const scatterData = response.data.scatter_data;
-            if (scatterData.length === 0) {
-                alert('No data returned from server!');
-                return;
-            }
-            const csvRows = [];
-            const headers = Object.keys(scatterData[0]);
-            const newHeaders = [];
-            headers.forEach(header => {
-                if (header === 'cell_lines') {
-                    newHeaders.push('DepMap ID');
-                }
-                newHeaders.push(header);
-                if (header === 'cell_lines') {
-                    newHeaders.push('Cell Line ID');
-                }
-            });
-            csvRows.push(newHeaders.join(','));
-            scatterData.forEach(obj => {
-                const row = [];
-                headers.forEach(header => {
-                    row.push(JSON.stringify(obj[header] ?? ''));
-                    if (header === 'cell_lines') {
-                        const depMapId = obj[header];
-                        const actualCellLineID = depMapToCellLineID[depMapId] || '';
-                        row.push(JSON.stringify(actualCellLineID));
-                    }
-                });
-                csvRows.push(row.join(','));
-            });
-            const csvString = csvRows.join('\n');
-            const blob = new Blob([csvString], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${feature1}_vs_${feature2}.csv`;
-            link.click();
-            window.URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error('Error fetching scatter data for download:', err);
-            alert('Failed to download data. See console for details.');
-        }
-    };
+      const blob = new Blob([csvString], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error fetching scatter data for download:', err);
+      alert('Failed to download data. See console for details.');
+    }
+  };
 
     // 4) your original download-table handler (verbatim)
     const handleDownloadTable = () => {
         if (sortedData.length === 0) {
-            alert('No results to download.');
-            return;
+          alert('No results to download.');
+          return;
         }
+      
         const headers = Object.keys(sortedData[0]);
         const csvRows = [headers.join(',')];
+      
         sortedData.forEach(row => {
-            const values = headers.map(h => JSON.stringify(row[h] ?? ''));
-            csvRows.push(values.join(','));
+          const values = headers.map(h => JSON.stringify(row[h] ?? ''));
+          csvRows.push(values.join(','));
         });
-        const feature1 = sortedData[0]?.feature1 || 'correlation';
+      
+        const feature1 = sortedData[0]?.feature_1 || 'results';
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const filename = `${feature1}_correlation_results_${timestamp}.csv`;
+        const filename = `${feature1}_${selectedTab}_results_${timestamp}.csv`;
+      
         const csvString = csvRows.join('\n');
         const blob = new Blob([csvString], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -149,7 +158,8 @@ function CorrelationResult({
         link.download = filename;
         link.click();
         window.URL.revokeObjectURL(url);
-    };
+      };
+      
 
     // 5) filter rows by thresholds; if no correlationKey, just use pValue
     const filteredData = useMemo(() => {
@@ -337,7 +347,7 @@ function CorrelationResult({
                                     <tr
                                         key={idx}
                                         className={
-                                            highlightedRow === item.feature2
+                                            highlightedRow === item.feature_2
                                                 ? 'border-red-400 border-2'
                                                 : ''
                                         }
@@ -399,7 +409,8 @@ function CorrelationResult({
                                                         item.feature_1,
                                                         item.feature_2,
                                                         item.database_1,
-                                                        item.database_2
+                                                        item.database_2,
+                                                        pValueKey.includes('anova') ? 'anova' : pValueKey.includes('chisq') ? 'chisq' : 'spearman'
                                                     )
                                                 }
                                                 className="text-blue-500 hover:underline"

@@ -10,7 +10,7 @@ export default function QueryContainer({
     clearQueryHistory,
 }) {
     return (
-        <div className="h-full flex flex-col">
+        <div className="flex flex-col w-full">
             {!isCollapsed && (
                 <>
                     <QueryForm

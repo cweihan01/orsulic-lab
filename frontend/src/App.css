@@ -1,5 +1,5 @@
 /* Query and results sections */
-.query-form, .correlation-result {
+/* .query-form, .correlation-result {
   background: #ffffff;
   margin: 20px auto;
   padding: 25px;
@@ -8,7 +8,6 @@
   box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Form styling */
 .query-form form {
   display: flex;
   flex-direction: column;
@@ -40,7 +39,7 @@
 
 .query-form button:hover {
   background: linear-gradient(135deg, #0056b3, #009acf);
-}
+} */
 
 /* Table styling */
 .correlation-result table {
@@ -120,4 +119,91 @@
 }
 .right-panel-expanded {
   grid-column: span 13 / span 13;
+}
+
+/* Sidebar */
+.sidebar-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 500px;
+  background: linear-gradient(180deg, #bad7f7, #e6bef7);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow-y: auto;
+}
+
+.sidebar-title {
+  font-family: 'Futura', sans-serif;
+  font-size: 2.3rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+  color: white;
+  align-self: center;
+}
+
+.sidebar-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sidebar.collapsed {
+  width: 60px;
+  align-items: center;
+  padding: 1rem 0.5rem;
+  overflow-x: hidden;
+}
+
+/* Hide content inside collapsed sidebar */
+.sidebar.collapsed .sidebar-title,
+.sidebar.collapsed .queryform-container,
+.sidebar.collapsed .query-history,
+.sidebar.collapsed .logo-container,
+.sidebar.collapsed button:not(.collapse-btn) {
+  display: none;
+}
+
+.collapse-btn {
+  background-color: #78aee8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  font-family: Futura, sans-serif;
+  font-weight: bold;
+  align-self: flex-end;
+  margin-bottom: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.collapse-btn:hover {
+  background-color: #5f96d2;
+}
+
+.main-panel {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* this logo is for sidebar */
+.logo-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.logo-img {
+  height: 48px;
 }
