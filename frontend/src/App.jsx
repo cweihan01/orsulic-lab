@@ -1,10 +1,9 @@
 import axios from 'axios';
 import { useRef, useState } from 'react';
-import CorrelationResult from './components/CorrelationResult';
 import Header from './components/Header.jsx';
-import Modal from './components/Modal.jsx';
 import QueryContainer from './components/QueryContainer.jsx';
-import ScatterPlot from './components/ScatterPlot';
+import ResultsContainer from './components/ResultsContainer.jsx';
+import Modal from './components/Modal.jsx';
 
 import './App.css';
 import './index.js';
@@ -38,7 +37,10 @@ function App() {
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         if (resultsContainerRef.current) {
-            resultsContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+            resultsContainerRef.current.scrollTo({
+                top: 0,
+                behavior: 'smooth',
+            });
         }
     };
 
@@ -71,7 +73,10 @@ function App() {
                 setCorrelationsMap(response.data.correlations);
             })
             .catch((err) => {
-                if (err.name === 'CanceledError' || err.message === 'canceled') {
+                if (
+                    err.name === 'CanceledError' ||
+                    err.message === 'canceled'
+                ) {
                     console.log('Query was cancelled by user');
                 } else {
                     console.error('Error fetching correlations:', err);
@@ -95,7 +100,13 @@ function App() {
         handleQuery(updatedQuery);
     };
 
-    const handleScatterRequest = (feature1, feature2, database1, database2, plotTypeOverride) => {
+    const handleScatterRequest = (
+        feature1,
+        feature2,
+        database1,
+        database2,
+        plotTypeOverride
+    ) => {
         setHighlightedRow(feature2);
         setPlotType(plotTypeOverride);
 
@@ -123,7 +134,11 @@ function App() {
                         duration-200 custom-scrollbar
                         ${isSidebarCollapsed ? 'w-6 px-0' : 'w-[500px]'}`}
                 >
-                    <div className={`${isSidebarCollapsed ? 'hidden' : 'block'} flex-1`}>
+                    <div
+                        className={`${
+                            isSidebarCollapsed ? 'hidden' : 'block'
+                        } flex-1`}
+                    >
                         <QueryContainer
                             openModal={() => setIsModalOpen(true)}
                             onQuery={handleQuery}
@@ -144,37 +159,26 @@ function App() {
                 </button>
 
                 {/* Results section: graph, correlation table */}
-                <div
-                    ref={resultsContainerRef}
-                    className="flex-1 flex-col overflow-y-auto p-8 custom-scrollbar"
-                >
-                    {scatterData.length > 0 && (
-                        <ScatterPlot
-                            data={scatterData}
-                            handleCloseGraph={handleCloseGraph}
-                            plotType={plotType}
-                        />
-                    )}
-
-                    <CorrelationResult
-                        correlationsMap={correlationsMap}
-                        minCorrelation={
-                            queryHistory.length ? parseFloat(queryHistory[0].minCorrelation) : 0.0
-                        }
-                        maxPValue={
-                            queryHistory.length ? parseFloat(queryHistory[0].maxPValue) : 1.0
-                        }
-                        onScatterRequest={handleScatterRequest}
-                        highlightedRow={highlightedRow}
-                        onRequery={handleRequery}
-                        isLoading={isLoading}
-                        onCancel={() => abortControllerRef.current?.abort()}
-                    />
-                </div>
+                <ResultsContainer
+                    scatterData={scatterData}
+                    correlationsMap={correlationsMap}
+                    queryHistory={queryHistory}
+                    highlightedRow={highlightedRow}
+                    isLoading={isLoading}
+                    onScatterRequest={handleScatterRequest}
+                    onRequery={handleRequery}
+                    onCancel={() => abortControllerRef.current?.abort()}
+                    handleCloseGraph={handleCloseGraph}
+                    plotType={plotType}
+                />
             </main>
 
             {/* Popup feature names */}
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} src="./sample.pdf" />
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                src="./sample.pdf"
+            />
         </div>
     );
 }
