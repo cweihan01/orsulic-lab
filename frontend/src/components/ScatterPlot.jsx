@@ -53,7 +53,10 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
             );
         }
 
-        const categories = [...new Set(data.map(d => d[catKey]))];
+        const categories = [...new Set(data.map(d => d[catKey]))].sort((a, b) =>
+            typeof a === 'number' ? a - b : String(a).localeCompare(String(b))
+        );
+
         plotData = categories.map(cat => ({
             type: 'box',
             y: data.filter(d => d[catKey] === cat).map(d => d[numKey]),
@@ -72,8 +75,13 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
             groupMap[yCat][xCat] = (groupMap[yCat][xCat] || 0) + 1;
         });
 
-        const xCategories = [...new Set(data.map(d => d[xKey]))];
-        const yCategories = Object.keys(groupMap);
+        const xCategories = [...new Set(data.map(d => d[xKey]))].sort((a, b) =>
+            typeof a === 'number' ? a - b : String(a).localeCompare(String(b))
+        );
+        const yCategories = Object.keys(groupMap).sort((a, b) =>
+            typeof a === 'number' ? a - b : String(a).localeCompare(String(b))
+        );
+        
 
         const colors = [
             'rgba(66, 165, 245, 0.6)',   // blue

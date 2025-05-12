@@ -26,6 +26,9 @@ function CorrelationResult({
     onCancel
 }) {
     const [selectedTab, setSelectedTab] = useState('spearman');
+    const [visibleCount, setVisibleCount] = useState(100);
+    const RESULTS_INCREMENT = 100;
+
     const data = correlationsMap[selectedTab] || [];
 
     // Find first tab with actual rows
@@ -35,6 +38,11 @@ function CorrelationResult({
         );
         setSelectedTab(firstNonEmpty || 'spearman');
     }, [correlationsMap]);
+
+    useEffect(() => {
+        setVisibleCount(100);
+    }, [selectedTab, minCorrelation, maxPValue]);
+    
 
     // 1) find the real metric columns in your data
     const { correlationKey, pValueKey } = useMemo(() => {
@@ -109,7 +117,7 @@ function CorrelationResult({
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${feature1}_vs_${feature2}_scatter.csv`;
+            link.download = `${feature1}_vs_${feature2}.csv`;
             link.click();
             window.URL.revokeObjectURL(url);
         } catch (err) {
@@ -211,6 +219,12 @@ function CorrelationResult({
 
     return items;
 }, [filteredData, sortConfig, selectedTab, correlationKey]);
+
+    const visibleData = useMemo(() => sortedData.slice(0, visibleCount), [sortedData, visibleCount]);
+
+
+
+
 
 
 
@@ -319,7 +333,7 @@ function CorrelationResult({
                                 </tr>
                             </thead>
                             <tbody>
-                                {sortedData.map((item, idx) => (
+                                {visibleData.map((item, idx) => (
                                     <tr
                                         key={idx}
                                         className={
@@ -361,18 +375,20 @@ function CorrelationResult({
                                         </td>
 
                                         <td>
-                                            <button
-                                                 onClick={() =>
-                                                    onScatterRequest(
-                                                      item.feature_1,
-                                                      item.feature_2,
-                                                      item.database_1,
-                                                      item.database_2,
-                                                      pValueKey.includes('anova') ? 'anova' : pValueKey.includes('chisq') ? 'chisq' : 'spearman'
-                                                    )
-                                                }
-                                                className="text-blue-500 hover:underline"
-                                            > 
+                                        <button
+    onClick={() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        onScatterRequest(
+            item.feature_1,
+            item.feature_2,
+            item.database_1,
+            item.database_2,
+            pValueKey.includes('anova') ? 'anova' : pValueKey.includes('chisq') ? 'chisq' : 'spearman'
+        );
+    }}
+    className="text-blue-500 hover:underline"
+>
+
                                                 {pValueKey.includes('anova') ? 'View Boxplot' : pValueKey.includes('chisq') ? 'View Barplot' : 'View Scatterplot'}
                                             </button>   
                                         </td>
@@ -393,8 +409,21 @@ function CorrelationResult({
                                         </td>
                                     </tr>
                                 ))}
-                            </tbody>
-                        </table>
+</tbody>
+</table>
+
+{visibleCount < sortedData.length && (
+    <div className="flex justify-center mt-4">
+        <button
+            onClick={() => setVisibleCount(prev => prev + RESULTS_INCREMENT)}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+            Load More
+        </button>
+    </div>
+)}
+
+
                     </div>
                 </>
             ) : (
