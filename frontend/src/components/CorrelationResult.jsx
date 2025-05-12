@@ -347,7 +347,7 @@ function CorrelationResult({
                                     <tr
                                         key={idx}
                                         className={
-                                            highlightedRow === item.feature2
+                                            highlightedRow === item.feature_2
                                                 ? 'border-red-400 border-2'
                                                 : ''
                                         }
