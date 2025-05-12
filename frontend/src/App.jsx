@@ -27,7 +27,7 @@ function App() {
         else setSidebarCollapsed(!isSidebarCollapsed);
 
         // Hack to tell Plotly to resize graph (if there is one) after collapsing
-        setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 200);
     };
 
     const handleCloseGraph = () => {
@@ -115,12 +115,13 @@ function App() {
         <div className="h-screen flex flex-col bg-gray-50">
             <Header />
 
-            <main className="relative flex flex-1 overflow-y-auto">
+            <main className="relative flex flex-1 overflow-y-auto custom-scrollbar">
                 {/* Sidebar section: query form, feature names, query history */}
                 <div
                     className={`h-full flex-shrink-0 flex flex-col px-6 py-2 bg-gradient-to-b
                         from-blue-200 to-purple-200 overflow-y-auto transition-width
-                        duration-300 ${isSidebarCollapsed ? 'w-6 px-0' : 'w-[500px]'}`}
+                        duration-200 custom-scrollbar
+                        ${isSidebarCollapsed ? 'w-6 px-0' : 'w-[500px]'}`}
                 >
                     <div className={`${isSidebarCollapsed ? 'hidden' : 'block'} flex-1`}>
                         <QueryContainer
@@ -143,7 +144,10 @@ function App() {
                 </button>
 
                 {/* Results section: graph, correlation table */}
-                <div ref={resultsContainerRef} className="flex-1 flex-col overflow-y-auto p-8">
+                <div
+                    ref={resultsContainerRef}
+                    className="flex-1 flex-col overflow-y-auto p-8 custom-scrollbar"
+                >
                     {scatterData.length > 0 && (
                         <ScatterPlot
                             data={scatterData}
