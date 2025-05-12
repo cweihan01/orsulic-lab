@@ -17,7 +17,8 @@ function App() {
     const [isQueryFormCollapsed, setIsQueryFormCollapsed] = useState(false);
     const [progress, setProgress] = useState(0);
     const [previousQuery, setPreviousQuery] = useState(null); 
-    const [queryHistory, setQueryHistory] = useState([]);    
+    const [queryHistory, setQueryHistory] = useState([]);
+    const [selectedTab, setSelectedTab] = useState("spearman");    
     const [plotType, setPlotType] = useState("spearman");
     const [isLoading, setIsLoading] = useState(false);
     const abortControllerRef = useRef(null);
@@ -125,15 +126,6 @@ function App() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="custom-header">
-                <div className="logo-container">
-                    <img src="/UCLA_Orsulic_Lab_Logo.png" alt="UCLA Orsulic Lab Logo" className="logo-img" />
-                </div>
-                <div className="title-container">
-                    <h1 className="header-title">Cell Line Database</h1>
-                </div>
-            </header>
-
             {progress > 0 && (
                 <div className="w-full bg-gray-200 h-2">
                     <div
@@ -143,24 +135,37 @@ function App() {
                 </div>
             )}
 
-            <div className="main-grid">
-                <div className={`panel ${isQueryFormCollapsed ? 'left-panel-collapsed' : 'left-panel-expanded'}`}>
-                    <QueryForm
-                        onSubmit={handleQuery}
-                        isCollapsed={isQueryFormCollapsed}
-                        toggleCollapse={handleCollapseQueryForm}
-                    />
+            <div className="sidebar-layout">
+                <aside className={`sidebar ${isQueryFormCollapsed ? 'collapsed' : ''}`}>
+                    <div className="logo-container">
+                        <img src="/UCLA_Orsulic_Lab_Logo.png" alt="Logo" className="logo-img" />
+                    </div>
+
+                    <div className="sidebar-header">
+                        <h1 className="sidebar-title">Cell Line Database</h1>
+                        <button
+                            className="collapse-btn"
+                            onClick={handleCollapseQueryForm}
+                            aria-label="Toggle Sidebar"
+                        >
+                            {isQueryFormCollapsed ? '▶' : '◀'}
+                        </button>
+                    </div>
+
                     {!isQueryFormCollapsed && (
                         <>
-                            <div className="mt-6">
-                                <button
-                                    onClick={openModal}
-                                    style={{ backgroundColor: '#78aee8', fontFamily: 'Futura' }}
-                                    className="mt-4 px-4 py-2 text-white rounded-lg hover:opacity-85"
-                                >
-                                    View Feature Names
-                                </button>
-                            </div>
+                            <QueryForm
+                            onSubmit={handleQuery}
+                            isCollapsed={isQueryFormCollapsed}
+                            toggleCollapse={handleCollapseQueryForm}
+                        />
+                            <button
+                                onClick={openModal}
+                                className="mt-4 px-4 py-2 text-white rounded-lg hover:opacity-85"
+                                style={{ backgroundColor: '#78aee8', fontFamily: 'Futura' }}
+                            >
+                                View Feature Names
+                            </button>
                             <QueryHistory
                                 history={queryHistory}
                                 onSelect={handleQuery}
@@ -168,24 +173,25 @@ function App() {
                             />
                         </>
                     )}
-                </div>
+                </aside>
 
-                <div className={`panel ${isQueryFormCollapsed ? 'right-panel-collapsed' : 'right-panel-expanded'}`}>
-                    {scatterData.length > 0 && (
-                        <ScatterPlot data={scatterData} handleCloseGraph={handleCloseGraph} plotType={plotType} />
+                <main className="main-panel">
+                        {scatterData.length > 0 && (
+                            <ScatterPlot data={scatterData} handleCloseGraph={handleCloseGraph} plotType={plotType} />
+                        )}
+                    {Object.keys(correlationsMap).length > 0 && (
+                        <CorrelationResult
+                            correlationsMap={correlationsMap}
+                            minCorrelation={minCorrelation}
+                            maxPValue={maxPValue}
+                            onScatterRequest={handleScatterRequest}
+                            highlightedRow={highlightedRow}
+                            onRequery={handleRequery}
+                            isLoading={isLoading}
+                            onCancel={() => abortControllerRef.current?.abort()}
+                        />
                     )}
-
-                    <CorrelationResult
-                        correlationsMap={correlationsMap}
-                        minCorrelation={minCorrelation}
-                        maxPValue={maxPValue}
-                        onScatterRequest={handleScatterRequest}
-                        highlightedRow={highlightedRow}
-                        onRequery={handleRequery}
-                        isLoading={isLoading}
-                        onCancel={() => abortControllerRef.current?.abort()}
-                    />
-                </div>
+                </main>
             </div>
 
             {isModalOpen && (
