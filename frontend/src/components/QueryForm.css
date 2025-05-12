@@ -1,67 +1,67 @@
-  .queryform-container {
+.queryform-container {
     width: 100%;
     background: white;
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: 12px;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
-  }
-  
-  .queryform-header {
+}
+
+.queryform-header {
     position: relative;
-    margin-bottom: 2rem;
-  }
-  
-  .queryform-title {
+    margin-bottom: 0.5rem;
+}
+
+.queryform-title {
     font-size: 2rem;
     font-family: Futura;
     font-weight: bold;
     letter-spacing: 1px;
     color: #333;
     margin: 0;
-  }
-  
-  .queryform-form {
+}
+
+.queryform-form {
     font-family: Futura;
     letter-spacing: 1px;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-  }
-  
-  .queryform-row {
+    gap: 1rem;
+}
+
+.queryform-row {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.2rem;
     width: 100%;
-  }
-  
-  .queryform-label {
+}
+
+.queryform-label {
     font-weight: normal;
     color: #444;
-  }
-  
-  .queryform-input {
+}
+
+.queryform-input {
     background-color: #f3f4f6;
     /* border: 0px solid #ccc; */
     padding: 0.75rem 1rem;
     border-radius: 8px;
     color: #555;
     font-size: 1rem;
-  }
-  
-  .queryform-input:focus {
+}
+
+.queryform-input:focus {
     outline: none;
     border-color: #78aee8;
     box-shadow: 0 0 0 3px rgba(120, 174, 232, 0.25);
-  }
-  
-  .submit-button-container {
+}
+
+.submit-button-container {
     display: flex;
     justify-content: center;
-  }
-  
-  .submit-button {
+}
+
+.submit-button {
     background-color: #78aee8;
     color: white;
     font-weight: bold;
@@ -69,18 +69,18 @@
     border: none;
     border-radius: 8px;
     cursor: pointer;
-  }
-  
-  .submit-button:hover {
+}
+
+.submit-button:hover {
     opacity: 0.85;
-  }
-  
-  .collapse-button-container {
+}
+
+.collapse-button-container {
     display: flex;
     justify-content: flex-end;
-  }
-  
-  .collapse-button {
+}
+
+.collapse-button {
     background-color: #78aee8;
     color: white;
     font-weight: bold;
@@ -90,20 +90,19 @@
     border: none;
     font-family: Futura;
     font-weight: normal;
-  }
-  
-  .collapse-button.top-right {
+}
+
+.collapse-button.top-right {
     position: absolute;
     top: 0;
     right: 0;
-  }
-  
-  .queryform-collapsed {
+}
+
+.queryform-collapsed {
     width: 100%;
     background: white;
     padding: 1rem;
     border-radius: 12px;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
-  }
-  
+}

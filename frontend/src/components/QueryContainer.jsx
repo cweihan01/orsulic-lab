@@ -19,16 +19,20 @@ export default function QueryContainer({
                 isCollapsed={isCollapsed}
                 lastQuery={queryHistory[0]}
             />
-            <div className="mt-6">
-                <button
-                    onClick={openModal}
-                    style={{ backgroundColor: '#78aee8', fontFamily: 'Futura' }}
-                    className="mt-4 px-4 py-2 text-white rounded-lg hover:opacity-85"
-                >
-                    View Feature Names
-                </button>
-            </div>
-            <QueryHistory history={queryHistory} onSelect={onQuery} onClear={clearQueryHistory} />
+
+            <button
+                onClick={openModal}
+                style={{ backgroundColor: '#78aee8', fontFamily: 'Futura' }}
+                className="my-4 px-4 py-2 text-white rounded-lg hover:opacity-85"
+            >
+                View Feature Names
+            </button>
+
+            <QueryHistory
+                history={queryHistory}
+                onSelect={onQuery}
+                onClear={clearQueryHistory}
+            />
         </div>
     );
 }
