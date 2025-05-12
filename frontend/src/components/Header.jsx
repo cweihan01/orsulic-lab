@@ -1,18 +1,24 @@
-import './Header.css';
-
 export default function Header() {
     return (
-        <header className="custom-header">
-            <div className="logo-container">
+        <header className="bg-gradient-to-br from-purple-300 via-blue-200 to-purple-200 text-white py-6 px-8 flex items-center">
+            {/* Logo on the left */}
+            <div className="flex-none">
                 <img
                     src="/UCLA_Orsulic_Lab_Logo.png"
                     alt="UCLA Orsulic Lab Logo"
-                    className="logo-img"
+                    className="h-12 w-auto"
                 />
             </div>
-            <div className="title-container">
-                <h1 className="header-title">Cell Line Database</h1>
+
+            {/* Title on the right */}
+            <div className="flex-1 text-center">
+                <h1 className="font-futura text-4xl font-bold tracking-widest leading-tight">
+                    Cell Line Database
+                </h1>
             </div>
+
+            {/* Empty placeholder to balance the flex so the title stays centered */}
+            <div className="flex-none w-12" />
         </header>
     );
 }
