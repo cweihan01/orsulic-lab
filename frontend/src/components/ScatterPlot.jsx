@@ -1,5 +1,7 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
+import depMapToCellLineID from '../cellline_mapping.js';
+
 
 const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
     if (!data || data.length === 0) return null;
@@ -10,7 +12,7 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
 
     const xValues = data.map(d => d[xKey]);
     const yValues = data.map(d => d[yKey]);
-    const textValues = data.map(d => d.cell_lines || '');
+    const textValues = data.map(d => depMapToCellLineID[d.cell_lines] || d.cell_lines || '');
 
     const title =
         plotType === 'anova'

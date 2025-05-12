@@ -74,50 +74,45 @@ function CorrelationResult({
         process.env.REACT_APP_API_ROOT + 'scatter/',
         payload
       );
-
+  
       const scatterData = response.data.scatter_data;
       if (!scatterData || scatterData.length === 0) {
         alert('No data returned from server!');
         return;
       }
-
+  
       const csvRows = [];
       const headers = Object.keys(scatterData[0]);
-      const isSpearman = plotType === 'spearman';
-
-      let headerRow;
-      if (isSpearman && headers.includes('cell_lines')) {
-        headerRow = headers.flatMap(header =>
-          header === 'cell_lines'
-            ? ['DepMap ID', header, 'Cell Line ID']
-            : [header]
-        );
-      } else {
-        headerRow = headers;
-      }
+      const includeCellLineID = headers.includes('cell_lines');
+  
+      // Reorder headers so Cell Line ID comes right after 'cell_lines'
+      let headerRow = [];
+      headers.forEach(header => {
+        headerRow.push(header);
+        if (header === 'cell_lines') {
+          headerRow.push('Cell Line ID');  // insert Cell Line ID immediately after cell_lines
+        }
+      });
       csvRows.push(headerRow.join(','));
-
+  
+      // Fill in rows accordingly
       scatterData.forEach(obj => {
         const row = [];
         headers.forEach(header => {
           const val = obj[header] ?? '';
-          if (isSpearman && header === 'cell_lines') {
-            const depMapId = val;
-            const actualCellLineID = depMapToCellLineID[depMapId] || '';
-            row.push(JSON.stringify(depMapId));
-            row.push(JSON.stringify(val));
-            row.push(JSON.stringify(actualCellLineID));
-          } else {
-            row.push(JSON.stringify(val));
+          row.push(JSON.stringify(val));
+          if (header === 'cell_lines') {
+            const cellID = depMapToCellLineID[val] || '';
+            row.push(JSON.stringify(cellID));
           }
         });
         csvRows.push(row.join(','));
       });
-
+  
       const csvString = csvRows.join('\n');
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `${feature1}_vs_${feature2}_${plotType}_data_${timestamp}.csv`;
-
+  
       const blob = new Blob([csvString], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -130,6 +125,8 @@ function CorrelationResult({
       alert('Failed to download data. See console for details.');
     }
   };
+  
+  
 
     // 4) your original download-table handler (verbatim)
     const handleDownloadTable = () => {
