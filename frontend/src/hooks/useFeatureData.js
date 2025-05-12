@@ -59,6 +59,29 @@ export function useSubcategoryData(selectedDatabases, isDropdownOpen) {
       setLastFetchedSelection(null);
     }
   }, [isDropdownOpen, pendingSelection, lastFetchedSelection, selectedDatabases.length]);
+
+  // Immediately refetch whenever selectedDatabases changes:
+  useEffect(() => {
+    if (!selectedDatabases || selectedDatabases.length === 0) {
+      setSubcategories([]);
+      return;
+    }
+    // fire off a fetch right away
+    (async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await getSubcategories(selectedDatabases);
+        setSubcategories(data);
+        setLastFetchedSelection(selectedDatabases);
+      } catch (err) {
+        console.error(err);
+        setError(err.message || 'Failed to fetch subcategories');
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [selectedDatabases]);
   
   return { subcategories, isLoading, error };
 }
@@ -136,6 +159,31 @@ export function useFeatureData(selectedDatabases, selectedSubcategories, isDropd
       setIsLoading(false);
     }
   }, [isDropdownOpen, pendingParams, lastFetchedParams, selectedDatabases.length, selectedSubcategories?.length]);
+
+  // Immediately refetch whenever either databases or subcategories changes:
+  useEffect(() => {
+    if (!selectedDatabases.length || !selectedSubcategories.length) {
+      setFeatures([]);
+      return;
+    }
+    (async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await getFeatures(selectedDatabases, selectedSubcategories);
+        setFeatures(data);
+        setLastFetchedParams({
+          databases: selectedDatabases,
+          subcategories: selectedSubcategories
+        });
+      } catch (err) {
+        console.error(err);
+        setError(err.message || 'Failed to fetch features');
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [selectedDatabases, selectedSubcategories]);
   
   return { features, isLoading, error };
 } 
