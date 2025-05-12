@@ -23,6 +23,7 @@ function App() {
     const [plotType, setPlotType] = useState('spearman');
     const [isLoading, setIsLoading] = useState(false);
     const abortControllerRef = useRef(null);
+    const resultsContainerRef = useRef(null);
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
@@ -35,6 +36,13 @@ function App() {
         if (!scatterData) setIsQueryFormCollapsed(false);
         else setIsQueryFormCollapsed(!isQueryFormCollapsed);
     };
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (resultsContainerRef.current) {
+            resultsContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
 
     const handleQuery = (query) => {
         // Cancel any previous request
@@ -51,8 +59,7 @@ function App() {
         setQueryHistory((prev) => [query, ...prev.slice(0, 19)]);
         console.log(queryHistory);
 
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        scrollToTop();
 
         axios
             .post(
@@ -79,12 +86,13 @@ function App() {
             })
             .finally(() => {
                 setIsLoading(false);
+                scrollToTop();
             });
     };
 
     const handleScatterRequest = (feature1, feature2, database1, database2, plotTypeOverride) => {
         setHighlightedRow(feature2);
-        setPlotType(plotTypeOverride); // ← now actually uses the correct type
+        setPlotType(plotTypeOverride);
 
         const scatterData = { feature1, feature2, database1, database2 };
 
@@ -109,32 +117,38 @@ function App() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="h-screen flex flex-col bg-gray-50">
             <Header />
 
-            <div className="sidebar-layout">
-                <aside className={`sidebar ${isQueryFormCollapsed ? 'collapsed' : ''}`}>
-                    {/* Collapse button at top-right of this panel */}
-                    <div className="sidebar-header">
-                        <button
-                            onClick={handleCollapseQueryForm}
-                            className="collapse-btn"
-                            aria-label="Toggle Sidebar"
-                        >
-                            {isQueryFormCollapsed ? '▶' : '◀'}
-                        </button>
+            <main className="relative flex flex-1 overflow-auto">
+                {/* Sidebar section: query form, feature names, query history */}
+                <div
+                    className={`h-full flex-shrink-0 flex flex-col px-6 py-2 bg-gradient-to-b
+                        from-blue-200 to-purple-200 overflow-y-auto transition-width
+                        duration-300 ${isQueryFormCollapsed ? 'w-6 px-0' : 'w-[500px]'}`}
+                >
+                    <div className={`${isQueryFormCollapsed ? 'hidden' : 'block'} flex-1`}>
+                        <QueryContainer
+                            openModal={openModal}
+                            onQuery={handleQuery}
+                            isCollapsed={isQueryFormCollapsed}
+                            queryHistory={queryHistory}
+                            clearQueryHistory={() => setQueryHistory([])}
+                        />
                     </div>
+                </div>
 
-                    <QueryContainer
-                        openModal={openModal}
-                        onQuery={handleQuery}
-                        isCollapsed={isQueryFormCollapsed}
-                        queryHistory={queryHistory}
-                        clearQueryHistory={() => setQueryHistory([])}
-                    />
-                </aside>
+                {/* Button to toggle sidebar collapse */}
+                <button
+                    onClick={handleCollapseQueryForm}
+                    className="absolute top-1/2 -ml-2 transform -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-full shadow-lg focus:outline-none"
+                    aria-label="Toggle sidebar"
+                >
+                    {isQueryFormCollapsed ? '▶' : '◀'}
+                </button>
 
-                <main className="main-panel">
+                {/* Results section: graph, correlation table */}
+                <div ref={resultsContainerRef} className="flex-1 overflow-y-auto p-8">
                     {scatterData.length > 0 && (
                         <ScatterPlot
                             data={scatterData}
@@ -153,9 +167,10 @@ function App() {
                         isLoading={isLoading}
                         onCancel={() => abortControllerRef.current?.abort()}
                     />
-                </main>
-            </div>
+                </div>
+            </main>
 
+            {/* Popup feature names */}
             <Modal isOpen={isModalOpen} onClose={closeModal} src="./sample.pdf" />
         </div>
     );
