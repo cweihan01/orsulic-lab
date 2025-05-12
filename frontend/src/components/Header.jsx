@@ -1,6 +1,6 @@
 export default function Header() {
     return (
-        <header className="bg-gradient-to-br from-purple-300 via-blue-200 to-purple-200 text-white py-6 px-8 flex items-center">
+        <header className="bg-gradient-to-br from-purple-300 via-blue-200 to-purple-200 text-white py-3 px-8 flex items-center">
             {/* Logo on the left */}
             <div className="flex-none">
                 <img
