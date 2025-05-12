@@ -127,27 +127,14 @@ function App() {
             <Header />
 
             <main className="relative flex flex-1 overflow-y-auto custom-scrollbar">
-                {/* Sidebar section: query form, feature names, query history */}
-                <div
-                    className={`h-full flex-shrink-0 flex flex-col px-6 py-2 bg-gradient-to-b
-                        from-blue-200 to-purple-200 overflow-y-auto transition-width
-                        duration-200 custom-scrollbar
-                        ${isSidebarCollapsed ? 'w-6 px-0' : 'w-[500px]'}`}
-                >
-                    <div
-                        className={`${
-                            isSidebarCollapsed ? 'hidden' : 'block'
-                        } flex-1`}
-                    >
-                        <QueryContainer
-                            openModal={() => setIsModalOpen(true)}
-                            onQuery={handleQuery}
-                            isCollapsed={isSidebarCollapsed}
-                            queryHistory={queryHistory}
-                            clearQueryHistory={() => setQueryHistory([])}
-                        />
-                    </div>
-                </div>
+                {/* Query section: query form, feature names, query history */}
+                <QueryContainer
+                    openModal={() => setIsModalOpen(true)}
+                    onQuery={handleQuery}
+                    isCollapsed={isSidebarCollapsed}
+                    queryHistory={queryHistory}
+                    clearQueryHistory={() => setQueryHistory([])}
+                />
 
                 {/* Button to toggle sidebar collapse */}
                 <button
