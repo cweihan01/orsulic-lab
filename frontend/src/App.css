@@ -1,50 +1,5 @@
-/* Header */
-.custom-header {
-  /* background: linear-gradient(135deg, #bad7f7, #e6bef7); */
-  /* background-image: linear-gradient(to top, #e6dee9 0%, #bdc2e8 99%, #bdc2e8 100%); */
-  /* background-image: linear-gradient(-225deg, #bad7f7 0%, #EACCF8 48%, #9285f1 100%); */
-  background-image: radial-gradient( circle 641px at 15% 20%,  rgb(195, 149, 236) 0%, rgb(157, 200, 244) 90% );
-
-  color: white;
-  padding: 24px 24px;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  position: relative;
-}
-
-.logo-container {
-  flex: 1 1 auto;
-  display: flex;
-  justify-content: flex-start;
-  min-width: 120px;
-}
-
-.logo-img {
-  height: 3rem;
-  width: auto;
-  margin: auto 0;
-}
-
-.title-container {
-  flex: 2 1 450px;
-  display: flex;
-  justify-content: left;
-}
-
-.header-title {
-  font-family: 'Futura', sans-serif;
-  font-size: 2.5rem;
-  font-weight: bold;
-  text-align: center;
-  letter-spacing: 3px;
-}
-
 /* Query and results sections */
-.query-form, .correlation-result {
+/* .query-form, .correlation-result {
   background: #ffffff;
   margin: 20px auto;
   padding: 25px;
@@ -53,7 +8,6 @@
   box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Form styling */
 .query-form form {
   display: flex;
   flex-direction: column;
@@ -85,7 +39,7 @@
 
 .query-form button:hover {
   background: linear-gradient(135deg, #0056b3, #009acf);
-}
+} */
 
 /* Table styling */
 .correlation-result table {
@@ -167,40 +121,7 @@
   grid-column: span 13 / span 13;
 }
 
-/* Tabs */
-
-.tab-buttons-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-  border-bottom: 2px solid #e5e7eb;
-  font-family: 'Futura', sans-serif;
-}
-
-.tab-button {
-  padding: 0.75rem 1.5rem;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  font-weight: 600;
-  color: #6b7280;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.tab-button:hover {
-  color: #374151;
-}
-
-.tab-button.active {
-  border-bottom: 3px solid #78aee8;
-  color: #1f2937;
-  font-weight: 700;
-}
-
 /* Sidebar */
-
 .sidebar-layout {
   display: flex;
   height: 100vh;
@@ -235,7 +156,7 @@
 }
 
 .sidebar.collapsed {
-  width: 60px;
+  width: 25px;
   align-items: center;
   padding: 1rem 0.5rem;
   overflow-x: hidden;
@@ -285,4 +206,42 @@
 
 .logo-img {
   height: 48px;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar {
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+/* WebKit browsers */
+.custom-scrollbar::-webkit-scrollbar {
+  width: .5rem;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  border-radius: 9999px;
+  background: #f3f4f6;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 9999px;      
+  background: #d1d5db;
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #374151;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #6b7280;
+  }
+  .custom-scrollbar {
+    scrollbar-color: #6b7280 #374151;
+  }
 }

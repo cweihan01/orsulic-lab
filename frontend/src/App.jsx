@@ -1,89 +1,68 @@
-import React, { useState, useRef } from 'react';
-import QueryForm from './components/QueryForm';
-import CorrelationResult from './components/CorrelationResult';
-import ScatterPlot from './components/ScatterPlot';
-import QueryHistory from './components/QueryHistory';
 import axios from 'axios';
+import { useRef, useState } from 'react';
+import Header from './components/Header.jsx';
+import QueryContainer from './components/QueryContainer.jsx';
+import ResultsContainer from './components/ResultsContainer.jsx';
+import Modal from './components/Modal.jsx';
+
 import './App.css';
 import './index.js';
 
 function App() {
-    const [correlationsMap, setCorrelationsMap] = useState({});
-    const [highlightedRow, setHighlightedRow] = useState(null);
-    const [scatterData, setScatterData] = useState([]);
-    const [minCorrelation, setMinCorrelation] = useState(0.0);
-    const [maxPValue, setMaxPValue] = useState(1.0);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isQueryFormCollapsed, setIsQueryFormCollapsed] = useState(false);
-    const [progress, setProgress] = useState(0);
-    const [previousQuery, setPreviousQuery] = useState(null); 
     const [queryHistory, setQueryHistory] = useState([]);
-    const [selectedTab, setSelectedTab] = useState("spearman");    
-    const [plotType, setPlotType] = useState("spearman");
+    const [correlationsMap, setCorrelationsMap] = useState({});
+    const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
     const abortControllerRef = useRef(null);
-    const progressRef = useRef(null);
 
-    const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
-    const handleCloseGraph = () => {
-        setHighlightedRow(null);
-        setScatterData([]);
-    };
-    const handleCollapseQueryForm = () => {
-        if (!scatterData) setIsQueryFormCollapsed(false);
-        else setIsQueryFormCollapsed(!isQueryFormCollapsed);
+    /** Toggle sidebar state */
+    const handleToggleSidebar = () => {
+        setSidebarCollapsed(!isSidebarCollapsed);
+        // HACK: tell Plotly to resize graph (if there is one) after collapsing
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 200);
     };
 
-    const startProgressSimulation = () => {
-        setProgress(0);
-        if (progressRef.current) clearInterval(progressRef.current);
-        progressRef.current = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 95) return prev;
-                return prev + Math.random() * 3 + 1;
-            });
-        }, 100);
+    /** Scroll to top of screen */
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const stopProgressSimulation = () => {
-        clearInterval(progressRef.current);
-        setProgress(100);
-        setTimeout(() => setProgress(0), 500);
-    };
-
+    /** Fetch correlation data from API when user clicks 'query' button */
     const handleQuery = (query) => {
         // Cancel any previous request
         abortControllerRef.current?.abort();
         const controller = new AbortController();
         abortControllerRef.current = controller;
         setIsLoading(true);
-        
-        handleCloseGraph();
-        
-        setMinCorrelation(parseFloat(query.minCorrelation));
-        setMaxPValue(parseFloat(query.maxPValue));
-        setPreviousQuery(query);
-        setQueryHistory(prev => [query, ...prev.slice(0, 19)]);
-        
-        // Scroll to top
-        startProgressSimulation();
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        scrollToTop();
 
+        // Add this query to history
+        setQueryHistory((prev) => [query, ...prev.slice(0, 19)]);
+
+        // Make API request
         axios
-            .post(`${process.env.REACT_APP_API_ROOT}correlations/`, {
-                feature1: query.feature1,
-                feature2: query.feature2,
-                database1: query.database1,
-                database2: query.database2,
-            }, {
-                signal: controller.signal
-            })
+            .post(
+                `${process.env.REACT_APP_API_ROOT}correlations/`,
+                {
+                    feature1: query.feature1,
+                    feature2: query.feature2,
+                    database1: query.database1,
+                    database2: query.database2,
+                },
+                {
+                    signal: controller.signal,
+                }
+            )
             .then((response) => {
                 setCorrelationsMap(response.data.correlations);
             })
             .catch((err) => {
-                if (err.name === 'CanceledError' || err.message === 'canceled') {
+                if (
+                    err.name === 'CanceledError' ||
+                    err.message === 'canceled'
+                ) {
                     console.log('Query was cancelled by user');
                 } else {
                     console.error('Error fetching correlations:', err);
@@ -91,122 +70,66 @@ function App() {
             })
             .finally(() => {
                 setIsLoading(false);
-                stopProgressSimulation();
+                scrollToTop();
             });
     };
 
-
-    
-    const handleScatterRequest = (feature1, feature2, database1, database2, plotTypeOverride) => {
-        setHighlightedRow(feature2);
-        setPlotType(plotTypeOverride);  // ← now actually uses the correct type
-        
-
-        const scatterData = { feature1, feature2, database1, database2 };
-
-        axios
-            .post(`${process.env.REACT_APP_API_ROOT}scatter/`, scatterData)
-            .then((response) => {
-                setScatterData(response.data.scatter_data);
-            })
-            .catch((error) => {
-                console.error('Error posting scatter data:', error);
-            });
-    };
-
+    /** Fetch correlation data when user clicks a feature in the table */
     const handleRequery = (newFeature1, newDatabase1) => {
-        if (!previousQuery) return;
+        const last = queryHistory[0];
+        console.log(last);
+        if (!last) return;
+
         const updatedQuery = {
-            ...previousQuery,
+            ...last,
             feature1: newFeature1,
             database1: [newDatabase1],
+            // HACK: helps to populate form fields, but may not work if >1 subcategories
+            // Should eventually keep track of subcategories either using API or state
+            subcategory1: last.subcategory2,
         };
         handleQuery(updatedQuery);
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {progress > 0 && (
-                <div className="w-full bg-gray-200 h-2">
-                    <div
-                        className="h-2 bg-indigo-500 transition-all duration-100 ease-linear"
-                        style={{ width: `${Math.min(progress, 100)}%` }}
-                    ></div>
-                </div>
-            )}
+        <div className="h-screen flex flex-col bg-gray-50">
+            <Header />
 
-            <div className="sidebar-layout">
-                <aside className={`sidebar ${isQueryFormCollapsed ? 'collapsed' : ''}`}>
-                    <div className="logo-container">
-                        <img src="/UCLA_Orsulic_Lab_Logo.png" alt="Logo" className="logo-img" />
-                    </div>
+            <main className="relative flex flex-1 overflow-y-auto custom-scrollbar">
+                {/* Query section: query form, feature names, query history */}
+                <QueryContainer
+                    openModal={() => setIsModalOpen(true)}
+                    onQuery={handleQuery}
+                    isCollapsed={isSidebarCollapsed}
+                    queryHistory={queryHistory}
+                    clearQueryHistory={() => setQueryHistory([])}
+                />
 
-                    <div className="sidebar-header">
-                        <h1 className="sidebar-title">Cell Line Database</h1>
-                        <button
-                            className="collapse-btn"
-                            onClick={handleCollapseQueryForm}
-                            aria-label="Toggle Sidebar"
-                        >
-                            {isQueryFormCollapsed ? '▶' : '◀'}
-                        </button>
-                    </div>
+                {/* Button to toggle sidebar collapse */}
+                <button
+                    onClick={handleToggleSidebar}
+                    className="absolute top-1/2 -ml-2 transform -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-full shadow-lg focus:outline-none"
+                    aria-label="Toggle sidebar"
+                >
+                    {isSidebarCollapsed ? '▶' : '◀'}
+                </button>
 
-                    {!isQueryFormCollapsed && (
-                        <>
-                            <QueryForm
-                            onSubmit={handleQuery}
-                            isCollapsed={isQueryFormCollapsed}
-                            toggleCollapse={handleCollapseQueryForm}
-                        />
-                            <button
-                                onClick={openModal}
-                                className="mt-4 px-4 py-2 text-white rounded-lg hover:opacity-85"
-                                style={{ backgroundColor: '#78aee8', fontFamily: 'Futura' }}
-                            >
-                                View Feature Names
-                            </button>
-                            <QueryHistory
-                                history={queryHistory}
-                                onSelect={handleQuery}
-                                onClear={() => setQueryHistory([])}
-                            />
-                        </>
-                    )}
-                </aside>
+                {/* Results section: graph, correlation table */}
+                <ResultsContainer
+                    correlationsMap={correlationsMap}
+                    lastQuery={queryHistory[0] ?? {}}
+                    onRequery={handleRequery}
+                    isLoading={isLoading}
+                    onCancel={() => abortControllerRef.current?.abort()}
+                />
+            </main>
 
-                <main className="main-panel">
-                        {scatterData.length > 0 && (
-                            <ScatterPlot data={scatterData} handleCloseGraph={handleCloseGraph} plotType={plotType} />
-                        )}
-                    {Object.keys(correlationsMap).length > 0 && (
-                        <CorrelationResult
-                            correlationsMap={correlationsMap}
-                            minCorrelation={minCorrelation}
-                            maxPValue={maxPValue}
-                            onScatterRequest={handleScatterRequest}
-                            highlightedRow={highlightedRow}
-                            onRequery={handleRequery}
-                            isLoading={isLoading}
-                            onCancel={() => abortControllerRef.current?.abort()}
-                        />
-                    )}
-                </main>
-            </div>
-
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full relative">
-                        <button
-                            onClick={closeModal}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full px-3 py-1 hover:bg-red-600"
-                        >
-                            X
-                        </button>
-                        <iframe src="/sample.pdf" className="w-full h-[80vh] p-4" title="Popup PDF"></iframe>
-                    </div>
-                </div>
-            )}
+            {/* Popup feature names */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                src="./sample.pdf"
+            />
         </div>
     );
 }
