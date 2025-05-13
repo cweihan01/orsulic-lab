@@ -96,33 +96,27 @@ export default function CorrelationTable({
 
             const csvRows = [];
             const headers = Object.keys(scatterData[0]);
-            const isSpearman = plotType === 'spearman';
+            const includeCellLineID = headers.includes('cell_lines');
 
-            let headerRow;
-            if (isSpearman && headers.includes('cell_lines')) {
-                headerRow = headers.flatMap((header) =>
-                    header === 'cell_lines'
-                        ? ['DepMap ID', header, 'Cell Line ID']
-                        : [header]
-                );
-            } else {
-                headerRow = headers;
-            }
+            // Reorder headers so Cell Line ID comes right after 'cell_lines'
+            let headerRow = [];
+            headers.forEach((header) => {
+                headerRow.push(header);
+                if (header === 'cell_lines') {
+                    headerRow.push('Cell Line ID'); // insert Cell Line ID immediately after cell_lines
+                }
+            });
             csvRows.push(headerRow.join(','));
 
+            // Fill in rows accordingly
             scatterData.forEach((obj) => {
                 const row = [];
                 headers.forEach((header) => {
                     const val = obj[header] ?? '';
-                    if (isSpearman && header === 'cell_lines') {
-                        const depMapId = val;
-                        const actualCellLineID =
-                            depMapToCellLineID[depMapId] || '';
-                        row.push(JSON.stringify(depMapId));
-                        row.push(JSON.stringify(val));
-                        row.push(JSON.stringify(actualCellLineID));
-                    } else {
-                        row.push(JSON.stringify(val));
+                    row.push(JSON.stringify(val));
+                    if (header === 'cell_lines') {
+                        const cellID = depMapToCellLineID[val] || '';
+                        row.push(JSON.stringify(cellID));
                     }
                 });
                 csvRows.push(row.join(','));
