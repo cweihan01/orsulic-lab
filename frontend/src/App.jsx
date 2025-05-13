@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Header from './components/Header.jsx';
 import QueryContainer from './components/QueryContainer.jsx';
 import ResultsContainer from './components/ResultsContainer.jsx';
@@ -9,13 +9,21 @@ import './App.css';
 import './index.js';
 
 function App() {
-    const [queryHistory, setQueryHistory] = useState([]);
+    const [queryHistory, setQueryHistory] = useState(() => {
+        const saved = localStorage.getItem('queryHistory');
+        return saved ? JSON.parse(saved) : [];
+    });
     const [correlationsMap, setCorrelationsMap] = useState({});
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const abortControllerRef = useRef(null);
+
+    // Whenever queryHistory changes, save to localStorage (at most 20)
+    useEffect(() => {
+        localStorage.setItem('queryHistory', JSON.stringify(queryHistory));
+    }, [queryHistory]);
 
     /** Toggle sidebar state */
     const handleToggleSidebar = () => {
@@ -77,7 +85,6 @@ function App() {
     /** Fetch correlation data when user clicks a feature in the table */
     const handleRequery = (newFeature1, newDatabase1) => {
         const last = queryHistory[0];
-        console.log(last);
         if (!last) return;
 
         const updatedQuery = {
