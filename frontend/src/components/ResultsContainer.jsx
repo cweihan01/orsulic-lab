@@ -24,11 +24,8 @@ export default function ResultsContainer({
         }
     };
 
-    // Auto-scroll to top of results section when loading, new correlations arrive,
-    // or graph plotted
-    useEffect(() => {
-        handleScrollToTop();
-    }, [isLoading, correlationsMap, scatterData]);
+    // Auto-scroll to top of results section when loading or new correlations arrive
+    useEffect(() => handleScrollToTop(), [isLoading, correlationsMap]);
 
     // Close any existing graph once new correlations arrive
     useEffect(() => handleCloseGraph(), [correlationsMap]);
@@ -41,6 +38,8 @@ export default function ResultsContainer({
         database2,
         plotTypeOverride
     ) => {
+        // Close open graph if any
+        handleCloseGraph();
         setHighlightedRow(feature2);
         setPlotType(plotTypeOverride);
         const payload = { feature1, feature2, database1, database2 };
@@ -52,7 +51,8 @@ export default function ResultsContainer({
             })
             .catch((error) => {
                 console.error('Error posting scatter data:', error);
-            });
+            })
+            .finally(() => handleScrollToTop());
     };
 
     /** Close graph by deleting scatter data */

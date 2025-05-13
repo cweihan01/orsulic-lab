@@ -166,8 +166,10 @@ const ScatterPlot = ({
                 </button>
             </div>
             <Plot
+                key={plotType}
+                revision={plotType}
                 data={plotData}
-                layout={layout}
+                layout={{ ...layout, transition: { duration: 0 } }}
                 useResizeHandler={true}
                 style={{ width: '100%', height: '100%' }}
             />
