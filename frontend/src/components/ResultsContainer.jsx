@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import ScatterPlot from './ScatterPlot';
 import CorrelationResult from './CorrelationResult';
+import LoadingIcon from './LoadingIcon';
 
 export default function ResultsContainer({
     scatterData,
@@ -29,6 +30,9 @@ export default function ResultsContainer({
             ref={resultsRef}
             className="flex-1 flex-col overflow-y-auto p-8 custom-scrollbar"
         >
+            {/* Loading icon */}
+            {isLoading && <LoadingIcon onCancel={onCancel} />}
+
             <ScatterPlot
                 data={scatterData}
                 handleCloseGraph={handleCloseGraph}
@@ -50,8 +54,6 @@ export default function ResultsContainer({
                 onScatterRequest={onScatterRequest}
                 highlightedRow={highlightedRow}
                 onRequery={onRequery}
-                isLoading={isLoading}
-                onCancel={onCancel}
             />
         </div>
     );

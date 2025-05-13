@@ -90,12 +90,16 @@ function App() {
 
     const handleRequery = (newFeature1, newDatabase1) => {
         const last = queryHistory[0];
+        console.log(last);
         if (!last) return;
 
         const updatedQuery = {
             ...last,
             feature1: newFeature1,
             database1: [newDatabase1],
+            // HACK: helps to populate form fields, but may not work if >1 subcategories
+            // Should eventually keep track of subcategories either using API or state
+            subcategory1: last.subcategory2,
         };
         handleQuery(updatedQuery);
     };
