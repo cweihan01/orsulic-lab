@@ -9,10 +9,6 @@ const ScatterPlot = ({
 }) => {
     if (!data || data.length === 0) return null;
 
-    // const keys = Object.keys(data[0]);
-    // const xKey = keys[1];
-    // const yKey = keys[2];
-
     let xKey, yKey;
     const featureKeys = Object.keys(data[0]).filter(
         (key) => !['cell_lines', 'Database', 'Feature'].includes(key)
@@ -30,15 +26,7 @@ const ScatterPlot = ({
         (d) => DEPMAP_TO_CELLLINE_ID[d.cell_lines] || d.cell_lines || ''
     );
 
-    const title =
-        plotType === TAB_TYPES.ANOVA
-            ? `Boxplot of ${xKey} vs ${yKey}`
-            : plotType === TAB_TYPES.CHISQUARED
-            ? `Grouped Bar Plot of ${xKey} and ${yKey}`
-            : `Scatter Plot of ${xKey} vs ${yKey}`;
-
     const layout = {
-        title,
         xaxis: { title: xKey, tickangle: 0 },
         yaxis: { title: yKey },
         autosize: true,
@@ -65,17 +53,6 @@ const ScatterPlot = ({
             numKey = xKey;
         } else {
             return null;
-            // return (
-            //     <div className="w-full p-4 my-2 rounded bg-white text-red-600">
-            //         <h2 className="text-xl font-bold mb-2">
-            //             Invalid ANOVA plot
-            //         </h2>
-            //         <p>
-            //             Exactly one variable must be categorical and one must be
-            //             numeric.
-            //         </p>
-            //     </div>
-            // );
         }
 
         const categories = [...new Set(data.map((d) => d[catKey]))].sort(
@@ -93,8 +70,11 @@ const ScatterPlot = ({
             jitter: 0.4,
             pointpos: 0,
         }));
+
+        layout.title = `Boxplot of ${numKey} by ${catKey}`;
+        layout.xaxis.title = catKey;
+        layout.yaxis.title = numKey;
     } else if (plotType === TAB_TYPES.CHISQUARED) {
-        // Grouped bar plot for cat vs cat
         const groupMap = {};
         data.forEach((d) => {
             const xCat = d[xKey];
@@ -114,18 +94,18 @@ const ScatterPlot = ({
         );
 
         const colors = [
-            'rgba(66, 165, 245, 0.6)', // blue
-            'rgba(239, 83, 80, 0.6)', // red
-            'rgba(102, 187, 106, 0.6)', // green
-            'rgba(255, 202, 40, 0.6)', // yellow
-            'rgba(171, 71, 188, 0.6)', // purple
-            'rgba(255, 112, 67, 0.6)', // orange
+            'rgba(66, 165, 245, 0.6)',
+            'rgba(239, 83, 80, 0.6)',
+            'rgba(102, 187, 106, 0.6)',
+            'rgba(255, 202, 40, 0.6)',
+            'rgba(171, 71, 188, 0.6)',
+            'rgba(255, 112, 67, 0.6)',
         ];
 
         plotData = yCategories.map((yCat, idx) => ({
             x: xCategories,
             y: xCategories.map((xCat) => groupMap[yCat][xCat] || 0),
-            name: yCat,
+            name: yCat, // Clean legend label
             type: 'bar',
             marker: {
                 color: colors[idx % colors.length],
@@ -140,8 +120,11 @@ const ScatterPlot = ({
                 '%{x}<br>%{y} counts<br>Group: %{name}<extra></extra>',
         }));
 
-        layout.barmode = 'group';
+        layout.title = `Grouped Bar Plot of ${xKey} and ${yKey}`;
+        layout.xaxis.title = xKey;
         layout.yaxis.title = 'Count';
+        layout.barmode = 'group';
+        layout.legend = { title: { text: yKey } }; // <- Legend title set here
     } else {
         plotData = [
             {
@@ -154,6 +137,7 @@ const ScatterPlot = ({
                 hoverinfo: 'text',
             },
         ];
+        layout.title = `Scatter Plot of ${xKey} vs ${yKey}`;
     }
 
     return (
