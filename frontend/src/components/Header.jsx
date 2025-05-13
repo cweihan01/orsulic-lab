@@ -12,7 +12,7 @@ export default function Header() {
 
             {/* Title on the right */}
             <div className="flex-1 text-center">
-                <h1 className="font-futura text-4xl font-bold tracking-wider leading-tight" style={{ color: 'black' }}>
+                <h1 className="font-futura text-4xl font-bold tracking-wider leading-tight" style={{ color: '#4338ca' }}>
                     Cell Line Database
                 </h1>
             </div>
