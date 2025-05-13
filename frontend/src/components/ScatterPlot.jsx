@@ -1,8 +1,12 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-import { DEPMAP_TO_CELLLINE_ID } from '../utils/constants.js';
+import { DEPMAP_TO_CELLLINE_ID, TAB_TYPES } from '../utils/constants.js';
 
-const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
+const ScatterPlot = ({
+    data,
+    handleCloseGraph,
+    plotType = TAB_TYPES.SPEARMAN,
+}) => {
     if (!data || data.length === 0) return null;
 
     const keys = Object.keys(data[0]);
@@ -16,9 +20,9 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
     );
 
     const title =
-        plotType === 'anova'
+        plotType === TAB_TYPES.ANOVA
             ? `Boxplot of ${xKey} vs ${yKey}`
-            : plotType === 'chisq'
+            : plotType === TAB_TYPES.CHISQUARED
             ? `Grouped Bar Plot of ${xKey} and ${yKey}`
             : `Scatter Plot of ${xKey} vs ${yKey}`;
 
@@ -32,7 +36,7 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
 
     let plotData;
 
-    if (plotType === 'anova') {
+    if (plotType === TAB_TYPES.ANOVA) {
         const isCategorical = (v) =>
             typeof v === 'string' ||
             typeof v === 'boolean' ||
@@ -49,17 +53,18 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
             catKey = yKey;
             numKey = xKey;
         } else {
-            return (
-                <div className="w-full p-4 my-2 rounded bg-white text-red-600">
-                    <h2 className="text-xl font-bold mb-2">
-                        Invalid ANOVA plot
-                    </h2>
-                    <p>
-                        Exactly one variable must be categorical and one must be
-                        numeric.
-                    </p>
-                </div>
-            );
+            return null;
+            // return (
+            //     <div className="w-full p-4 my-2 rounded bg-white text-red-600">
+            //         <h2 className="text-xl font-bold mb-2">
+            //             Invalid ANOVA plot
+            //         </h2>
+            //         <p>
+            //             Exactly one variable must be categorical and one must be
+            //             numeric.
+            //         </p>
+            //     </div>
+            // );
         }
 
         const categories = [...new Set(data.map((d) => d[catKey]))].sort(
@@ -77,7 +82,7 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
             jitter: 0.4,
             pointpos: 0,
         }));
-    } else if (plotType === 'chisq') {
+    } else if (plotType === TAB_TYPES.CHISQUARED) {
         // Grouped bar plot for cat vs cat
         const groupMap = {};
         data.forEach((d) => {
