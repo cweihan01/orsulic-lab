@@ -17,12 +17,17 @@ export default function ResultsContainer({
 
     const resultsRef = useRef(null);
 
-    // Auto-scroll to top of results section when loading, new correlations arrive,
-    // or graph plotted
-    useEffect(() => {
+    /** Scroll to top of results section */
+    const handleScrollToTop = () => {
         if (resultsRef.current) {
             resultsRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         }
+    };
+
+    // Auto-scroll to top of results section when loading, new correlations arrive,
+    // or graph plotted
+    useEffect(() => {
+        handleScrollToTop();
     }, [isLoading, correlationsMap, scatterData]);
 
     // Close any existing graph once new correlations arrive
@@ -79,6 +84,7 @@ export default function ResultsContainer({
                 onScatterRequest={handleScatterRequest}
                 highlightedRow={highlightedRow}
                 onRequery={onRequery}
+                onScrollToTop={handleScrollToTop}
             />
         </div>
     );

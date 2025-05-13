@@ -53,6 +53,7 @@ function CorrelationResult({
     onScatterRequest,
     highlightedRow,
     onRequery,
+    onScrollToTop
 }) {
     const [selectedTab, setSelectedTab] = useState('spearman');
 
@@ -174,6 +175,7 @@ function CorrelationResult({
                     selectedTab={selectedTab}
                     sortConfig={sortConfig}
                     setSortConfig={setSortConfig}
+                    onScrollToTop={onScrollToTop}
                 />
             ) : (
                 <p className="text-center my-4">
