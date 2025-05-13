@@ -41,8 +41,14 @@ const ScatterPlot = ({
             typeof v === 'boolean' ||
             (typeof v === 'number' && Number.isInteger(v) && v < 20);
 
-        const xIsCat = isCategorical(xValues[0]);
-        const yIsCat = isCategorical(yValues[0]);
+        const isCategoricalByDistribution = (arr) => {
+            const unique = [...new Set(arr.filter((v) => v !== null && v !== undefined))];
+            return unique.length <= 10;
+        };
+        
+        const xIsCat = isCategoricalByDistribution(xValues);
+        const yIsCat = isCategoricalByDistribution(yValues);
+        
 
         let catKey, numKey;
         if (xIsCat && !yIsCat) {
