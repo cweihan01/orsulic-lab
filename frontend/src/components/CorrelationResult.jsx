@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import CorrelationTable from './CorrelationTable.jsx';
-import LoadingIcon from './LoadingIcon.jsx';
 
 import './CorrelationResult.css';
 

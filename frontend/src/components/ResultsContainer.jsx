@@ -1,20 +1,20 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import ScatterPlot from './ScatterPlot';
 import CorrelationResult from './CorrelationResult';
 import LoadingIcon from './LoadingIcon';
+import axios from 'axios';
 
 export default function ResultsContainer({
-    scatterData,
     correlationsMap,
-    queryHistory,
-    highlightedRow,
+    lastQuery,
     isLoading,
-    onScatterRequest,
     onRequery,
     onCancel,
-    handleCloseGraph,
-    plotType,
 }) {
+    const [scatterData, setScatterData] = useState([]);
+    const [plotType, setPlotType] = useState('spearman');
+    const [highlightedRow, setHighlightedRow] = useState(null);
+
     const resultsRef = useRef(null);
 
     // Auto-scroll to top of results section when loading, new correlations arrive,
@@ -25,6 +25,37 @@ export default function ResultsContainer({
         }
     }, [isLoading, correlationsMap, scatterData]);
 
+    // Close any existing graph once new correlations arrive
+    useEffect(() => handleCloseGraph(), [correlationsMap]);
+
+    /** Request scatter data from API when graph displayed */
+    const handleScatterRequest = (
+        feature1,
+        feature2,
+        database1,
+        database2,
+        plotTypeOverride
+    ) => {
+        setHighlightedRow(feature2);
+        setPlotType(plotTypeOverride);
+        const payload = { feature1, feature2, database1, database2 };
+
+        axios
+            .post(`${process.env.REACT_APP_API_ROOT}scatter/`, payload)
+            .then((response) => {
+                setScatterData(response.data.scatter_data);
+            })
+            .catch((error) => {
+                console.error('Error posting scatter data:', error);
+            });
+    };
+
+    /** Close graph by deleting scatter data */
+    const handleCloseGraph = () => {
+        setHighlightedRow(null);
+        setScatterData([]);
+    };
+
     return (
         <div
             ref={resultsRef}
@@ -33,25 +64,19 @@ export default function ResultsContainer({
             {/* Loading icon */}
             {isLoading && <LoadingIcon onCancel={onCancel} />}
 
+            {/* Graph (scatter/box/bar plot) */}
             <ScatterPlot
                 data={scatterData}
                 handleCloseGraph={handleCloseGraph}
                 plotType={plotType}
             />
 
+            {/* Table of correlation results */}
             <CorrelationResult
                 correlationsMap={correlationsMap}
-                minCorrelation={
-                    queryHistory.length
-                        ? parseFloat(queryHistory[0].minCorrelation)
-                        : 0.0
-                }
-                maxPValue={
-                    queryHistory.length
-                        ? parseFloat(queryHistory[0].maxPValue)
-                        : 1.0
-                }
-                onScatterRequest={onScatterRequest}
+                minCorrelation={parseFloat(lastQuery.minCorrelation ?? 0)}
+                maxPValue={parseFloat(lastQuery.maxPValue ?? 1)}
+                onScatterRequest={handleScatterRequest}
                 highlightedRow={highlightedRow}
                 onRequery={onRequery}
             />
