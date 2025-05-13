@@ -1,12 +1,13 @@
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import Header from './components/Header.jsx';
+import Modal from './components/Modal.jsx';
 import QueryContainer from './components/QueryContainer.jsx';
 import ResultsContainer from './components/ResultsContainer.jsx';
-import Modal from './components/Modal.jsx';
 
 import './App.css';
 import './index.js';
+import { MAX_QUERY_HISTORY_LENGTH } from './utils/constants.js';
 
 function App() {
     const [queryHistory, setQueryHistory] = useState(() => {
@@ -20,7 +21,7 @@ function App() {
 
     const abortControllerRef = useRef(null);
 
-    // Whenever queryHistory changes, save to localStorage (at most 20)
+    // Whenever queryHistory changes, save to localStorage
     useEffect(() => {
         localStorage.setItem('queryHistory', JSON.stringify(queryHistory));
     }, [queryHistory]);
@@ -46,8 +47,11 @@ function App() {
         setIsLoading(true);
         scrollToTop();
 
-        // Add this query to history
-        setQueryHistory((prev) => [query, ...prev.slice(0, 19)]);
+        // Add this query to history, retaining the given max number
+        setQueryHistory((prev) => [
+            query,
+            ...prev.slice(0, MAX_QUERY_HISTORY_LENGTH - 1),
+        ]);
 
         // Make API request
         axios

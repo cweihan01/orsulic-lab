@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 
-import depMapToCellLineID from '../cellline_mapping.js';
 import axios from 'axios';
-import { TAB_DISPLAY_NAMES } from '../utils/constants.js';
+import {
+    DEPMAP_TO_CELLLINE_ID,
+    TAB_DISPLAY_NAMES,
+} from '../utils/constants.js';
 
 // Number of results in table to display at once
 const RESULTS_INCREMENT = 50;
@@ -70,7 +72,7 @@ const handleDownloadRowData = async (
                 const val = obj[header] ?? '';
                 row.push(JSON.stringify(val));
                 if (header === 'cell_lines') {
-                    const cellID = depMapToCellLineID[val] || '';
+                    const cellID = DEPMAP_TO_CELLLINE_ID[val] || '';
                     row.push(JSON.stringify(cellID));
                 }
             });

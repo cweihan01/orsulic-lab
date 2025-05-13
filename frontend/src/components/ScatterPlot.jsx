@@ -1,7 +1,6 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-import depMapToCellLineID from '../cellline_mapping.js';
-
+import { DEPMAP_TO_CELLLINE_ID } from '../utils/constants.js';
 
 const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
     if (!data || data.length === 0) return null;
@@ -10,9 +9,11 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
     const xKey = keys[1];
     const yKey = keys[2];
 
-    const xValues = data.map(d => d[xKey]);
-    const yValues = data.map(d => d[yKey]);
-    const textValues = data.map(d => depMapToCellLineID[d.cell_lines] || d.cell_lines || '');
+    const xValues = data.map((d) => d[xKey]);
+    const yValues = data.map((d) => d[yKey]);
+    const textValues = data.map(
+        (d) => DEPMAP_TO_CELLLINE_ID[d.cell_lines] || d.cell_lines || ''
+    );
 
     const title =
         plotType === 'anova'
@@ -32,8 +33,9 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
     let plotData;
 
     if (plotType === 'anova') {
-        const isCategorical = v =>
-            typeof v === 'string' || typeof v === 'boolean' ||
+        const isCategorical = (v) =>
+            typeof v === 'string' ||
+            typeof v === 'boolean' ||
             (typeof v === 'number' && Number.isInteger(v) && v < 20);
 
         const xIsCat = isCategorical(xValues[0]);
@@ -49,19 +51,27 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
         } else {
             return (
                 <div className="w-full p-4 my-2 rounded bg-white text-red-600">
-                    <h2 className="text-xl font-bold mb-2">Invalid ANOVA plot</h2>
-                    <p>Exactly one variable must be categorical and one must be numeric.</p>
+                    <h2 className="text-xl font-bold mb-2">
+                        Invalid ANOVA plot
+                    </h2>
+                    <p>
+                        Exactly one variable must be categorical and one must be
+                        numeric.
+                    </p>
                 </div>
             );
         }
 
-        const categories = [...new Set(data.map(d => d[catKey]))].sort((a, b) =>
-            typeof a === 'number' ? a - b : String(a).localeCompare(String(b))
+        const categories = [...new Set(data.map((d) => d[catKey]))].sort(
+            (a, b) =>
+                typeof a === 'number'
+                    ? a - b
+                    : String(a).localeCompare(String(b))
         );
 
-        plotData = categories.map(cat => ({
+        plotData = categories.map((cat) => ({
             type: 'box',
-            y: data.filter(d => d[catKey] === cat).map(d => d[numKey]),
+            y: data.filter((d) => d[catKey] === cat).map((d) => d[numKey]),
             name: cat,
             boxpoints: 'all',
             jitter: 0.4,
@@ -70,33 +80,35 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
     } else if (plotType === 'chisq') {
         // Grouped bar plot for cat vs cat
         const groupMap = {};
-        data.forEach(d => {
+        data.forEach((d) => {
             const xCat = d[xKey];
             const yCat = d[yKey];
             if (!groupMap[yCat]) groupMap[yCat] = {};
             groupMap[yCat][xCat] = (groupMap[yCat][xCat] || 0) + 1;
         });
 
-        const xCategories = [...new Set(data.map(d => d[xKey]))].sort((a, b) =>
-            typeof a === 'number' ? a - b : String(a).localeCompare(String(b))
+        const xCategories = [...new Set(data.map((d) => d[xKey]))].sort(
+            (a, b) =>
+                typeof a === 'number'
+                    ? a - b
+                    : String(a).localeCompare(String(b))
         );
         const yCategories = Object.keys(groupMap).sort((a, b) =>
             typeof a === 'number' ? a - b : String(a).localeCompare(String(b))
         );
-        
 
         const colors = [
-            'rgba(66, 165, 245, 0.6)',   // blue
-            'rgba(239, 83, 80, 0.6)',    // red
-            'rgba(102, 187, 106, 0.6)',  // green
-            'rgba(255, 202, 40, 0.6)',   // yellow
-            'rgba(171, 71, 188, 0.6)',   // purple
-            'rgba(255, 112, 67, 0.6)',   // orange
+            'rgba(66, 165, 245, 0.6)', // blue
+            'rgba(239, 83, 80, 0.6)', // red
+            'rgba(102, 187, 106, 0.6)', // green
+            'rgba(255, 202, 40, 0.6)', // yellow
+            'rgba(171, 71, 188, 0.6)', // purple
+            'rgba(255, 112, 67, 0.6)', // orange
         ];
 
         plotData = yCategories.map((yCat, idx) => ({
             x: xCategories,
-            y: xCategories.map(xCat => groupMap[yCat][xCat] || 0),
+            y: xCategories.map((xCat) => groupMap[yCat][xCat] || 0),
             name: yCat,
             type: 'bar',
             marker: {
@@ -106,9 +118,10 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
                     width: 1,
                 },
             },
-            text: xCategories.map(xCat => groupMap[yCat][xCat] || 0),
+            text: xCategories.map((xCat) => groupMap[yCat][xCat] || 0),
             textposition: 'auto',
-            hovertemplate: '%{x}<br>%{y} counts<br>Group: %{name}<extra></extra>',
+            hovertemplate:
+                '%{x}<br>%{y} counts<br>Group: %{name}<extra></extra>',
         }));
 
         layout.barmode = 'group';
@@ -128,9 +141,15 @@ const ScatterPlot = ({ data, handleCloseGraph, plotType = 'spearman' }) => {
     }
 
     return (
-        <div className="w-full flex-grow rounded-lg drop-shadow-lg p-4 my-2" style={{ background: 'white' }}>
+        <div
+            className="w-full flex-grow rounded-lg drop-shadow-lg p-4 my-2"
+            style={{ background: 'white' }}
+        >
             <div className="relative">
-                <h2 className="text-3xl font-semibold text-gray-800 mb-4" style={{ fontFamily: 'Futura' }}>
+                <h2
+                    className="text-3xl font-semibold text-gray-800 mb-4"
+                    style={{ fontFamily: 'Futura' }}
+                >
                     {layout.title}
                 </h2>
                 <button
