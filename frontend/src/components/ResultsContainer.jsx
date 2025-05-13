@@ -59,7 +59,7 @@ export default function ResultsContainer({
     return (
         <div
             ref={resultsRef}
-            className="flex-1 flex-col overflow-y-auto p-8 custom-scrollbar"
+            className="flex-1 flex-col overflow-y-auto px-4 py-2 custom-scrollbar"
         >
             {/* Loading icon */}
             {isLoading && <LoadingIcon onCancel={onCancel} />}

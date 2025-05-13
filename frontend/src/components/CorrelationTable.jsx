@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 
 import depMapToCellLineID from '../cellline_mapping.js';
 import axios from 'axios';
+import { TAB_DISPLAY_NAMES } from '../utils/constants.js';
 
 // Number of results in table to display at once
 const RESULTS_INCREMENT = 100;
@@ -22,32 +23,24 @@ const getPValueColor = (p) => {
 };
 
 export default function CorrelationTable({
-    filteredData,
+    sortedData,
     correlationKey,
     pValueKey,
     highlightedRow,
     onRequery,
     onScatterRequest,
     selectedTab,
+    sortConfig,
+    setSortConfig,
 }) {
     // Store the number of rows that are being displayed currently
     const [visibleCount, setVisibleCount] = useState(RESULTS_INCREMENT);
 
-    // Store sorted column state
-    const [sortConfig, setSortConfig] = useState({
-        key: null,
-        direction: 'ascending',
-    });
-
-    // Set sorted column
-    useEffect(() => {
-        if (!pValueKey && !correlationKey) return;
-
-        const defaultKey = correlationKey || pValueKey || 'count';
-        const defaultDirection = correlationKey ? 'descending' : 'ascending';
-
-        setSortConfig({ key: defaultKey, direction: defaultDirection });
-    }, [correlationKey, pValueKey]);
+    // Subset of all data that is being displayed
+    const visibleData = useMemo(
+        () => sortedData.slice(0, visibleCount),
+        [sortedData, visibleCount]
+    );
 
     /** Sort by new key/column */
     const requestSort = (key) => {
@@ -64,76 +57,18 @@ export default function CorrelationTable({
         return sortConfig.direction === 'ascending' ? '▲' : '▼';
     };
 
-    /** Perform sort based on key */
-    const sortedData = useMemo(() => {
-        const items = [...filteredData];
-        items.sort((a, b) => {
-            let aVal = a[sortConfig.key],
-                bVal = b[sortConfig.key];
+    // Set sorted column
+    useEffect(() => {
+        if (!pValueKey && !correlationKey) return;
 
-            // Special case: sort Spearman correlation by absolute value
-            if (sortConfig.key === correlationKey && typeof aVal === 'number') {
-                aVal = Math.abs(aVal);
-                bVal = Math.abs(bVal);
-            }
+        const defaultKey = correlationKey || pValueKey || 'count';
+        const defaultDirection = correlationKey ? 'descending' : 'ascending';
 
-            // Sort numerical values
-            if (typeof aVal === 'number' && typeof bVal === 'number') {
-                return sortConfig.direction === 'ascending'
-                    ? aVal - bVal
-                    : bVal - aVal;
-            }
-
-            // Sort everything else as strings
-            const aStr = String(aVal).toLowerCase(),
-                bStr = String(bVal).toLowerCase();
-            if (aStr < bStr)
-                return sortConfig.direction === 'ascending' ? -1 : 1;
-            if (aStr > bStr)
-                return sortConfig.direction === 'ascending' ? 1 : -1;
-
-            return 0;
-        });
-        return items;
-    }, [filteredData, sortConfig, correlationKey]);
-
-    // Subset of all data that is being displayed
-    const visibleData = useMemo(
-        () => sortedData.slice(0, visibleCount),
-        [sortedData, visibleCount]
-    );
-
-    /** Download the entire table as a csv file */
-    const handleDownloadTable = () => {
-        if (sortedData.length === 0) {
-            alert('No results to download.');
-            return;
-        }
-
-        const headers = Object.keys(sortedData[0]);
-        const csvRows = [headers.join(',')];
-
-        sortedData.forEach((row) => {
-            const values = headers.map((h) => JSON.stringify(row[h] ?? ''));
-            csvRows.push(values.join(','));
-        });
-
-        const feature1 = sortedData[0]?.feature_1 || 'results';
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const filename = `${feature1}_${selectedTab}_results_${timestamp}.csv`;
-
-        const csvString = csvRows.join('\n');
-        const blob = new Blob([csvString], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.click();
-        window.URL.revokeObjectURL(url);
-    };
+        setSortConfig({ key: defaultKey, direction: defaultDirection });
+    }, [correlationKey, pValueKey]);
 
     /** Download a single row of data as a csv file */
-    const handleDownloadData = async (
+    const handleDownloadRowData = async (
         feature1,
         feature2,
         database1,
@@ -212,20 +147,8 @@ export default function CorrelationTable({
 
     return (
         <>
-            <div className="flex justify-end mb-2">
-                <button
-                    onClick={handleDownloadTable}
-                    style={{
-                        backgroundColor: '#78aee8',
-                        fontFamily: 'Futura',
-                    }}
-                    className="text-white px-4 py-2 rounded hover:opacity-85"
-                >
-                    Download Table as CSV
-                </button>
-            </div>
-
             <div className="overflow-x-auto">
+                {/* Table */}
                 <table className="correlation-result w-full">
                     <thead>
                         <tr>
@@ -262,7 +185,7 @@ export default function CorrelationTable({
                                     style={{ backgroundColor: '#78aee8' }}
                                     onClick={() => requestSort(correlationKey)}
                                 >
-                                    {correlationKey.replace(/_/g, ' ')}{' '}
+                                    {TAB_DISPLAY_NAMES[selectedTab]} Correlation
                                     {getSortArrow(correlationKey)}
                                 </th>
                             )}
@@ -271,7 +194,7 @@ export default function CorrelationTable({
                                 style={{ backgroundColor: '#78aee8' }}
                                 onClick={() => requestSort(pValueKey)}
                             >
-                                {pValueKey.replace(/_/g, ' ')}{' '}
+                                {TAB_DISPLAY_NAMES[selectedTab]} P-value
                                 {getSortArrow(pValueKey)}
                             </th>
                             <th style={{ backgroundColor: '#78aee8' }}>
@@ -350,7 +273,7 @@ export default function CorrelationTable({
                                 <td>
                                     <button
                                         onClick={() =>
-                                            handleDownloadData(
+                                            handleDownloadRowData(
                                                 item.feature_1,
                                                 item.feature_2,
                                                 item.database_1,
@@ -367,20 +290,21 @@ export default function CorrelationTable({
                         ))}
                     </tbody>
                 </table>
-
-                {visibleCount < sortedData.length && (
-                    <div className="flex justify-center mt-4">
-                        <button
-                            onClick={() =>
-                                setVisibleCount((v) => v + RESULTS_INCREMENT)
-                            }
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Load More
-                        </button>
-                    </div>
-                )}
             </div>
+
+            {/* Load more button at buttom of table */}
+            {visibleCount < sortedData.length && (
+                <div className="flex justify-center mt-4">
+                    <button
+                        onClick={() =>
+                            setVisibleCount((v) => v + RESULTS_INCREMENT)
+                        }
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                        Load More
+                    </button>
+                </div>
+            )}
         </>
     );
 }
