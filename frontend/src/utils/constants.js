@@ -1,6 +1,9 @@
 /** Max number of queries in query history */
 export const MAX_QUERY_HISTORY_LENGTH = 20;
 
+/** Number of results in table to display at once */
+export const RESULTS_INCREMENT = 50;
+
 /** List of different correlation types */
 export const TAB_KEYS = ['spearman', 'anova', 'chisq'];
 

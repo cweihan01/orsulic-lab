@@ -4,10 +4,8 @@ import axios from 'axios';
 import {
     DEPMAP_TO_CELLLINE_ID,
     TAB_DISPLAY_NAMES,
+    RESULTS_INCREMENT,
 } from '../utils/constants.js';
-
-// Number of results in table to display at once
-const RESULTS_INCREMENT = 50;
 
 const getCorrelationColor = (c) => {
     if (c > 0.75) return '#2e7d32';
