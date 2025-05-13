@@ -114,16 +114,8 @@ function App() {
                     isCollapsed={isSidebarCollapsed}
                     queryHistory={queryHistory}
                     clearQueryHistory={() => setQueryHistory([])}
+                    onToggleSidebar={handleToggleSidebar}
                 />
-
-                {/* Button to toggle sidebar collapse */}
-                <button
-                    onClick={handleToggleSidebar}
-                    className="absolute top-1/2 -ml-2 transform -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-full shadow-lg focus:outline-none"
-                    aria-label="Toggle sidebar"
-                >
-                    {isSidebarCollapsed ? '▶' : '◀'}
-                </button>
 
                 {/* Results section: graph, correlation table */}
                 <ResultsContainer

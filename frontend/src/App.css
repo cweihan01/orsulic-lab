@@ -130,8 +130,9 @@
 
 .sidebar {
   width: 500px;
-  background: linear-gradient(180deg, #bad7f7, #e6bef7);
-  padding: 1.5rem;
+  background: linear-gradient(180deg, #bfdbf8, #e6bef7);
+  /* padding: 1.5rem; */
+  padding: 0px 1.5rem 15px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -156,10 +157,11 @@
 }
 
 .sidebar.collapsed {
-  width: 25px;
+  width: 43px;
   align-items: center;
   padding: 1rem 0.5rem;
   overflow-x: hidden;
+  background: none;
 }
 
 /* Hide content inside collapsed sidebar */
@@ -175,15 +177,34 @@
   background-color: #78aee8;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 0.4rem 0.8rem;
+  padding: 1.3rem 0.7rem;
   font-size: 1.2rem;
   cursor: pointer;
   font-family: Futura, sans-serif;
   font-weight: bold;
-  align-self: flex-end;
-  margin-bottom: 1rem;
   transition: background-color 0.2s ease;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+/* Rounded when sidebar is expanded */
+.sidebar:not(.collapsed) .collapse-btn {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  border-top-left-radius: 40px;
+  border-bottom-left-radius: 40px;
+}
+
+/* Rounded when sidebar is collapsed */
+.sidebar.collapsed .collapse-btn {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border-top-right-radius: 40px;
+  border-bottom-right-radius: 40px;
+  right: 1px;
 }
 
 .collapse-btn:hover {
