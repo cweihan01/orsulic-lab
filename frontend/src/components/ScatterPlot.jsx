@@ -9,9 +9,20 @@ const ScatterPlot = ({
 }) => {
     if (!data || data.length === 0) return null;
 
-    const keys = Object.keys(data[0]);
-    const xKey = keys[1];
-    const yKey = keys[2];
+    // const keys = Object.keys(data[0]);
+    // const xKey = keys[1];
+    // const yKey = keys[2];
+
+    let xKey, yKey;
+    const featureKeys = Object.keys(data[0]).filter(
+        (key) => !['cell_lines', 'Database', 'Feature'].includes(key)
+    );
+
+    if (featureKeys.length === 1) {
+        xKey = yKey = featureKeys[0];
+    } else if (featureKeys.length >= 2) {
+        [xKey, yKey] = featureKeys;
+    }
 
     const xValues = data.map((d) => d[xKey]);
     const yValues = data.map((d) => d[yKey]);
@@ -28,7 +39,7 @@ const ScatterPlot = ({
 
     const layout = {
         title,
-        xaxis: { title: xKey, tickangle: -30 },
+        xaxis: { title: xKey, tickangle: 0 },
         yaxis: { title: yKey },
         autosize: true,
         font: { family: 'Futura', size: 14 },
