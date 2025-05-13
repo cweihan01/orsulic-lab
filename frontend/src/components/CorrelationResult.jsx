@@ -53,7 +53,7 @@ function CorrelationResult({
     onScatterRequest,
     highlightedRow,
     onRequery,
-    onScrollToTop
+    onScrollToTop,
 }) {
     const [selectedTab, setSelectedTab] = useState('spearman');
 

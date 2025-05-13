@@ -5,6 +5,7 @@ import {
     DEPMAP_TO_CELLLINE_ID,
     TAB_DISPLAY_NAMES,
     RESULTS_INCREMENT,
+    TAB_TYPES,
 } from '../utils/constants.js';
 
 const getCorrelationColor = (c) => {
@@ -227,9 +228,9 @@ const TableBodyRow = ({
                     }
                     className="text-blue-500 hover:underline"
                 >
-                    {selectedTab === 'anova'
+                    {selectedTab === TAB_TYPES.ANOVA
                         ? 'View Boxplot'
-                        : selectedTab === 'chisq'
+                        : selectedTab === TAB_TYPES.CHISQUARED
                         ? 'View Barplot'
                         : 'View Scatterplot'}
                 </button>

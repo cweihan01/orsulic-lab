@@ -4,14 +4,18 @@ export const MAX_QUERY_HISTORY_LENGTH = 20;
 /** Number of results in table to display at once */
 export const RESULTS_INCREMENT = 50;
 
-/** List of different correlation types */
-export const TAB_KEYS = ['spearman', 'anova', 'chisq'];
+/** List of different correlation types corresponding exactly to API key */
+const SPEARMAN = 'spearman';
+const ANOVA = 'anova';
+const CHISQUARED = 'chisquared';
+export const TAB_TYPES = { SPEARMAN, ANOVA, CHISQUARED };
+export const TAB_KEYS = [SPEARMAN, ANOVA, CHISQUARED];
 
 /** Map each correlation type to human-readable format */
 export const TAB_DISPLAY_NAMES = {
     spearman: 'Spearman',
     anova: 'ANOVA',
-    chisq: 'Chi-Square',
+    chisquared: 'Chi-Square',
 };
 
 /** Map each DepMap ID to cell line human-readable name */
