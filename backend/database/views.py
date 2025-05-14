@@ -105,6 +105,10 @@ class CorrelationView(APIView):
             db1_names = request.data.get("database1")
             db2_names = request.data.get("database2")
 
+            # Extract subcategory names for feature 1 and features 2
+            # subcategory1_names = request.data.get("subcategory1")
+            # subcategory2_names = request.data.get("subcategory2")
+
             # Ensure input features are provided
             if not f1_name:
                 return Response({"error": "Feature 1 is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -170,13 +174,25 @@ class CorrelationView(APIView):
                 elif db_name == "Drug Screen":
                     f2_data["Drug Screen"] = DrugScreen.objects.filter(feature__in=f2_objects).values_list()
 
-            f1_df = correlations.get_feature_values(f1_data, CELL_LINES)
-            f2_df = correlations.get_feature_values(f2_data, CELL_LINES)
+            
+            # 2) build a map for feature2 → its sub_category
+            feature_to_subcategory = {
+                f.name: f.sub_category for f in f2_objects
+            }
+            feature_to_subcategory[feature1.name] = feature1.sub_category
 
-            # print("Feature 1 df:")
-            # print(f1_df)
-            # print("Feature 2 df:")
-            # print(f2_df)
+            feature_to_datatype = {
+                feature.name: feature.data_type
+                for feature in Feature.objects.all()
+            }
+
+            f1_df = correlations.get_feature_values(f1_data, CELL_LINES, feature_to_subcategory, feature_to_datatype)
+            f2_df = correlations.get_feature_values(f2_data, CELL_LINES, feature_to_subcategory, feature_to_datatype)
+
+            print("Feature 1 df:")
+            print(f1_df.head(5))
+            print("Feature 2 df:")
+            print(f2_df.head(5))
 
             # Call the updated calculate_correlations function
             results_df_dict = correlations.calculate_correlations(f1_df, f2_df)
@@ -186,6 +202,12 @@ class CorrelationView(APIView):
                 key: df.to_dict(orient="records")
                 for key, df in results_df_dict.items()
             }
+
+            # # 3) now inject these into each row of each result list
+            # for corr_type, records in results_json.items():
+            #     for rec in records:
+            #         rec['subcategory1'] = feature1.sub_category
+            #         rec['subcategory2'] = f2_subcat_map.get(rec['feature_2'], None)
             
             # Save results to cache for 1 hour
             cache.set(cache_key, results_json, timeout=3600)

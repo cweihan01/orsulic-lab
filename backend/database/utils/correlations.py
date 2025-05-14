@@ -27,8 +27,8 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
     non-NaN values used for the correlation), correlation, p-value
     """
     # Set a multi-index based on "Database" and "Feature"
-    df1 = df1.set_index(["Database", "Feature"])
-    df2 = df2.set_index(["Database", "Feature"])
+    df1 = df1.set_index(["Database", "Feature", "subcategory", "datatype"])
+    df2 = df2.set_index(["Database", "Feature", "subcategory", "datatype"])
 
     feature_type_map = {
         feature.name: feature.data_type
@@ -42,12 +42,21 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
     # Compute Spearman correlations for each unique pair of features across databases
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        for (db1, f1_name), f1_vals in df1.iterrows():
-            for (db2, f2_name), f2_vals in df2.iterrows():
-                f1_type = feature_type_map.get(f1_name)
-                f2_type = feature_type_map.get(f2_name)
+        for (db1, f1_name, f1_subcategory, f1_type), f1_vals in df1.iterrows():
+            print(f1_name, f1_subcategory, f1_type)
+            for (db2, f2_name, f2_subcategory, f2_type), f2_vals in df2.iterrows():
+                print(f2_name, f2_subcategory, f2_type)
+                # f1_type = feature_type_map.get(f1_name)
+                # f2_type = feature_type_map.get(f2_name)
 
-                
+                # f1_type = df1[["datatype"]]
+                # f2_type = df2[["datatype"]]
+
+                # f1_subcategory = df1[["subcategory"]]
+                # f2_subcategory = df2[["subcategory"]]
+
+                # print(f1_type, f2_type)
+                # print(f1_subcategory, f2_subcategory)
 
                 valid_data = pd.concat([f1_vals, f2_vals], axis=1).dropna()
                 count = valid_data.shape[0]  # Number of valid data points
@@ -70,7 +79,7 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                     if (spearman_corr is not None and math.isfinite(spearman_corr)) and (spearman_pvalue is not None and math.isfinite(spearman_pvalue)):
                         spearman_corr = round_to_n(spearman_corr, 3)
                         spearman_pvalue = round_to_n(spearman_pvalue, 3)
-                        spearman_results.append([db1, f1_name, db2, f2_name, count, spearman_corr, spearman_pvalue])
+                        spearman_results.append([db1, f1_subcategory, f1_name, db2, f2_subcategory, f2_name, count, spearman_corr, spearman_pvalue])
 
                 # ANOVA: one categorical, one numerical
                 elif (f1_type == "cat" and f2_type == "num") or (f1_type == "num" and f2_type == "cat"):
@@ -84,7 +93,7 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                             _, anova_pvalue = f_oneway(*groups)
                             if anova_pvalue is not None and math.isfinite(anova_pvalue):
                                 anova_pvalue = round_to_n(anova_pvalue, 3)
-                                anova_results.append([db1, f1_name, db2, f2_name, count, anova_pvalue])
+                                anova_results.append([db1, f1_subcategory, f1_name, db2, f2_subcategory, f2_name, count, anova_pvalue])
                         except:
                             continue
 
@@ -96,28 +105,28 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                             _, chisq_pvalue, _, _ = chi2_contingency(contingency_table)
                             if chisq_pvalue is not None and math.isfinite(chisq_pvalue):
                                 chisq_pvalue = round_to_n(chisq_pvalue, 3)
-                                chisq_results.append([db1, f1_name, db2, f2_name, count, chisq_pvalue])
+                                chisq_results.append([db1, f1_subcategory, f1_name, db2, f2_subcategory, f2_name, count, chisq_pvalue])
                         except:
                             continue
 
     return {
         "spearman": pd.DataFrame(
             spearman_results,
-            columns=["database_1", "feature_1", "database_2", "feature_2", "count",
+            columns=["database_1", "subcategory1", "feature_1", "database_2", "subcategory2", "feature_2", "count",
                      "spearman_correlation", "spearman_pvalue"]
         ),
         "anova": pd.DataFrame(
             anova_results,
-            columns=["database_1", "feature_1", "database_2", "feature_2", "count", "anova_pvalue"]
+            columns=["database_1", "subcategory1", "feature_1", "database_2", "subcategory2", "feature_2", "count", "anova_pvalue"]
         ),
         "chisquared": pd.DataFrame(
             chisq_results,
-            columns=["database_1", "feature_1", "database_2", "feature_2", "count", "chisq_pvalue"]
+            columns=["database_1", "subcategory1", "feature_1", "database_2", "subcategory2", "feature_2", "count", "chisq_pvalue"]
         )
     }
 
 # 
-def get_feature_values(db_dict: dict, CELL_LINES) -> pd.DataFrame: 
+def get_feature_values(db_dict: dict, CELL_LINES, feature_to_subcategory, feature_to_datatype) -> pd.DataFrame: 
     """
     Given a `db_dict` and `CELL_LINES`, convert the pandas Dataframe, where the rows correspond to database/feature pairs
     and the values of the corresponding cell lines
@@ -139,6 +148,9 @@ def get_feature_values(db_dict: dict, CELL_LINES) -> pd.DataFrame:
 
         # Adding the database information to the row
         tmp_df["Database"] = key
+
+        tmp_df["subcategory"] = tmp_df["Feature"].map(feature_to_subcategory)
+        tmp_df["datatype"] = tmp_df["Feature"].map(feature_to_datatype)
         
         # Moving it so that its the first column
         col = tmp_df.pop('Database')
