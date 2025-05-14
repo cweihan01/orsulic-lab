@@ -133,7 +133,7 @@ function App() {
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                src="./sample.pdf"
+                src="./Nuclear_Features.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0"
             />
         </div>
     );

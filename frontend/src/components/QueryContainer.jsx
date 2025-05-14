@@ -45,7 +45,7 @@ export default function QueryContainer({
                         }}
                         className="my-4 px-4 py-2 text-white rounded-lg hover:opacity-85"
                     >
-                        View Feature Names
+                        View Nuclear Features
                     </button>
 
                     <QueryHistory
