@@ -46,7 +46,6 @@ function App() {
         abortControllerRef.current = controller;
         setIsLoading(true);
         scrollToTop();
-        console.log(query)
 
         // Add this query to history, retaining the given max number
         setQueryHistory((prev) => [
@@ -69,7 +68,6 @@ function App() {
                 }
             )
             .then((response) => {
-                console.log(response.data.correlations)
                 setCorrelationsMap(response.data.correlations);
             })
             .catch((err) => {

@@ -136,9 +136,9 @@ const TableHeaderRow = ({
             <th
                 className="cursor-pointer"
                 style={{ backgroundColor: '#78aee8' }}
-                onClick={() => requestSort('subcategory2')}
+                onClick={() => requestSort('subcategory_2')}
             >
-                Subcategory 2 {getSortArrow('subcategory2')}
+                Subcategory 2 {getSortArrow('subcategory_2')}
             </th>
             <th
                 className="cursor-pointer"
@@ -198,9 +198,9 @@ const TableBodyRow = ({
                     : ''
             }
         >
-            <td>{item.subcategory1}</td>
+            <td>{item.subcategory_1}</td>
             <td>{item.feature_1}</td>
-            <td>{item.subcategory2}</td>
+            <td>{item.subcategory_2}</td>
             <td>
                 <button
                     onClick={() => onRequery(item.feature_2, item.database_2)}
