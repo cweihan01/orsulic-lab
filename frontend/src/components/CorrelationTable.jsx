@@ -297,6 +297,10 @@ export default function CorrelationTable({
         setSortConfig({ key: defaultKey, direction: defaultDirection });
     }, [correlationKey, pValueKey]);
 
+    useEffect(() => {
+        setVisibleCount(RESULTS_INCREMENT);
+    }, [sortedData]);
+
     return (
         <>
             {/* Table */}
