@@ -1,13 +1,15 @@
-from rest_framework import serializers
 import math
+from rest_framework import serializers
 
-from .models import Feature, Nuclear, Molecular, DrugScreen, CELL_LINES
+from .models import Feature, Nuclear, Molecular, DrugScreen
+from .utils.constants import CELL_LINES
 
 
 class FeatureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feature
         fields = ['name', 'data_type', 'category', 'sub_category']
+
 
 class MolecularSerializer(serializers.ModelSerializer):
     feature = FeatureSerializer()
@@ -27,7 +29,6 @@ class MolecularSerializer(serializers.ModelSerializer):
         return rep
 
 
-
 class DrugScreenSerializer(serializers.ModelSerializer):
     feature = FeatureSerializer()
 
@@ -44,7 +45,7 @@ class DrugScreenSerializer(serializers.ModelSerializer):
             if isinstance(rep[field], float) and (math.isnan(rep[field]) or math.isinf(rep[field])):
                 rep[field] = None
         return rep
-    
+
 
 class NuclearSerializer(serializers.ModelSerializer):
     feature = FeatureSerializer()

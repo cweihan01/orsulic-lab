@@ -10,13 +10,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from .models import Feature, Nuclear, Molecular, DrugScreen, CELL_LINES, Correlation
+from .models import Feature, Nuclear, Molecular, DrugScreen, Correlation
 from .serializers import FeatureSerializer, NuclearSerializer, MolecularSerializer, DrugScreenSerializer
 from .utils import correlations
+from .utils.constants import CELL_LINES, CACHE_DURATION
 
 
 def index(request):
     return render(request, 'database/index.html')
+
 
 def cellline(request):
     rows = Nuclear.objects.all()
@@ -26,6 +28,7 @@ def cellline(request):
         'columns': columns,
     }
     return render(request, 'database/cellline.html', context)
+
 
 def corr(request):
     rows = Correlation.objects.all()
@@ -46,7 +49,7 @@ class FeatureViewSet(viewsets.ModelViewSet):
     def categories(self, request):
         categories = Feature.objects.values_list('category', flat=True).distinct()
         return Response({'categories': list(categories)})
-    
+
     # Get subcategories for multiple categories with /api/features/subcategories/?categories=Nuclear&categories=Drug%20Screen
     @action(detail=False, methods=['get'])
     def subcategories(self, request):
@@ -56,11 +59,11 @@ class FeatureViewSet(viewsets.ModelViewSet):
 
         if not categories:
             return Response({'error': 'Categories parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
         subcategories = Feature.objects.filter(category__in=categories)\
             .values_list('sub_category', flat=True)\
             .distinct()
-        
+
         return Response({'subcategories': list(subcategories)})
 
     def list(self, request, *args, **kwargs):
@@ -71,7 +74,7 @@ class FeatureViewSet(viewsets.ModelViewSet):
         # Apply filters if parameters are provided
         if database_list:
             self.queryset = self.queryset.filter(category__in=database_list)
-        
+
         if sub_category_list:
             self.queryset = self.queryset.filter(sub_category__in=sub_category_list)
 
@@ -84,9 +87,11 @@ class NuclearViewSet(viewsets.ModelViewSet):
     queryset = Nuclear.objects.all()
     serializer_class = NuclearSerializer
 
+
 class MolecularViewSet(viewsets.ModelViewSet):
     queryset = Molecular.objects.all()
     serializer_class = MolecularSerializer
+
 
 class DrugScreenViewSet(viewsets.ModelViewSet):
     queryset = DrugScreen.objects.all()
@@ -104,10 +109,6 @@ class CorrelationView(APIView):
             # Extract database names for feature 1 and features 2
             db1_names = request.data.get("database1")
             db2_names = request.data.get("database2")
-
-            # Extract subcategory names for feature 1 and features 2
-            # subcategory1_names = request.data.get("subcategory1")
-            # subcategory2_names = request.data.get("subcategory2")
 
             # Ensure input features are provided
             if not f1_name:
@@ -145,13 +146,14 @@ class CorrelationView(APIView):
             cached_result = cache.get(cache_key)
             if cached_result is not None:
                 return Response({"correlations": cached_result}, status=status.HTTP_200_OK)
-            
-            # Fetch Feature objects
+
+            # Fetch Feature objects for feature 1
             try:
-                feature1 = Feature.objects.get(name=f1_name)
+                f1_object = Feature.objects.get(name=f1_name)
             except Feature.DoesNotExist:
                 return Response({"error": f"Feature '{f1_name}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
+            # Fetch Feature objects for features 2
             f2_objects = Feature.objects.filter(name__in=f2_names)
             if not f2_objects.exists():
                 return Response({"error": f"None of the provided features in Feature 2 were found: {f2_names}."}, status=status.HTTP_404_NOT_FOUND)
@@ -159,40 +161,46 @@ class CorrelationView(APIView):
             f1_data = {}
             for db_name in db1_names:
                 if db_name == "Nuclear":
-                    f1_data["Nuclear"] = Nuclear.objects.filter(feature=feature1)
+                    f1_data["Nuclear"] = Nuclear.objects.filter(feature=f1_object)
                 elif db_name == "Molecular":
-                    f1_data["Molecular"] = Molecular.objects.filter(feature=feature1).values_list()
+                    f1_data["Molecular"] = Molecular.objects.filter(
+                        feature=f1_object).values_list()
                 elif db_name == "Drug Screen":
-                    f1_data["Drug Screen"] = DrugScreen.objects.filter(feature=feature1).values_list()
+                    f1_data["Drug Screen"] = DrugScreen.objects.filter(
+                        feature=f1_object).values_list()
 
             f2_data = {}
             for db_name in db2_names:
                 if db_name == "Nuclear":
                     f2_data["Nuclear"] = Nuclear.objects.filter(feature__in=f2_objects)
                 elif db_name == "Molecular":
-                    f2_data["Molecular"] = Molecular.objects.filter(feature__in=f2_objects).values_list()
+                    f2_data["Molecular"] = Molecular.objects.filter(
+                        feature__in=f2_objects).values_list()
                 elif db_name == "Drug Screen":
-                    f2_data["Drug Screen"] = DrugScreen.objects.filter(feature__in=f2_objects).values_list()
+                    f2_data["Drug Screen"] = DrugScreen.objects.filter(
+                        feature__in=f2_objects).values_list()
 
-            
-            # 2) build a map for feature2 → its sub_category
+            # Map each feature (in current query) to its sub_category
             feature_to_subcategory = {
                 f.name: f.sub_category for f in f2_objects
             }
-            feature_to_subcategory[feature1.name] = feature1.sub_category
+            feature_to_subcategory[f1_object.name] = f1_object.sub_category
 
+            # Map each feature (in current query) to its data_type (num, cat)
             feature_to_datatype = {
-                feature.name: feature.data_type
-                for feature in Feature.objects.all()
+                f.name: f.data_type for f in f2_objects
             }
+            feature_to_datatype[f1_object.name] = f1_object.data_type
 
-            f1_df = correlations.get_feature_values(f1_data, CELL_LINES, feature_to_subcategory, feature_to_datatype)
-            f2_df = correlations.get_feature_values(f2_data, CELL_LINES, feature_to_subcategory, feature_to_datatype)
+            f1_df = correlations.get_feature_values(
+                f1_data, feature_to_subcategory, feature_to_datatype)
+            f2_df = correlations.get_feature_values(
+                f2_data, feature_to_subcategory, feature_to_datatype)
 
-            print("Feature 1 df:")
-            print(f1_df.head(5))
-            print("Feature 2 df:")
-            print(f2_df.head(5))
+            # print("Feature 1 df:")
+            # print(f1_df.head(5))
+            # print("Feature 2 df:")
+            # print(f2_df.head(5))
 
             # Call the updated calculate_correlations function
             results_df_dict = correlations.calculate_correlations(f1_df, f2_df)
@@ -203,14 +211,8 @@ class CorrelationView(APIView):
                 for key, df in results_df_dict.items()
             }
 
-            # # 3) now inject these into each row of each result list
-            # for corr_type, records in results_json.items():
-            #     for rec in records:
-            #         rec['subcategory1'] = feature1.sub_category
-            #         rec['subcategory2'] = f2_subcat_map.get(rec['feature_2'], None)
-            
-            # Save results to cache for 1 hour
-            cache.set(cache_key, results_json, timeout=3600)
+            # Save correlation results to cache
+            cache.set(cache_key, results_json, timeout=CACHE_DURATION)
             return Response({"correlations": results_json}, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -218,13 +220,12 @@ class CorrelationView(APIView):
             return Response({"Error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class ScatterView(APIView): 
+class ScatterView(APIView):
     def post(self, request, *args, **kwargs):
-        
         try:
             # Extract input features from the request body
             f1_name = request.data.get("feature1")
-            f2_name = request.data.get("feature2") 
+            f2_name = request.data.get("feature2")
 
             db1_name = request.data.get("database1")
             db2_name = request.data.get("database2")
@@ -234,7 +235,7 @@ class ScatterView(APIView):
                 return Response({"error": "Feature 1 is required."}, status=status.HTTP_400_BAD_REQUEST)
             if not f2_name:  # Check for single value
                 return Response({"error": "Feature 2 is required."}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             # Fetch Feature objects
             try:
                 feature1 = Feature.objects.get(name=f1_name)
@@ -246,9 +247,9 @@ class ScatterView(APIView):
             except Feature.DoesNotExist:
                 return Response({"error": f"Feature '{f2_name}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
-            f1_data = None 
+            f1_data = None
             f2_data = None
-            
+
             # Query CellLine table using the retrieved Features
             if db1_name == "Nuclear":
                 f1_data = Nuclear.objects.filter(feature=feature1)
@@ -263,7 +264,6 @@ class ScatterView(APIView):
                 f2_data = Molecular.objects.filter(feature=feature2)
             elif db2_name == "Drug Screen":
                 f2_data = DrugScreen.objects.filter(feature=feature2)
-
 
             if not f1_data or not f2_data:
                 # print(f1_data.values_list())
@@ -281,10 +281,11 @@ class ScatterView(APIView):
 
             # print("Merged DataFrame:")
             # print(merged_df.head(5))
-            
+
             # Transpose the merged DataFrame
             transposed_df = merged_df.T.reset_index()
-            transposed_df.columns = ["cell_lines"] + [f"{f1_name}", f"{f2_name}"]  # Rename columns
+            transposed_df.columns = ["cell_lines"] + \
+                [f"{f1_name}", f"{f2_name}"]  # Rename columns
 
             # Remove redundnant first row
             transposed_df = transposed_df.iloc[1:].reset_index(drop=True)
