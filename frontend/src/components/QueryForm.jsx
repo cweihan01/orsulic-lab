@@ -69,6 +69,19 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
         });
     };
 
+    const handleResetForm = () => {
+        setSelectedDatabase1([]);
+        setSelectedDatabase2([]);
+        setSelectedSubCategories1([]);
+        setSelectedSubCategories2([]);
+        setFeature1('');
+        setFeature2([]);
+        setMinCorrelation(0.0);
+        setMaxPValue(1.0);
+        setIsCollapsible(false);
+    };
+    
+
     const handleSubmit = (e) => {
         e.preventDefault();
         const query = {
@@ -139,6 +152,8 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
                     </button>
                 )} */}
             </div>
+
+
             <form className="queryform-form" onSubmit={handleSubmit}>
                 {[
                     {
@@ -271,16 +286,37 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
                         {component}
                     </div>
                 ))}
-                
+                                
+
                 <div className="submit-button-container">
                     <button
                         type="submit"
                         className="submit-button"
                         disabled={!isFormValid()}
-                        style={{ opacity: isFormValid() ? 1 : 0.5, cursor: isFormValid() ? 'pointer' : 'not-allowed' }}
+                        style={{
+                            opacity: isFormValid() ? 1 : 0.5,
+                            cursor: isFormValid() ? 'pointer' : 'not-allowed'
+                        }}
                     >
-                        Query Database
+                        Query
                     </button>
+
+                    <button
+                        type="button"
+                        className="reset-button ml-4"
+                        onClick={handleResetForm}
+                        style={{
+                            marginLeft: '12px',
+                            backgroundColor: '#e5e7eb',
+                            color: '#333',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        Reset
+                    </button>
+                    
                 </div>
             </form>
         </div>

@@ -22,7 +22,7 @@ function QueryHistory({ history, onSelect, onClear }) {
                     style={{ fontFamily: 'Futura' }}
                     className="text-sm text-red-500 hover:underline"
                 >
-                    Clear History
+                    Clear
                 </button>
             </div>
             {history.length === 0 ? (
