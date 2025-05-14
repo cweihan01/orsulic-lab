@@ -1,0 +1,24 @@
+services:
+    redis:
+        container_name: orsulic-redis
+        image: redis
+        ports:
+            - '6379:6379'
+
+    backend:
+        container_name: orsulic-backend
+        build:
+            context: ./backend
+        env_file: ./backend/.env
+        depends_on:
+            - redis
+        ports:
+            - '8000:8000' # maps host:8000 to container:8000
+
+    frontend:
+        container_name: orsulic-frontend
+        build:
+            context: ./frontend
+        env_file: ./frontend/.env
+        ports:
+            - '3000:3000' # maps host:3000 to container:3000
