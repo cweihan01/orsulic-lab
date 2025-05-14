@@ -5,6 +5,9 @@ from scipy.stats import spearmanr, f_oneway, chi2_contingency
 from database.models import Feature
 import warnings
 
+# Round to n significant digits
+round_to_n = lambda x, n: x if x == 0 else round(x, -int(math.floor(math.log10(abs(x)))) + (n - 1))
+
 def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
     """
     Given two DataFrames `df1` and `df2`, computes the correlations between each row of
@@ -65,6 +68,8 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
 
                     # Reject null and nan values
                     if (spearman_corr is not None and math.isfinite(spearman_corr)) and (spearman_pvalue is not None and math.isfinite(spearman_pvalue)):
+                        spearman_corr = round_to_n(spearman_corr, 3)
+                        spearman_pvalue = round_to_n(spearman_pvalue, 3)
                         spearman_results.append([db1, f1_name, db2, f2_name, count, spearman_corr, spearman_pvalue])
 
                 # ANOVA: one categorical, one numerical
@@ -78,6 +83,7 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                         try:
                             _, anova_pvalue = f_oneway(*groups)
                             if anova_pvalue is not None and math.isfinite(anova_pvalue):
+                                anova_pvalue = round_to_n(anova_pvalue, 3)
                                 anova_results.append([db1, f1_name, db2, f2_name, count, anova_pvalue])
                         except:
                             continue
@@ -89,6 +95,7 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                         try:
                             _, chisq_pvalue, _, _ = chi2_contingency(contingency_table)
                             if chisq_pvalue is not None and math.isfinite(chisq_pvalue):
+                                chisq_pvalue = round_to_n(chisq_pvalue, 3)
                                 chisq_results.append([db1, f1_name, db2, f2_name, count, chisq_pvalue])
                         except:
                             continue

@@ -23,6 +23,17 @@ const getPValueColor = (p) => {
     return '#9e9e9e';
 };
 
+/** Format number to 3 s.f. and scientific notation if necessary */
+const formatNumber = (n) => {
+    if (typeof n !== 'number' || Number.isNaN(n)) return n;
+    const abs = Math.abs(n);
+    // Scientific notation if <0.001 or >=1000
+    if ((abs !== 0 && abs < 0.001) || abs >= 1000) {
+        return n.toExponential(3);
+    }
+    return n.toPrecision(3);
+};
+
 /** Download a single row of data as a csv file */
 const handleDownloadRowData = async (
     feature1,
@@ -205,7 +216,7 @@ const TableBodyRow = ({
                         color: getCorrelationColor(item[correlationKey]),
                     }}
                 >
-                    {item[correlationKey]}
+                    {formatNumber(item[correlationKey])}
                 </td>
             )}
             <td
@@ -213,7 +224,7 @@ const TableBodyRow = ({
                     color: getPValueColor(item[pValueKey]),
                 }}
             >
-                {item[pValueKey]}
+                {formatNumber(item[pValueKey])}
             </td>
             <td>
                 <button
