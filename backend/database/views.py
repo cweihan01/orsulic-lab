@@ -239,11 +239,15 @@ class ScatterView(APIView):
             # Fetch Feature objects
             try:
                 feature1 = Feature.objects.get(name=f1_name)
+                # Get data_type for feature1
+                f1_data_type = feature1.data_type  # This will be "num" or "cat"
             except Feature.DoesNotExist:
                 return Response({"error": f"Feature '{f1_name}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
             try:
-                feature2 = Feature.objects.get(name=f2_name)  # Fetch single feature
+                feature2 = Feature.objects.get(name=f2_name)
+                # Get data_type for feature2
+                f2_data_type = feature2.data_type  # This will be "num" or "cat"
             except Feature.DoesNotExist:
                 return Response({"error": f"Feature '{f2_name}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -298,9 +302,15 @@ class ScatterView(APIView):
 
             # Convert the transposed DataFrame to a JSON-compatible format
             transposed_json = transposed_df.to_dict(orient="records")
+            print(transposed_json)
 
-            return Response({"scatter_data": transposed_json}, status=status.HTTP_200_OK)
-
+            # Include the data types in the response
+            return Response({
+                "scatter_data": transposed_json,
+                "feature1_type": f1_data_type,
+                "feature2_type": f2_data_type
+            }, status=status.HTTP_200_OK)
+            
         except Exception as e:
             print("Error:", traceback.format_exc())
             return Response({"Error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

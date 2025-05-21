@@ -5,6 +5,8 @@ import { DEPMAP_TO_CELLLINE_ID, TAB_TYPES } from '../utils/constants.js';
 const ScatterPlot = ({
     data,
     handleCloseGraph,
+    feature1Type,
+    feature2Type,
     plotType = TAB_TYPES.SPEARMAN,
 }) => {
     if (!data || data.length === 0) return null;
@@ -36,25 +38,11 @@ const ScatterPlot = ({
     let plotData;
 
     if (plotType === TAB_TYPES.ANOVA) {
-        const isCategorical = (v) =>
-            typeof v === 'string' ||
-            typeof v === 'boolean' ||
-            (typeof v === 'number' && Number.isInteger(v) && v < 20);
-
-        const isCategoricalByDistribution = (arr) => {
-            const unique = [...new Set(arr.filter((v) => v !== null && v !== undefined))];
-            return unique.length <= 10;
-        };
-        
-        const xIsCat = isCategoricalByDistribution(xValues);
-        const yIsCat = isCategoricalByDistribution(yValues);
-        
-
         let catKey, numKey;
-        if (xIsCat && !yIsCat) {
+        if (feature1Type === "cat" && feature2Type === "num") {
             catKey = xKey;
             numKey = yKey;
-        } else if (!xIsCat && yIsCat) {
+        } else if (feature1Type === "num" && feature2Type === "cat") {
             catKey = yKey;
             numKey = xKey;
         } else {
