@@ -426,7 +426,7 @@ class CorrelationTCGAView(APIView):
             # Fetch Feature objects for feature 1
             try:
                 f1_object = Feature_TCGA.objects.get(name=f1_name)
-            except Feature.DoesNotExist:
+            except Feature_TCGA.DoesNotExist:
                 return Response({"error": f"Feature '{f1_name}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
             # Fetch Feature objects for features 2
