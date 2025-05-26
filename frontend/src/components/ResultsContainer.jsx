@@ -14,6 +14,8 @@ export default function ResultsContainer({
     const [scatterData, setScatterData] = useState([]);
     const [plotType, setPlotType] = useState('spearman');
     const [highlightedRow, setHighlightedRow] = useState(null);
+    const [feature1Type, setFeature1Type] = useState(null);
+    const [feature2Type, setFeature2Type] = useState(null);
 
     const resultsRef = useRef(null);
 
@@ -48,6 +50,8 @@ export default function ResultsContainer({
             .post(`${process.env.REACT_APP_API_ROOT}scatter/`, payload)
             .then((response) => {
                 setScatterData(response.data.scatter_data);
+                setFeature1Type(response.data.feature1_type);
+                setFeature2Type(response.data.feature2_type);
             })
             .catch((error) => {
                 console.error('Error posting scatter data:', error);
@@ -74,6 +78,8 @@ export default function ResultsContainer({
                 data={scatterData}
                 handleCloseGraph={handleCloseGraph}
                 plotType={plotType}
+                feature1Type={feature1Type}
+                feature2Type={feature2Type}
             />
 
             {/* Table of correlation results */}
