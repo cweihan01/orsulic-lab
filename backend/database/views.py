@@ -493,7 +493,7 @@ class CorrelationTCGAView(APIView):
             return Response({"Error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class ScatterView(APIView):
+class ScatterTCGAView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             # Extract input features from the request body
