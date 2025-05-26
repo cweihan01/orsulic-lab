@@ -136,7 +136,7 @@ function CorrelationResult({
             <div className="flex justify-between items-center mb-4">
                 {/* Results tab title */}
                 <h2
-                    className="text-3xl font-semibold text-gray-800"
+                    className="text-3xl font-semibold text-gray-800 mt-4 mb-4 ml-4"
                     style={{ fontFamily: 'Futura' }}
                 >
                     {TAB_DISPLAY_NAMES[selectedTab]} Correlation Results

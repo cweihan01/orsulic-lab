@@ -148,218 +148,220 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
     // }
 
     return (
-        <div className="queryform-container">
-            <div className="queryform-header">
-                <h2 className="queryform-title">Query Form</h2>
-                {/* {isCollapsible && (
-                    <button onClick={toggleCollapse} className="collapse-button top-right">
-                        ◀
-                    </button>
-                )} */}
-            </div>
-
+        <>
             <div className="queryform-tab-toggle">
-            <button
-                type="button"
-                onClick={() => {
-                    setDataSource("cellline");
-                    handleResetForm(); // <-- reset form when toggling data source
-                  }}
-                className={dataSource === "cellline" ? "active-tab" : ""}
-            >
-                Cell Line
-            </button>
-            <button
-                type="button"
-                onClick={() => {
-                    setDataSource("tcga");
-                    handleResetForm(); // <-- reset form when toggling data source
-                  }}
-                className={dataSource === "tcga" ? "active-tab" : ""}
-            >
-                TCGA
-            </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        setDataSource("cellline");
+                        handleResetForm(); // <-- reset form when toggling data source
+                    }}
+                    className={dataSource === "cellline" ? "active-tab" : ""}
+                >
+                    Cell Line
+                </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        setDataSource("tcga");
+                        handleResetForm(); // <-- reset form when toggling data source
+                    }}
+                    className={dataSource === "tcga" ? "active-tab" : ""}
+                >
+                    TCGA
+                </button>
             </div>
+            
+            <div className="queryform-container">
+                <div className="queryform-header">
+                    <h2 className="queryform-title">Query Form</h2>
+                    {/* {isCollapsible && (
+                        <button onClick={toggleCollapse} className="collapse-button top-right">
+                            ◀
+                        </button>
+                    )} */}
+                </div>
 
-            <form className="queryform-form" onSubmit={handleSubmit}>
-                {[
-                    {
-                        id: 'database1',
-                        label: 'Category 1:',
-                        component: (
-                            <MultiSelectDropdown
-                                formFieldName="database1"
-                                value={selectedDatabase1}
-                                options={sortOptions(
-                                    databaseList.filter(db =>
-                                      dataSource === "tcga"
-                                        ? tcgaCategories.includes(db)
-                                        : celllineCategories.includes(db)
-                                    )
-                                  )}
-                                onChange={handleChangeDatabase1}
-                                prompt="Select one or more databases"
-                                onOpenStateChange={(isOpen) => handleDropdownOpenState('database1', isOpen)}
-                            />
-                        ),
-                    },
-                    {
-                        id: 'subcategory1',
-                        label: 'SubCategory 1:',
-                        component: (
-                            <MultiSelectDropdown
-                                formFieldName="subcategory1"
-                                value={selectedSubCategories1}
-                                options={sortOptions(subCategoryList1)}
-                                onChange={handleChangeSubcategory1}
-                                prompt="Select one or more subcategories"
-                                onOpenStateChange={(isOpen) => handleDropdownOpenState('subcategory1', isOpen)}
-                            />
-                        ),
-                    },
-                    {
-                        id: 'feature1',
-                        label: 'Feature 1:',
-                        component: (
-                            <SearchableSelect
-                                options={
-                                    selectedSubCategories1.includes('Nuclear')
-                                    ? nuclearFeatureSort(featureList1)
-                                    : sortOptions(featureList1)
-                                }
-                                value={feature1}
-                                onChange={setFeature1}
-                                placeholder="Select a feature"
-                            />
-                        ),
-                    },
-                    {
-                        id: 'database2',
-                        label: 'Category 2:',
-                        component: (
-                            <MultiSelectDropdown
-                                formFieldName="database2"
-                                value={selectedDatabase2}
-                                options={sortOptions(
-                                    databaseList.filter(db =>
-                                      dataSource === "tcga"
-                                        ? tcgaCategories.includes(db)
-                                        : celllineCategories.includes(db)
-                                    )
-                                  )}
-                                  
-                                onChange={handleChangeDatabase2}
-                                prompt="Select one or more databases"
-                                onOpenStateChange={(isOpen) => handleDropdownOpenState('database2', isOpen)}
-                            />
-                        ),
-                    },
-                    {
-                        id: 'subcategory2',
-                        label: 'SubCategory 2:',
-                        component: (
-                            <MultiSelectDropdown
-                                formFieldName="subcategory2"
-                                value={selectedSubCategories2}
-                                options={sortOptions(subCategoryList2)}
-                                onChange={handleChangeSubcategory2}
-                                prompt="Select one or more subcategories"
-                                onOpenStateChange={(isOpen) => handleDropdownOpenState('subcategory2', isOpen)}
-                            />
-                        ),
-                    },
-                    {
-                        id: 'feature2',
-                        label: 'Feature 2:',
-                        component: (
-                            <MultiSelectDropdown
-                                formFieldName="feature2"
-                                value={feature2}
-                                options={
-                                    selectedSubCategories2.includes('Nuclear')
-                                    ? nuclearFeatureSort(featureList2)
-                                    : sortOptions(featureList2)
-                                }
-                                onChange={setFeature2}
-                                prompt="Select one or more features"
-                                onOpenStateChange={(isOpen) => handleDropdownOpenState('feature2', isOpen)}
-                            />
-                        ),
-                    },
-                    {
-                        id: 'minCorrelation',
-                        label: 'Minimum Correlation:',
-                        component: (
-                            <input
-                                type="number"
-                                id="minCorrelation"
-                                value={minCorrelation}
-                                min="-1"
-                                max="1"
-                                step="0.01"
-                                onChange={(e) => setMinCorrelation(e.target.value)}
-                                className="queryform-input"
-                            />
-                        ),
-                    },
-                    {
-                        id: 'maxPValue',
-                        label: 'Maximum P-Value:',
-                        component: (
-                            <input
-                                type="number"
-                                id="maxPValue"
-                                value={maxPValue}
-                                min="0"
-                                max="1"
-                                step="0.01"
-                                onChange={(e) => setMaxPValue(e.target.value)}
-                                className="queryform-input"
-                            />
-                        ),
-                    },
-                ].map(({ id, label, component }) => (
-                    <div className="queryform-row" key={id}>
-                        <label htmlFor={id} className="queryform-label">
-                            {label}
-                        </label>
-                        {component}
-                    </div>
-                ))}
+                <form className="queryform-form" onSubmit={handleSubmit}>
+                    {[
+                        {
+                            id: 'database1',
+                            label: 'Category 1:',
+                            component: (
+                                <MultiSelectDropdown
+                                    formFieldName="database1"
+                                    value={selectedDatabase1}
+                                    options={sortOptions(
+                                        databaseList.filter(db =>
+                                          dataSource === "tcga"
+                                            ? tcgaCategories.includes(db)
+                                            : celllineCategories.includes(db)
+                                        )
+                                      )}
+                                    onChange={handleChangeDatabase1}
+                                    prompt="Select one or more databases"
+                                    onOpenStateChange={(isOpen) => handleDropdownOpenState('database1', isOpen)}
+                                />
+                            ),
+                        },
+                        {
+                            id: 'subcategory1',
+                            label: 'SubCategory 1:',
+                            component: (
+                                <MultiSelectDropdown
+                                    formFieldName="subcategory1"
+                                    value={selectedSubCategories1}
+                                    options={sortOptions(subCategoryList1)}
+                                    onChange={handleChangeSubcategory1}
+                                    prompt="Select one or more subcategories"
+                                    onOpenStateChange={(isOpen) => handleDropdownOpenState('subcategory1', isOpen)}
+                                />
+                            ),
+                        },
+                        {
+                            id: 'feature1',
+                            label: 'Feature 1:',
+                            component: (
+                                <SearchableSelect
+                                    options={
+                                        selectedSubCategories1.includes('Nuclear')
+                                        ? nuclearFeatureSort(featureList1)
+                                        : sortOptions(featureList1)
+                                    }
+                                    value={feature1}
+                                    onChange={setFeature1}
+                                    placeholder="Select a feature"
+                                />
+                            ),
+                        },
+                        {
+                            id: 'database2',
+                            label: 'Category 2:',
+                            component: (
+                                <MultiSelectDropdown
+                                    formFieldName="database2"
+                                    value={selectedDatabase2}
+                                    options={sortOptions(
+                                        databaseList.filter(db =>
+                                          dataSource === "tcga"
+                                            ? tcgaCategories.includes(db)
+                                            : celllineCategories.includes(db)
+                                        )
+                                      )}
+                                      
+                                    onChange={handleChangeDatabase2}
+                                    prompt="Select one or more databases"
+                                    onOpenStateChange={(isOpen) => handleDropdownOpenState('database2', isOpen)}
+                                />
+                            ),
+                        },
+                        {
+                            id: 'subcategory2',
+                            label: 'SubCategory 2:',
+                            component: (
+                                <MultiSelectDropdown
+                                    formFieldName="subcategory2"
+                                    value={selectedSubCategories2}
+                                    options={sortOptions(subCategoryList2)}
+                                    onChange={handleChangeSubcategory2}
+                                    prompt="Select one or more subcategories"
+                                    onOpenStateChange={(isOpen) => handleDropdownOpenState('subcategory2', isOpen)}
+                                />
+                            ),
+                        },
+                        {
+                            id: 'feature2',
+                            label: 'Feature 2:',
+                            component: (
+                                <MultiSelectDropdown
+                                    formFieldName="feature2"
+                                    value={feature2}
+                                    options={
+                                        selectedSubCategories2.includes('Nuclear')
+                                        ? nuclearFeatureSort(featureList2)
+                                        : sortOptions(featureList2)
+                                    }
+                                    onChange={setFeature2}
+                                    prompt="Select one or more features"
+                                    onOpenStateChange={(isOpen) => handleDropdownOpenState('feature2', isOpen)}
+                                />
+                            ),
+                        },
+                        {
+                            id: 'minCorrelation',
+                            label: 'Minimum Correlation:',
+                            component: (
+                                <input
+                                    type="number"
+                                    id="minCorrelation"
+                                    value={minCorrelation}
+                                    min="-1"
+                                    max="1"
+                                    step="0.01"
+                                    onChange={(e) => setMinCorrelation(e.target.value)}
+                                    className="queryform-input"
+                                />
+                            ),
+                        },
+                        {
+                            id: 'maxPValue',
+                            label: 'Maximum P-Value:',
+                            component: (
+                                <input
+                                    type="number"
+                                    id="maxPValue"
+                                    value={maxPValue}
+                                    min="0"
+                                    max="1"
+                                    step="0.01"
+                                    onChange={(e) => setMaxPValue(e.target.value)}
+                                    className="queryform-input"
+                                />
+                            ),
+                        },
+                    ].map(({ id, label, component }) => (
+                        <div className="queryform-row" key={id}>
+                            <label htmlFor={id} className="queryform-label">
+                                {label}
+                            </label>
+                            {component}
+                        </div>
+                    ))}
                                 
 
-                <div className="submit-button-container">
-                    <button
-                        type="submit"
-                        className="submit-button"
-                        disabled={!isFormValid()}
-                        style={{
-                            opacity: isFormValid() ? 1 : 0.5,
-                            cursor: isFormValid() ? 'pointer' : 'not-allowed'
-                        }}
-                    >
-                        Query
-                    </button>
+                    <div className="submit-button-container">
+                        <button
+                            type="submit"
+                            className="submit-button"
+                            disabled={!isFormValid()}
+                            style={{
+                                opacity: isFormValid() ? 1 : 0.5,
+                                cursor: isFormValid() ? 'pointer' : 'not-allowed'
+                            }}
+                        >
+                            Query
+                        </button>
 
-                    <button
-                        type="button"
-                        className="reset-button ml-4"
-                        onClick={handleResetForm}
-                        style={{
-                            marginLeft: '12px',
-                            backgroundColor: '#e5e7eb',
-                            color: '#333',
-                            padding: '8px 16px',
-                            borderRadius: '6px',
-                            fontWeight: 'bold',
-                        }}
-                    >
-                        Reset
-                    </button>
-                    
-                </div>
-            </form>
-        </div>
+                        <button
+                            type="button"
+                            className="reset-button ml-4"
+                            onClick={handleResetForm}
+                            style={{
+                                marginLeft: '12px',
+                                backgroundColor: '#e5e7eb',
+                                color: '#333',
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            Reset
+                        </button>
+                        
+                    </div>
+                </form>
+            </div>
+        </>
     );
 }
 

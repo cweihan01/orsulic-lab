@@ -42,7 +42,7 @@ export default function QueryContainer({
                                 backgroundColor: '#78aee8',
                                 fontFamily: 'Futura',
                             }}
-                            className="my-4 px-4 py-2 text-white rounded-lg hover:opacity-85"
+                            className="my-6 px-4 py-2 text-white rounded-lg hover:opacity-85"
                         >
                             View Nuclear Features
                         </button>
