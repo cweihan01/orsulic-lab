@@ -1,8 +1,8 @@
 import pandas as pd
 from django.core.management import BaseCommand
 
-from database.models import Feature, Nuclear, Molecular, DrugScreen
-from database.utils.constants import CELL_LINES
+from database.models import Feature, Nuclear, Molecular, DrugScreen, Feature_TCGA, Nuclear_TCGA, Molecular_TCGA, Clinical_TCGA, FracLac_TCGA
+from database.utils.constants import CELL_LINES, PATIENTS
 
 
 class Command(BaseCommand):
@@ -26,7 +26,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(
                 f"Successfully loaded {filepath}. {total_rows} rows received."))
 
-            model_name = filepath.split("/")[-1].replace(".csv", "").split("_")[0]
+            model_name = "_".join(filepath.split("/")[-1].replace(".csv", "").split("_")[:2])
             model_class = globals().get(model_name)
 
             if model_class is None:
@@ -42,11 +42,11 @@ class Command(BaseCommand):
                 data_type = row.iloc[1]
                 category = row.iloc[2]
                 sub_category = row.iloc[3]
-                cellline_values = row.iloc[4:]
+                values = row.iloc[4:]
 
-                cellline_values = cellline_values.where(pd.notna(cellline_values), None)
+                values = values.where(pd.notna(values), None)
 
-                feature_obj, created = Feature.objects.get_or_create(
+                feature_obj, created = Feature_TCGA.objects.get_or_create(
                     name=feature_name, category=category,
                     sub_category=sub_category, defaults={"data_type": data_type})
 
@@ -54,12 +54,10 @@ class Command(BaseCommand):
                     feature_obj.data_type = data_type
                     feature_obj.save()
 
-                cellline_data = {cellline_name: value for cellline_name,
-                                 value in cellline_values.items()}
+                data = {name: value for name, value in values.items()}
 
-                self.update_or_create_model(model_class, feature_obj, cellline_data)
+                self.update_or_create_model(model_class, feature_obj, data)
 
-    def update_or_create_model(self, model_class, feature_obj, cellline_data):
-        valid_cellline_data = {k: v for k, v in cellline_data.items() if k in CELL_LINES}
-        model_class.objects.get_or_create(
-            feature=feature_obj, defaults=valid_cellline_data)
+    def update_or_create_model(self, model_class, feature_obj, data):
+        valid_data = {k: v for k, v in data.items() if k in PATIENTS}
+        model_class.objects.get_or_create(feature=feature_obj, defaults=valid_data)

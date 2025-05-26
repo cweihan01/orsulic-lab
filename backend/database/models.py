@@ -1,6 +1,6 @@
 from django.db import models
 
-from .utils.constants import CELL_LINES
+from .utils.constants import CELL_LINES, PATIENTS
 
 
 class Feature(models.Model):
@@ -23,7 +23,7 @@ class Feature(models.Model):
         return f"{self.name}"
 
 
-def create_model(model_name) -> models.Model:
+def create_cellline_model(model_name) -> models.Model:
     """
     Create models dynamically.
     Each model will have a feature as primary key and float fields for each cell line.
@@ -42,9 +42,65 @@ def create_model(model_name) -> models.Model:
 
 
 # Create models
-Nuclear = create_model('Nuclear')
-Molecular = create_model('Molecular')
-DrugScreen = create_model("DrugScreen")
+Nuclear = create_cellline_model('Nuclear')
+Molecular = create_cellline_model('Molecular')
+DrugScreen = create_cellline_model("DrugScreen")
+
+
+class Feature_TCGA(models.Model):
+    """
+    Stores each feature.
+    """
+    name = models.CharField(max_length=200, primary_key=True)
+    data_type = models.CharField(max_length=3,
+                                 choices=[("num", "Numerical"),
+                                          ("cat", "Categorical")],
+                                 default="num")
+    category = models.CharField(max_length=20,
+                                choices=[("Nuclear", "Nuclear"),
+                                         ("Molecular", "Molecular"),
+                                         ("Clinical", "Clinical"),
+                                         ("FracLac", "FracLac")],
+                                default="Molecular")
+    sub_category = models.CharField(max_length=100, default="NA")
+
+    def __str__(self):
+        return f"{self.name}"
+    
+
+def create_tcga_model(model_name) -> models.Model:
+    """
+    Create models dynamically.
+    Each model will have a feature as primary key and float fields for each cell line.
+    """
+    attrs = {
+        "__module__": __name__,
+        'feature': models.OneToOneField(Feature_TCGA, on_delete=models.CASCADE, primary_key=True),
+    }
+
+    for patient in PATIENTS:
+        attrs[patient] = models.FloatField(null=True, blank=True)
+
+    attrs['__str__'] = lambda self: self.feature.name
+
+    return type(model_name, (models.Model,), attrs)
+
+
+# Create models
+Nuclear_TCGA = create_tcga_model('Nuclear_TCGA')
+Molecular_TCGA = create_tcga_model('Molecular_TCGA')
+FracLac_TCGA = create_tcga_model("FracLac_TCGA")
+
+
+class Clinical_TCGA(models.Model):
+
+    feature = models.OneToOneField(Feature_TCGA, on_delete=models.CASCADE, primary_key=True)
+
+    def __str__(self):
+        return self.feature.name
+    
+for patient in PATIENTS:
+    Clinical_TCGA.add_to_class(patient, models.CharField(max_length=50, null=True, blank=True))
 
 
 class Correlation(models.Model):
