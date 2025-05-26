@@ -14,7 +14,7 @@ const ScatterPlot = ({
 
     let xKey, yKey;
     const featureKeys = Object.keys(data[0]).filter(
-        (key) => !['cell_lines', 'Database', 'Feature'].includes(key)
+        (key) => !['cell_lines', 'patients', 'Database', 'Feature'].includes(key)
     );
 
     if (featureKeys.length === 1) {
@@ -26,7 +26,14 @@ const ScatterPlot = ({
     const xValues = data.map((d) => d[xKey]);
     const yValues = data.map((d) => d[yKey]);
     const textValues = data.map(
-        (d) => DEPMAP_TO_CELLLINE_ID[d.cell_lines] || d.cell_lines || ''
+        (d) => {
+            if (d.cell_lines) {
+                return DEPMAP_TO_CELLLINE_ID[d.cell_lines] || d.cell_lines || '';
+            } else if (d.patients) {
+                return d.patients || '';
+            }
+            return '';
+        }
     );
 
 
