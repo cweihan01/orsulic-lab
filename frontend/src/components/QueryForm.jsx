@@ -8,6 +8,7 @@ import { useSubcategoryData, useFeatureData } from '../hooks/useFeatureData';
 import './QueryForm.css';
 
 function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
+    const [dataSource, setDataSource] = useState("cellline");
     const [selectedDatabase1, setSelectedDatabase1] = useState([]);
     const [selectedDatabase2, setSelectedDatabase2] = useState([]);
     const [selectedSubCategories1, setSelectedSubCategories1] = useState([]);
@@ -17,15 +18,25 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
     const [minCorrelation, setMinCorrelation] = useState(0.0);
     const [maxPValue, setMaxPValue] = useState(1.0);
     const [isCollapsible, setIsCollapsible] = useState(false);
-
-    // Add new state to track which dropdowns are open
+  
+    const celllineCategories = ["Nuclear", "Molecular", "Drug Screen"];
+    const tcgaCategories = ["Nuclear", "Molecular", "Clinical", "FracLac"];
+  
     const [openDropdowns, setOpenDropdowns] = useState({
-        database1: false,
-        subcategory1: false,
-        database2: false,
-        subcategory2: false,
-        feature2: false
+      database1: false,
+      subcategory1: false,
+      database2: false,
+      subcategory2: false,
+      feature2: false
     });
+  
+    // 🟢 Fetch hooks based on data source
+    const { categories: databaseList } = useCategoryData(dataSource);
+    const { subcategories: subCategoryList1 } = useSubcategoryData(dataSource, selectedDatabase1, openDropdowns.database1);
+    const { subcategories: subCategoryList2 } = useSubcategoryData(dataSource, selectedDatabase2, openDropdowns.database2);
+    const { features: featureList1 } = useFeatureData(dataSource, selectedDatabase1, selectedSubCategories1, openDropdowns.subcategory1);
+    const { features: featureList2 } = useFeatureData(dataSource, selectedDatabase2, selectedSubCategories2, openDropdowns.subcategory2);
+  
 
     useEffect(() => {
         if (!lastQuery) return;
@@ -38,13 +49,6 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
         setMinCorrelation(lastQuery.minCorrelation || 0.0);
         setMaxPValue(lastQuery.maxPValue || 1.0);
    }, [lastQuery]);
-
-    // Use custom hooks for data fetching - destructure only what we need
-    const { categories: databaseList } = useCategoryData();
-    const { subcategories: subCategoryList1 } = useSubcategoryData(selectedDatabase1, openDropdowns.database1);
-    const { subcategories: subCategoryList2 } = useSubcategoryData(selectedDatabase2, openDropdowns.database2);
-    const { features: featureList1 } = useFeatureData(selectedDatabase1, selectedSubCategories1, openDropdowns.subcategory1);
-    const { features: featureList2 } = useFeatureData(selectedDatabase2, selectedSubCategories2, openDropdowns.subcategory2);
 
     // Memoize the handleDropdownOpenState function to prevent it from being recreated on every render
     const handleDropdownOpenState = useCallback((dropdownName, isOpen) => {
@@ -93,6 +97,7 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
             maxPValue,
             database1: selectedDatabase1, // Include selected databases
             database2: selectedDatabase2,
+            tcga: dataSource === "tcga" // <-- added line
         };
         console.log('Query Parameters:', query); // Debugging query params
         onSubmit(query);
@@ -153,6 +158,28 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
                 )} */}
             </div>
 
+            <div className="queryform-tab-toggle">
+            <button
+                type="button"
+                onClick={() => {
+                    setDataSource("cellline");
+                    handleResetForm(); // <-- reset form when toggling data source
+                  }}
+                className={dataSource === "cellline" ? "active-tab" : ""}
+            >
+                Cell Line
+            </button>
+            <button
+                type="button"
+                onClick={() => {
+                    setDataSource("tcga");
+                    handleResetForm(); // <-- reset form when toggling data source
+                  }}
+                className={dataSource === "tcga" ? "active-tab" : ""}
+            >
+                TCGA
+            </button>
+            </div>
 
             <form className="queryform-form" onSubmit={handleSubmit}>
                 {[
@@ -163,7 +190,13 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
                             <MultiSelectDropdown
                                 formFieldName="database1"
                                 value={selectedDatabase1}
-                                options={sortOptions(databaseList)}
+                                options={sortOptions(
+                                    databaseList.filter(db =>
+                                      dataSource === "tcga"
+                                        ? tcgaCategories.includes(db)
+                                        : celllineCategories.includes(db)
+                                    )
+                                  )}
                                 onChange={handleChangeDatabase1}
                                 prompt="Select one or more databases"
                                 onOpenStateChange={(isOpen) => handleDropdownOpenState('database1', isOpen)}
@@ -207,7 +240,14 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
                             <MultiSelectDropdown
                                 formFieldName="database2"
                                 value={selectedDatabase2}
-                                options={sortOptions(databaseList)}
+                                options={sortOptions(
+                                    databaseList.filter(db =>
+                                      dataSource === "tcga"
+                                        ? tcgaCategories.includes(db)
+                                        : celllineCategories.includes(db)
+                                    )
+                                  )}
+                                  
                                 onChange={handleChangeDatabase2}
                                 prompt="Select one or more databases"
                                 onOpenStateChange={(isOpen) => handleDropdownOpenState('database2', isOpen)}

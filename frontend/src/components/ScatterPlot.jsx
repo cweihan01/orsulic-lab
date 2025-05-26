@@ -9,6 +9,7 @@ const ScatterPlot = ({
     feature2Type,
     plotType = TAB_TYPES.SPEARMAN,
 }) => {
+
     if (!data || data.length === 0) return null;
 
     let xKey, yKey;
@@ -27,6 +28,7 @@ const ScatterPlot = ({
     const textValues = data.map(
         (d) => DEPMAP_TO_CELLLINE_ID[d.cell_lines] || d.cell_lines || ''
     );
+
 
     const layout = {
         xaxis: { title: xKey, tickangle: 0 },
@@ -156,7 +158,7 @@ const ScatterPlot = ({
             </div>
             <Plot
                 key={plotType}
-                revision={plotType}
+                revision={{ spearman: 1, anova: 2, chisquared: 3 }[plotType] ?? 0}
                 data={plotData}
                 layout={{ ...layout, transition: { duration: 0 } }}
                 useResizeHandler={true}

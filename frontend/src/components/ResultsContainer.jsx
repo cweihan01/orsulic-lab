@@ -33,21 +33,28 @@ export default function ResultsContainer({
     useEffect(() => handleCloseGraph(), [correlationsMap]);
 
     /** Request scatter data from API when graph displayed */
+
+
     const handleScatterRequest = (
         feature1,
         feature2,
         database1,
         database2,
-        plotTypeOverride
+        plotTypeOverride,
+        isTcga = false  // ← add this parameter
     ) => {
-        // Close open graph if any
         handleCloseGraph();
         setHighlightedRow(feature2);
         setPlotType(plotTypeOverride);
+    
         const payload = { feature1, feature2, database1, database2 };
-
+    
+        const endpoint = isTcga
+            ? `${process.env.REACT_APP_API_ROOT}scatter_tcga/`
+            : `${process.env.REACT_APP_API_ROOT}scatter/`;
+    
         axios
-            .post(`${process.env.REACT_APP_API_ROOT}scatter/`, payload)
+            .post(endpoint, payload)
             .then((response) => {
                 setScatterData(response.data.scatter_data);
                 setFeature1Type(response.data.feature1_type);
@@ -58,6 +65,8 @@ export default function ResultsContainer({
             })
             .finally(() => handleScrollToTop());
     };
+    
+    
 
     /** Close graph by deleting scatter data */
     const handleCloseGraph = () => {
@@ -88,6 +97,7 @@ export default function ResultsContainer({
                 minCorrelation={parseFloat(lastQuery.minCorrelation ?? 0)}
                 maxPValue={parseFloat(lastQuery.maxPValue ?? 1)}
                 onScatterRequest={handleScatterRequest}
+                tcga={lastQuery?.tcga}
                 highlightedRow={highlightedRow}
                 onRequery={onRequery}
                 onScrollToTop={handleScrollToTop}

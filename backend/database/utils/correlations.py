@@ -128,17 +128,16 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
     }
 
 
-def get_feature_values(db_dict: dict, feature_to_subcategory: dict, feature_to_datatype: dict) -> pd.DataFrame:
+def get_feature_values(
+    db_dict: dict,
+    feature_to_subcategory: dict,
+    feature_to_datatype: dict,
+    sample_ids: list  # <-- Add this parameter
+) -> pd.DataFrame:
     """
-    Given a `db_dict`, return a pandas DataFrame containing the database, subcategory, 
-    feature, datatype and each of the corresponding cell lines.
-
-    :param db_dict: dictionary mapping each database (Nuclear, Molecular, Drug Screen)
-    to its corresponding QuerySet objects
-
-    :param feature_to_subcategory: dictionary mapping each feature to its subcategory
-    :param feature_to_datatype: dictionary mapping each feature to its data type (num, cat)
+    Generalized to work for either Cell Line (CELL_LINES) or TCGA (PATIENTS).
     """
+
     df_list = []
 
     for key in db_dict.keys():
@@ -146,24 +145,20 @@ def get_feature_values(db_dict: dict, feature_to_subcategory: dict, feature_to_d
         if len(tmp_queryset) == 0:
             continue
 
-        # Converting to a dataframe
-        tmp_df = pd.DataFrame(list(tmp_queryset), columns=["feature", *CELL_LINES])
+        # Generalize based on sample_ids
+        tmp_df = pd.DataFrame(list(tmp_queryset), columns=["feature", *sample_ids])
 
-        # Adding the database information to the row
         tmp_df["database"] = key
-
         tmp_df["subcategory"] = tmp_df["feature"].map(feature_to_subcategory)
         tmp_df["datatype"] = tmp_df["feature"].map(feature_to_datatype)
 
-        # Moving it so that its the first column
         col = tmp_df.pop('database')
         tmp_df.insert(0, "database", col)
 
         df_list.append(tmp_df)
 
-    # Combine all the dataframes in the list
     df = pd.concat(df_list, ignore_index=True)
 
-    # Filtering the columns where the values for CELL_LINE are 0
-    df_filtered = df.loc[~(df[CELL_LINES] == 0).all(axis=1)]
+    df_filtered = df.loc[~(df[sample_ids] == 0).all(axis=1)]
     return df_filtered
+

@@ -40,7 +40,8 @@ const handleDownloadRowData = async (
     feature2,
     database1,
     database2,
-    plotType
+    plotType,
+    tcga = false
 ) => {
     try {
         const payload = {
@@ -50,10 +51,13 @@ const handleDownloadRowData = async (
             database2,
             plotType,
         };
-        const response = await axios.post(
-            process.env.REACT_APP_API_ROOT + 'scatter/',
-            payload
-        );
+
+        const endpoint = tcga
+        ? `${process.env.REACT_APP_API_ROOT}scatter_tcga/`
+        : `${process.env.REACT_APP_API_ROOT}scatter/`;
+
+        const response = await axios.post(endpoint, payload);
+
 
         const scatterData = response.data.scatter_data;
         if (!scatterData || scatterData.length === 0) {
@@ -188,6 +192,7 @@ const TableBodyRow = ({
     selectedTab,
     onScatterRequest,
     onRequery,
+    tcga,
 }) => {
     return (
         <tr
@@ -234,7 +239,8 @@ const TableBodyRow = ({
                             item.feature_2,
                             item.database_1,
                             item.database_2,
-                            selectedTab
+                            selectedTab,
+                            tcga
                         )
                     }
                     className="text-blue-500 hover:underline"
@@ -254,7 +260,8 @@ const TableBodyRow = ({
                             item.feature_2,
                             item.database_1,
                             item.database_2,
-                            selectedTab
+                            selectedTab,
+                            tcga
                         )
                     }
                     className="text-blue-500 hover:underline"
@@ -277,6 +284,7 @@ export default function CorrelationTable({
     sortConfig,
     setSortConfig,
     onScrollToTop,
+    tcga
 }) {
     // Store the number of rows that are being displayed currently
     const [visibleCount, setVisibleCount] = useState(RESULTS_INCREMENT);
@@ -326,6 +334,7 @@ export default function CorrelationTable({
                                 selectedTab={selectedTab}
                                 onScatterRequest={onScatterRequest}
                                 onRequery={onRequery}
+                                tcga={tcga}
                             />
                         ))}
                     </tbody>

@@ -53,38 +53,34 @@ function App() {
             ...prev.slice(0, MAX_QUERY_HISTORY_LENGTH - 1),
         ]);
 
-        // Make API request
-        axios
-            .post(
-                `${process.env.REACT_APP_API_ROOT}correlations/`,
-                {
-                    feature1: query.feature1,
-                    feature2: query.feature2,
-                    database1: query.database1,
-                    database2: query.database2,
-                },
-                {
-                    signal: controller.signal,
-                }
-            )
-            .then((response) => {
-                setCorrelationsMap(response.data.correlations);
-            })
-            .catch((err) => {
-                if (
-                    err.name === 'CanceledError' ||
-                    err.message === 'canceled'
-                ) {
-                    console.log('Query was cancelled by user');
-                } else {
-                    console.error('Error fetching correlations:', err);
-                }
-            })
-            .finally(() => {
-                setIsLoading(false);
-                scrollToTop();
-            });
+        const endpoint = query.tcga
+        ? `${process.env.REACT_APP_API_ROOT}correlations_tcga/`
+        : `${process.env.REACT_APP_API_ROOT}correlations/`;
+
+        axios.post(endpoint, {
+        feature1: query.feature1,
+        feature2: query.feature2,
+        database1: query.database1,
+        database2: query.database2,
+        subcategory1: query.subcategory1,
+        subcategory2: query.subcategory2,
+        minCorrelation: query.minCorrelation,
+        maxPValue: query.maxPValue,
+        }, {
+        signal: controller.signal
+        })
+        .then((response) => {
+        setCorrelationsMap(response.data.correlations);
+        })
+        .catch((err) => {
+            console.error('Error fetching correlations:', err);
+        })
+        .finally(() => {
+            setIsLoading(false);
+            scrollToTop();
+        });
     };
+
 
     /** Fetch correlation data when user clicks a feature in the table */
     const handleRequery = (newFeature1, newDatabase1) => {

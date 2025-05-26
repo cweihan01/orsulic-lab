@@ -123,3 +123,12 @@
     cursor: pointer;
 }
 
+.active-tab {
+    background-color: #78aee8;
+    color: white;
+    font-weight: bold;
+    border-radius: 6px;
+    padding: 4px 12px;
+    margin: 0 2px;
+  }
+  

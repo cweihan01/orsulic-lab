@@ -193,9 +193,9 @@ class CorrelationView(APIView):
             feature_to_datatype[f1_object.name] = f1_object.data_type
 
             f1_df = correlations.get_feature_values(
-                f1_data, feature_to_subcategory, feature_to_datatype)
+                f1_data, feature_to_subcategory, feature_to_datatype, CELL_LINES)
             f2_df = correlations.get_feature_values(
-                f2_data, feature_to_subcategory, feature_to_datatype)
+                f2_data, feature_to_subcategory, feature_to_datatype, CELL_LINES)
 
             # Call the updated calculate_correlations function
             results_df_dict = correlations.calculate_correlations(f1_df, f2_df)
@@ -425,12 +425,12 @@ class CorrelationTCGAView(APIView):
 
             # Fetch Feature objects for feature 1
             try:
-                f1_object = Feature.objects.get(name=f1_name)
+                f1_object = Feature_TCGA.objects.get(name=f1_name)
             except Feature.DoesNotExist:
                 return Response({"error": f"Feature '{f1_name}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
             # Fetch Feature objects for features 2
-            f2_objects = Feature.objects.filter(name__in=f2_names)
+            f2_objects = Feature_TCGA.objects.filter(name__in=f2_names)
             if not f2_objects.exists():
                 return Response({"error": f"None of the provided features in Feature 2 were found: {f2_names}."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -471,9 +471,10 @@ class CorrelationTCGAView(APIView):
             feature_to_datatype[f1_object.name] = f1_object.data_type
 
             f1_df = correlations.get_feature_values(
-                f1_data, feature_to_subcategory, feature_to_datatype)
+                f1_data, feature_to_subcategory, feature_to_datatype, sample_ids = PATIENTS)
             f2_df = correlations.get_feature_values(
-                f2_data, feature_to_subcategory, feature_to_datatype)
+                f2_data, feature_to_subcategory, feature_to_datatype, sample_ids = PATIENTS)
+            
 
             # Call the updated calculate_correlations function
             results_df_dict = correlations.calculate_correlations(f1_df, f2_df)
@@ -563,6 +564,8 @@ class ScatterTCGAView(APIView):
             transposed_df = merged_df.T.reset_index()
             transposed_df.columns = ["patients"] + \
                 [f"{f1_name}", f"{f2_name}"]  # Rename columns
+            
+
 
             # Remove redundnant first row
             transposed_df = transposed_df.iloc[1:].reset_index(drop=True)
@@ -576,7 +579,12 @@ class ScatterTCGAView(APIView):
             # Convert the transposed DataFrame to a JSON-compatible format
             transposed_json = transposed_df.to_dict(orient="records")
 
-            return Response({"scatter_data": transposed_json}, status=status.HTTP_200_OK)
+            return Response({
+                "scatter_data": transposed_json,
+                "feature1_type": feature1.data_type,
+                "feature2_type": feature2.data_type
+            }, status=status.HTTP_200_OK)
+
 
         except Exception as e:
             print("Error:", traceback.format_exc())
