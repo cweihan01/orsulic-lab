@@ -54,6 +54,7 @@ function CorrelationResult({
     highlightedRow,
     onRequery,
     onScrollToTop,
+    tcga,
 }) {
     const [selectedTab, setSelectedTab] = useState('spearman');
 
@@ -176,6 +177,7 @@ function CorrelationResult({
                     sortConfig={sortConfig}
                     setSortConfig={setSortConfig}
                     onScrollToTop={onScrollToTop}
+                    tcga={tcga}
                 />
             ) : (
                 <p className="text-center my-4">
