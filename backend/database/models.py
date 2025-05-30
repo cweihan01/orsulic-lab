@@ -88,7 +88,6 @@ def create_tcga_model(model_name) -> models.Model:
 
 # Create models
 Nuclear_TCGA = create_tcga_model('Nuclear_TCGA')
-Molecular_TCGA = create_tcga_model('Molecular_TCGA')
 FracLac_TCGA = create_tcga_model("FracLac_TCGA")
 
 
@@ -101,6 +100,17 @@ class Clinical_TCGA(models.Model):
     
 for patient in PATIENTS:
     Clinical_TCGA.add_to_class(patient, models.CharField(max_length=50, null=True, blank=True))
+
+
+class Molecular_TCGA(models.Model):
+
+    feature = models.OneToOneField(Feature_TCGA, on_delete=models.CASCADE, primary_key=True)
+
+    def __str__(self):
+        return self.feature.name
+    
+for patient in PATIENTS:
+    Molecular_TCGA.add_to_class(patient, models.CharField(max_length=50, null=True, blank=True))
 
 
 class Correlation(models.Model):

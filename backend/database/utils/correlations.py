@@ -80,14 +80,16 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
 
                 # ANOVA: one categorical, one numerical
                 elif (f1_type == "cat" and f2_type == "num") or (f1_type == "num" and f2_type == "cat"):
+                    
                     if f1_type == "cat":
-                        groups = [f2_valid[f1_valid == cat] for cat in f1_valid.unique()]
+                        groups = [pd.to_numeric(f2_valid[f1_valid == cat], errors="coerce") for cat in f1_valid.unique()]
                     else:
-                        groups = [f1_valid[f2_valid == cat] for cat in f2_valid.unique()]
+                        groups = [pd.to_numeric(f1_valid[f2_valid == cat], errors="coerce") for cat in f2_valid.unique()]
 
                     if len(groups) > 1:
                         try:
                             _, anova_pvalue = f_oneway(*groups)
+                            print(anova_pvalue)
                             if anova_pvalue is not None and math.isfinite(anova_pvalue):
                                 anova_pvalue = _round_to_n(anova_pvalue, 3)
                                 anova_results.append(

@@ -45,29 +45,39 @@ DrugScreenSerializer = create_serializer(DrugScreen, FeatureSerializer, CELL_LIN
 
 
 NuclearTCGASerializer = create_serializer(Nuclear_TCGA, FeatureTCGASerializer, PATIENTS)
-MolecularTCGASerializer = create_serializer(Molecular_TCGA, FeatureTCGASerializer, PATIENTS)
 FracLacTCGASerializer = create_serializer(FracLac_TCGA, FeatureTCGASerializer, PATIENTS)
+ClinicalTCGASerializer = create_serializer(Clinical_TCGA, FeatureTCGASerializer, PATIENTS)
+MolecularTCGASerializer = create_serializer(Molecular_TCGA, FeatureTCGASerializer, PATIENTS)
 
 
-class ClinicalTCGASerializer(serializers.ModelSerializer):
-    feature = FeatureTCGASerializer()
+# def create_numcat_serializer(model_name, feature_serializer, field_list):
+#     class NumCatSerializer(serializers.ModelSerializer):
+#         feature = feature_serializer()
 
-    class Meta:
-        model = Clinical_TCGA
-        fields = ['feature', *[patient for patient in PATIENTS]]
+#         class Meta:
+#             model = model_name
+#             fields = ['feature', *field_list]
 
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        data_type = rep['feature']['data_type']
+#         def to_representation(self, instance):
+#             rep = {
+#                 'feature': feature_serializer().to_representation(instance.feature)
+#             }
+#             data_type = rep['feature']['data_type']
 
-        for patient in PATIENTS:
-            val = rep.get(patient)
-            if val is not None:
-                if data_type == 'num':
-                    try:
-                        rep[patient] = float(val)
-                    except (ValueError, TypeError):
-                        rep[patient] = None
-                elif data_type == 'cat':
-                    rep[patient] = str(val)
-        return rep
+#             for field in field_list:
+#                 val = getattr(instance, field)
+#                 if val is not None:
+#                     if data_type == 'num':
+#                         try:
+#                             rep[field] = float(val)
+#                         except (ValueError, TypeError):
+#                             rep[field] = None
+#                     elif data_type == 'cat':
+#                         rep[field] = str(val)
+#             return rep
+
+#     return NumCatSerializer
+
+
+# ClinicalTCGASerializer = create_numcat_serializer(Clinical_TCGA, FeatureTCGASerializer, PATIENTS)
+# MolecularTCGASerializer = create_numcat_serializer(Molecular_TCGA, FeatureTCGASerializer, PATIENTS)
