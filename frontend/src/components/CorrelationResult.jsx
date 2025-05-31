@@ -60,6 +60,8 @@ function CorrelationResult({
     const [selectedTab, setSelectedTab] = useState('spearman');
 
     const data = correlationsMap[selectedTab] || [];
+    
+    const [hasQueried, setHasQueried] = useState(false);
 
     useEffect(() => {
         const firstNonEmpty = TAB_KEYS.find(
@@ -68,7 +70,17 @@ function CorrelationResult({
                 correlationsMap[key].length > 0
         );
         setSelectedTab(firstNonEmpty || 'spearman');
+    
+        const anyData = TAB_KEYS.some(
+            (key) =>
+                Array.isArray(correlationsMap[key]) &&
+                correlationsMap[key].length > 0
+        );
+        if (anyData) {
+            setHasQueried(true);
+        }
     }, [correlationsMap]);
+    
 
     const { correlationKey, pValueKey } = useMemo(() => {
         if (!data || data.length === 0) {
@@ -157,21 +169,21 @@ function CorrelationResult({
 
             {/* Tab selector */}
 
-            {TAB_KEYS.some((key) => correlationsMap[key]?.length > 0) && (
             <div className="tab-buttons-container">
-                {TAB_KEYS.filter((key) => correlationsMap[key]?.length > 0).map((key) => (
-                    <button
-                        key={key}
-                        onClick={() => setSelectedTab(key)}
-                        className={`tab-button ${
-                            selectedTab === key ? 'active' : ''
-                        }`}
-                    >
-                        {TAB_DISPLAY_NAMES[key]}
-                    </button>
-                ))}
+            {TAB_KEYS.filter((key) => {
+                const hasData = Array.isArray(correlationsMap[key]) && correlationsMap[key].length > 0;
+                return !hasQueried || hasData; // Show all before first query, filter after
+            }).map((key) => (
+                <button
+                key={key}
+                onClick={() => setSelectedTab(key)}
+                className={`tab-button ${selectedTab === key ? 'active' : ''}`}
+                >
+                {TAB_DISPLAY_NAMES[key]}
+                </button>
+            ))}
             </div>
-        )}
+
 
             {/* Table */}
             {filteredData.length > 0 ? (
