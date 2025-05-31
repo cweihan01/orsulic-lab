@@ -8,7 +8,10 @@ import { useSubcategoryData, useFeatureData } from '../hooks/useFeatureData';
 import './QueryForm.css';
 
 function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
-    const [dataSource, setDataSource] = useState("cellline");
+    const [dataSource, setDataSource] = useState(() => {
+        return localStorage.getItem('selectedDataSource') || 'cellline';
+      });
+      
     const [selectedDatabase1, setSelectedDatabase1] = useState([]);
     const [selectedDatabase2, setSelectedDatabase2] = useState([]);
     const [selectedSubCategories1, setSelectedSubCategories1] = useState([]);
@@ -37,18 +40,36 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
     const { features: featureList1 } = useFeatureData(dataSource, selectedDatabase1, selectedSubCategories1, openDropdowns.subcategory1);
     const { features: featureList2 } = useFeatureData(dataSource, selectedDatabase2, selectedSubCategories2, openDropdowns.subcategory2);
   
+    const [savedStates, setSavedStates] = useState(() => {
+        try {
+          const saved = localStorage.getItem('queryFormSavedStates');
+          return saved ? JSON.parse(saved) : { cellline: null, tcga: null };
+        } catch {
+          return { cellline: null, tcga: null };
+        }
+      });
 
     useEffect(() => {
-        if (!lastQuery) return;
-        setSelectedDatabase1(lastQuery.database1 || []);
-        setSelectedSubCategories1(lastQuery.subcategory1 || []);
-        setFeature1(lastQuery.feature1 || '');
-        setSelectedDatabase2(lastQuery.database2 || []);
-        setSelectedSubCategories2(lastQuery.subcategory2 || []);
-        setFeature2(lastQuery.feature2 || []);
-        setMinCorrelation(lastQuery.minCorrelation || 0.0);
-        setMaxPValue(lastQuery.maxPValue || 1.0);
-   }, [lastQuery]);
+        localStorage.setItem('queryFormSavedStates', JSON.stringify(savedStates));
+    }, [savedStates]);
+    
+
+   useEffect(() => {
+    if (!lastQuery) return;
+    if ((lastQuery.tcga && dataSource !== "tcga") || (!lastQuery.tcga && dataSource !== "cellline")) {
+      return; // prevent loading the wrong tab's query
+    }
+    setSelectedDatabase1(lastQuery.database1 || []);
+    setSelectedSubCategories1(lastQuery.subcategory1 || []);
+    setFeature1(lastQuery.feature1 || '');
+    setSelectedDatabase2(lastQuery.database2 || []);
+    setSelectedSubCategories2(lastQuery.subcategory2 || []);
+    setFeature2(lastQuery.feature2 || []);
+    setMinCorrelation(lastQuery.minCorrelation ?? 0.0);
+    setMaxPValue(lastQuery.maxPValue ?? 1.0);
+  }, [lastQuery, dataSource]);
+  
+
 
     // Memoize the handleDropdownOpenState function to prevent it from being recreated on every render
     const handleDropdownOpenState = useCallback((dropdownName, isOpen) => {
@@ -73,7 +94,8 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
         });
     };
 
-    const handleResetForm = () => {
+    const handleResetForm = (tab = dataSource) => {
+        setSavedStates(prev => ({ ...prev, [tab]: null }));
         setSelectedDatabase1([]);
         setSelectedDatabase2([]);
         setSelectedSubCategories1([]);
@@ -83,8 +105,8 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
         setMinCorrelation(0.0);
         setMaxPValue(1.0);
         setIsCollapsible(false);
-    };
-    
+      };
+      
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -103,6 +125,30 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
         onSubmit(query);
         setIsCollapsible(true); // Collapsible once submitted
     };
+
+    const switchTab = (toTab) => {
+        const prevTab = dataSource;
+        const currentState = getCurrentFormState();
+      
+        // Save current form state under previous tab
+        setSavedStates(prev => ({ ...prev, [prevTab]: currentState }));
+      
+        // Persist tab selection (optional)
+        localStorage.setItem('selectedDataSource', toTab);
+      
+        // Update the current tab
+        setDataSource(toTab);
+      
+        // Delay restoring until after the tab state updates
+        setTimeout(() => {
+          if (savedStates[toTab]) {
+            restoreFormState(savedStates[toTab]);
+          } else {
+            handleResetForm(toTab);
+          }
+        }, 0);
+      };
+
 
     // When database1 input is changed, clear subcategory1 and feature1 inputs
     const handleChangeDatabase1 = (selected) => {
@@ -147,29 +193,69 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
     //     );
     // }
 
+      const getCurrentFormState = () => ({
+        selectedDatabase1,
+        selectedDatabase2,
+        selectedSubCategories1,
+        selectedSubCategories2,
+        feature1,
+        feature2,
+        minCorrelation,
+        maxPValue
+      });
+      
+      const restoreFormState = (state) => {
+        if (!state) return;
+        setSelectedDatabase1(state.selectedDatabase1 || []);
+        setSelectedDatabase2(state.selectedDatabase2 || []);
+        setSelectedSubCategories1(state.selectedSubCategories1 || []);
+        setSelectedSubCategories2(state.selectedSubCategories2 || []);
+        setFeature1(state.feature1 || '');
+        setFeature2(state.feature2 || []);
+        setMinCorrelation(state.minCorrelation ?? 0.0);
+        setMaxPValue(state.maxPValue ?? 1.0);
+      };
+      
+      
+
     return (
         <>
             <div className="queryform-tab-toggle">
+
                 <button
                     type="button"
                     onClick={() => {
+                        setSavedStates(prev => ({ ...prev, [dataSource]: getCurrentFormState() }));
+                        localStorage.setItem("selectedDataSource", "cellline"); // or "tcga"
                         setDataSource("cellline");
-                        handleResetForm(); // <-- reset form when toggling data source
+                        if (savedStates.cellline) {
+                        restoreFormState(savedStates.cellline);
+                        } else {
+                        handleResetForm("cellline");
+                        }
                     }}
                     className={dataSource === "cellline" ? "active-tab" : ""}
-                >
+                    >
                     Cell Line
                 </button>
                 <button
                     type="button"
                     onClick={() => {
+                        setSavedStates(prev => ({ ...prev, [dataSource]: getCurrentFormState() }));
+                        localStorage.setItem("selectedDataSource", "tcga"); // or "tcga"
                         setDataSource("tcga");
-                        handleResetForm(); // <-- reset form when toggling data source
+                        if (savedStates.tcga) {
+                        restoreFormState(savedStates.tcga);
+                        } else {
+                        handleResetForm("tcga");
+                        }
                     }}
                     className={dataSource === "tcga" ? "active-tab" : ""}
-                >
+                    >
                     TCGA
                 </button>
+
+
             </div>
             
             <div className="queryform-container">

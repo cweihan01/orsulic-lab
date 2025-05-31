@@ -55,6 +55,7 @@ function CorrelationResult({
     onRequery,
     onScrollToTop,
     tcga,
+    dataSource,
 }) {
     const [selectedTab, setSelectedTab] = useState('spearman');
 
@@ -136,12 +137,17 @@ function CorrelationResult({
         <div className="w-full rounded-lg drop-shadow-lg bg-white p-4 bg-gray-200 overflow-x-auto min-h-full">
             <div className="flex justify-between items-center mb-4">
                 {/* Results tab title */}
-                <h2
-                    className="text-3xl font-semibold text-gray-800 mt-4 mb-4 ml-4"
-                    style={{ fontFamily: 'Futura' }}
-                >
-                    {TAB_DISPLAY_NAMES[selectedTab]} Correlation Results
-                </h2>
+
+
+                {filteredData.length > 0 && (
+                    <h2
+                        className="text-3xl font-semibold text-gray-800"
+                        style={{ fontFamily: 'Futura' }}
+                    >
+                        {dataSource === 'tcga' ? 'TCGA Results' : 'Cell Line Results'}
+                    </h2>
+                )}
+
 
                 {/* Download table button */}
                 {sortedData.length > 0 && (
@@ -150,8 +156,10 @@ function CorrelationResult({
             </div>
 
             {/* Tab selector */}
+
+            {TAB_KEYS.some((key) => correlationsMap[key]?.length > 0) && (
             <div className="tab-buttons-container">
-                {TAB_KEYS.map((key) => (
+                {TAB_KEYS.filter((key) => correlationsMap[key]?.length > 0).map((key) => (
                     <button
                         key={key}
                         onClick={() => setSelectedTab(key)}
@@ -159,10 +167,11 @@ function CorrelationResult({
                             selectedTab === key ? 'active' : ''
                         }`}
                     >
-                        {TAB_DISPLAY_NAMES[[key]]}
+                        {TAB_DISPLAY_NAMES[key]}
                     </button>
                 ))}
             </div>
+        )}
 
             {/* Table */}
             {filteredData.length > 0 ? (
@@ -173,11 +182,11 @@ function CorrelationResult({
                     highlightedRow={highlightedRow}
                     onRequery={onRequery}
                     onScatterRequest={onScatterRequest}
+                    tcga={tcga}
                     selectedTab={selectedTab}
                     sortConfig={sortConfig}
                     setSortConfig={setSortConfig}
                     onScrollToTop={onScrollToTop}
-                    tcga={tcga}
                 />
             ) : (
                 <p className="text-center my-4">

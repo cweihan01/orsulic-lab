@@ -101,6 +101,7 @@ export default function ResultsContainer({
                 highlightedRow={highlightedRow}
                 onRequery={onRequery}
                 onScrollToTop={handleScrollToTop}
+                dataSource={lastQuery?.tcga ? 'tcga' : 'cellline'}
             />
         </div>
     );
