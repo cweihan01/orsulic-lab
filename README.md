@@ -1,12 +1,20 @@
 # Orsulic Lab
 
-*DataRes Consulting, Fall 2024 - Winter 2025*
+*DataRes Consulting, Fall 2024 - Spring 2025*
+
+## Tech Stack
+
+This project is built using React, Django REST API, and PostgreSQL, and hosted on AWS.
+
+The architecture diagram is as follows:
+
+![Architecture Diagram](./assets/architecture-diagram.png)
 
 ## Database Schema
 
 The current database schema is as follows:
 
-![Database Schema](./assets/db-diagram.png).
+![Database Schema](./assets/db-diagram.png)
 
 ## Installation Instructions
 
