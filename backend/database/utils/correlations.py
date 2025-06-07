@@ -89,7 +89,6 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                     if len(groups) > 1:
                         try:
                             _, anova_pvalue = f_oneway(*groups)
-                            print(anova_pvalue)
                             if anova_pvalue is not None and math.isfinite(anova_pvalue):
                                 anova_pvalue = _round_to_n(anova_pvalue, 3)
                                 anova_results.append(
