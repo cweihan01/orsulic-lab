@@ -16,7 +16,7 @@ function App() {
     });
     const [correlationsMap, setCorrelationsMap] = useState({});
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalSrc, setModalSrc] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const abortControllerRef = useRef(null);
@@ -54,33 +54,36 @@ function App() {
         ]);
 
         const endpoint = query.tcga
-        ? `${process.env.REACT_APP_API_ROOT}correlations_tcga/`
-        : `${process.env.REACT_APP_API_ROOT}correlations/`;
+            ? `${process.env.REACT_APP_API_ROOT}correlations_tcga/`
+            : `${process.env.REACT_APP_API_ROOT}correlations/`;
 
-        axios.post(endpoint, {
-        feature1: query.feature1,
-        feature2: query.feature2,
-        database1: query.database1,
-        database2: query.database2,
-        subcategory1: query.subcategory1,
-        subcategory2: query.subcategory2,
-        minCorrelation: query.minCorrelation,
-        maxPValue: query.maxPValue,
-        }, {
-        signal: controller.signal
-        })
-        .then((response) => {
-        setCorrelationsMap(response.data.correlations);
-        })
-        .catch((err) => {
-            console.error('Error fetching correlations:', err);
-        })
-        .finally(() => {
-            setIsLoading(false);
-            scrollToTop();
-        });
+        axios.post(
+            endpoint,
+            {
+                feature1: query.feature1,
+                feature2: query.feature2,
+                database1: query.database1,
+                database2: query.database2,
+                subcategory1: query.subcategory1,
+                subcategory2: query.subcategory2,
+                minCorrelation: query.minCorrelation,
+                maxPValue: query.maxPValue,
+            },
+            {
+                signal: controller.signal,
+            }
+        )
+            .then((response) => {
+                setCorrelationsMap(response.data.correlations);
+            })
+            .catch((err) => {
+                console.error('Error fetching correlations:', err);
+            })
+            .finally(() => {
+                setIsLoading(false);
+                scrollToTop();
+            });
     };
-
 
     /** Fetch correlation data when user clicks a feature in the table */
     const handleRequery = (newFeature1, newDatabase1) => {
@@ -92,20 +95,25 @@ function App() {
             feature1: newFeature1,
             database1: [newDatabase1],
             // HACK: helps to populate form fields, but may not work if >1 subcategories
-            // Should eventually keep track of subcategories either using API or state
             subcategory1: last.subcategory2,
         };
         handleQuery(updatedQuery);
     };
+
+    // Modal openers
+    const openNuclear = () =>
+        setModalSrc('/Nuclear_Features.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0');
+    const openFracLac = () =>
+        setModalSrc('/FracLac_Name_Codes.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0');
 
     return (
         <div className="h-screen flex flex-col bg-gray-50">
             <Header />
 
             <main className="relative flex flex-1 overflow-y-auto custom-scrollbar">
-                {/* Query section: query form, feature names, query history */}
                 <QueryContainer
-                    openModal={() => setIsModalOpen(true)}
+                    openNuclearModal={openNuclear}
+                    openFracLacModal={openFracLac}
                     onQuery={handleQuery}
                     isCollapsed={isSidebarCollapsed}
                     queryHistory={queryHistory}
@@ -113,7 +121,6 @@ function App() {
                     onToggleSidebar={handleToggleSidebar}
                 />
 
-                {/* Results section: graph, correlation table */}
                 <ResultsContainer
                     correlationsMap={correlationsMap}
                     lastQuery={queryHistory[0] ?? {}}
@@ -123,14 +130,16 @@ function App() {
                 />
             </main>
 
-            {/* Popup feature names */}
             <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                src="./Nuclear_Features.pdf#view=FitH&toolbar=0&navpanes=0&scrollbar=0"
+                isOpen={!!modalSrc}
+                onClose={() => setModalSrc(null)}
+                src={modalSrc ?? ''}
             />
         </div>
     );
 }
 
 export default App;
+
+
+
