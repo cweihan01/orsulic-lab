@@ -26,7 +26,19 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(
                 f"Successfully loaded {filepath}. {total_rows} rows received."))
 
-            model_name = "_".join(filepath.split("/")[-1].replace(".csv", "").split("_")[:2])
+            # model_name = "_".join(filepath.split("/")[-1].replace(".csv", "").split("_")[:2])
+
+            # add the following instead:
+            filename = filepath.split("/")[-1].replace(".csv", "")
+            parts = filename.split("_")
+
+            if "TCGA" in parts:
+                model_name = f"{parts[0]}_TCGA"   # e.g. Molecular_TCGA
+            else:
+                model_name = parts[0]             # e.g. Molecular
+
+            is_tcga = "TCGA" in parts  # compute once and reuse
+
             model_class = globals().get(model_name)
 
             if model_class is None:
@@ -45,10 +57,19 @@ class Command(BaseCommand):
                 values = row.iloc[4:]
 
                 values = values.where(pd.notna(values), None)
+                
 
-                feature_obj, created = Feature_TCGA.objects.get_or_create(
-                    name=feature_name, category=category,
-                    sub_category=sub_category, defaults={"data_type": data_type})
+                if is_tcga:
+                    feature_obj, created = Feature_TCGA.objects.get_or_create(
+                        name=feature_name, category=category,
+                        sub_category=sub_category, defaults={"data_type": data_type}
+                    )
+                else:
+                    feature_obj, created = Feature.objects.get_or_create(
+                        name=feature_name, category=category,
+                        sub_category=sub_category, defaults={"data_type": data_type}
+                    )
+
 
                 if not created:
                     feature_obj.data_type = data_type
@@ -56,8 +77,10 @@ class Command(BaseCommand):
 
                 data = {name: value for name, value in values.items()}
 
-                self.update_or_create_model(model_class, feature_obj, data)
-
-    def update_or_create_model(self, model_class, feature_obj, data):
-        valid_data = {k: v for k, v in data.items() if k in PATIENTS}
+                self.update_or_create_model(model_class, feature_obj, data, is_tcga)
+                
+    def update_or_create_model(self, model_class, feature_obj, data, is_tcga):
+        allowed = set(PATIENTS if is_tcga else CELL_LINES)
+        valid_data = {k: v for k, v in data.items() if k in allowed}
         model_class.objects.get_or_create(feature=feature_obj, defaults=valid_data)
+
