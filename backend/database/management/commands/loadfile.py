@@ -82,5 +82,9 @@ class Command(BaseCommand):
     def update_or_create_model(self, model_class, feature_obj, data, is_tcga):
         allowed = set(PATIENTS if is_tcga else CELL_LINES)
         valid_data = {k: v for k, v in data.items() if k in allowed}
-        model_class.objects.get_or_create(feature=feature_obj, defaults=valid_data)
+        
+        obj, created = model_class.objects.get_or_create(feature=feature_obj)
+        for k, v in valid_data.items():
+            setattr(obj, k, v)
+        obj.save()
 

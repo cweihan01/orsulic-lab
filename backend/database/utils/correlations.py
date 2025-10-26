@@ -59,8 +59,8 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                 if count < 3:
                     continue
 
-                f1_valid = valid_data.iloc[:, 0]
-                f2_valid = valid_data.iloc[:, 1]
+                f1_valid = valid_data.iloc[:, 0].astype(float)
+                f2_valid = valid_data.iloc[:, 1].astype(float)
 
                 spearman_corr = spearman_pvalue = None
                 anova_pvalue = None
@@ -68,8 +68,7 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
 
                 # Spearman: both numerical
                 if f1_type == "num" and f2_type == "num":
-                    spearman_corr, spearman_pvalue = spearmanr(
-                        f1_valid, f2_valid, nan_policy="omit")
+                    spearman_corr, spearman_pvalue = spearmanr(f1_valid, f2_valid, nan_policy="omit")
 
                     # Reject null and nan values
                     if (spearman_corr is not None and math.isfinite(spearman_corr)) and (spearman_pvalue is not None and math.isfinite(spearman_pvalue)):
