@@ -59,8 +59,8 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                 if count < 3:
                     continue
 
-                f1_valid = valid_data.iloc[:, 0].astype(float)
-                f2_valid = valid_data.iloc[:, 1].astype(float)
+                f1_valid = valid_data.iloc[:, 0]
+                f2_valid = valid_data.iloc[:, 1]
 
                 spearman_corr = spearman_pvalue = None
                 anova_pvalue = None
@@ -68,7 +68,9 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
 
                 # Spearman: both numerical
                 if f1_type == "num" and f2_type == "num":
-                    spearman_corr, spearman_pvalue = spearmanr(f1_valid, f2_valid, nan_policy="omit")
+                    x = pd.to_numeric(f1_valid, errors="coerce")
+                    y = pd.to_numeric(f2_valid, errors="coerce")
+                    spearman_corr, spearman_pvalue = spearmanr(x, y, nan_policy="omit")
 
                     # Reject null and nan values
                     if (spearman_corr is not None and math.isfinite(spearman_corr)) and (spearman_pvalue is not None and math.isfinite(spearman_pvalue)):
@@ -97,7 +99,7 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
 
                 # Chi-squared: both categorical
                 elif f1_type == "cat" and f2_type == "cat":
-                    contingency_table = pd.crosstab(f1_valid, f2_valid)
+                    contingency_table = pd.crosstab(f1_valid.astype("string"), f2_valid.astype("string"))
                     if contingency_table.shape[0] > 1 and contingency_table.shape[1] > 1:
                         try:
                             _, chisq_pvalue, _, _ = chi2_contingency(contingency_table)
@@ -107,6 +109,7 @@ def calculate_correlations(df1: pd.DataFrame, df2: pd.DataFrame):
                                     [db1, f1_subcategory, f1_name, db2, f2_subcategory, f2_name, count, chisq_pvalue])
                         except:
                             continue
+
 
     return {
         "spearman": pd.DataFrame(
