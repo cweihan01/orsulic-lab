@@ -23,7 +23,7 @@ function QueryForm({ onSubmit, isCollapsed, lastQuery }) {
     const [isCollapsible, setIsCollapsible] = useState(false);
   
     const celllineCategories = ["Nuclear", "Molecular", "Drug Screen"];
-    const tcgaCategories = ["Nuclear", "Molecular", "Clinical", "FracLac"];
+    const tcgaCategories = ["Nuclear", "Molecular", "Clinical", "FracLac", "Doberstein"];
   
     const [openDropdowns, setOpenDropdowns] = useState({
       database1: false,
