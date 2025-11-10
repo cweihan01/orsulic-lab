@@ -1,7 +1,7 @@
 import pandas as pd
 from django.core.management import BaseCommand
 
-from database.models import Feature, Nuclear, Molecular, DrugScreen, Feature_TCGA, Nuclear_TCGA, Molecular_TCGA, Clinical_TCGA, FracLac_TCGA
+from database.models import Feature, Nuclear, Molecular, DrugScreen, Feature_TCGA, Nuclear_TCGA, Molecular_TCGA, Clinical_TCGA, FracLac_TCGA, Doberstein_TCGA
 from database.utils.constants import CELL_LINES, PATIENTS
 
 

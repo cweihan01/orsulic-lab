@@ -13,6 +13,7 @@ router.register("nuclear_tcga", views.NuclearTCGAViewSet)
 router.register("molecular_tcga", views.MolecularTCGAViewSet)
 router.register("clinical_tcga", views.ClinicalTCGAViewSet)
 router.register("fraclac_tcga", views.FracLacTCGAViewSet)
+router.register("doberstein_tcga", views.DobersteinTCGAViewSet)
 
 urlpatterns = [
     path('', views.index, name=""),

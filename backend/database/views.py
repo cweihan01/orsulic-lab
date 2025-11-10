@@ -10,8 +10,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from .models import Feature, Nuclear, Molecular, DrugScreen, Correlation, Feature_TCGA, Nuclear_TCGA, Molecular_TCGA, Clinical_TCGA, FracLac_TCGA
-from .serializers import FeatureSerializer, NuclearSerializer, MolecularSerializer, DrugScreenSerializer, FeatureTCGASerializer, NuclearTCGASerializer, MolecularTCGASerializer, ClinicalTCGASerializer, FracLacTCGASerializer
+from .models import Feature, Nuclear, Molecular, DrugScreen, Correlation, Feature_TCGA, Nuclear_TCGA, Molecular_TCGA, Clinical_TCGA, FracLac_TCGA, Doberstein_TCGA
+from .serializers import FeatureSerializer, NuclearSerializer, MolecularSerializer, DrugScreenSerializer, FeatureTCGASerializer, NuclearTCGASerializer, MolecularTCGASerializer, ClinicalTCGASerializer, FracLacTCGASerializer, DobersteinTCGASerializer
 from .utils import correlations
 from .utils.constants import CELL_LINES, CACHE_DURATION, PATIENTS
 
@@ -374,6 +374,11 @@ class FracLacTCGAViewSet(viewsets.ModelViewSet):
     serializer_class = FracLacTCGASerializer
 
 
+class DobersteinTCGAViewSet(viewsets.ModelViewSet):
+    queryset = Doberstein_TCGA.objects.all()
+    serializer_class = DobersteinTCGASerializer
+
+
 class CorrelationTCGAView(APIView):
     def post(self, request, *args, **kwargs):
         try:
@@ -439,24 +444,26 @@ class CorrelationTCGAView(APIView):
                 if db_name == "Nuclear":
                     f1_data["Nuclear"] = Nuclear_TCGA.objects.filter(feature=f1_object)
                 elif db_name == "Molecular":
-                    f1_data["Molecular"] = Molecular_TCGA.objects.filter(
-                        feature=f1_object).values_list()
+                    f1_data["Molecular"] = Molecular_TCGA.objects.filter(feature=f1_object).values_list()
                 elif db_name == "Clinical":
                     f1_data["Clinical"] = Clinical_TCGA.objects.filter(feature=f1_object)
                 elif db_name == "FracLac":
                     f1_data["FracLac"] = FracLac_TCGA.objects.filter(feature=f1_object)
+                elif db_name == "Doberstein":
+                    f1_data["Doberstein"] = Doberstein_TCGA.objects.filter(feature=f1_object)
 
             f2_data = {}
             for db_name in db2_names:
                 if db_name == "Nuclear":
                     f2_data["Nuclear"] = Nuclear_TCGA.objects.filter(feature__in=f2_objects)
                 elif db_name == "Molecular":
-                    f2_data["Molecular"] = Molecular_TCGA.objects.filter(
-                        feature__in=f2_objects).values_list()
+                    f2_data["Molecular"] = Molecular_TCGA.objects.filter(feature__in=f2_objects).values_list()
                 elif db_name == "Clinical":
                     f2_data["Clinical"] = Clinical_TCGA.objects.filter(feature__in=f2_objects)
                 elif db_name == "FracLac":
                     f2_data["FracLac"] = FracLac_TCGA.objects.filter(feature__in=f2_objects)
+                elif db_name == "Doberstein":
+                    f2_data["Doberstein"] = Doberstein_TCGA.objects.filter(feature__in=f2_objects)
 
             # Map each feature (in current query) to its sub_category
             feature_to_subcategory = {
@@ -533,6 +540,8 @@ class ScatterTCGAView(APIView):
                 f1_data = Clinical_TCGA.objects.filter(feature=feature1)
             elif db1_name == "FracLac":
                 f1_data = FracLac_TCGA.objects.filter(feature=feature1)
+            elif db1_name == "Doberstein":
+                f1_data = Doberstein_TCGA.objects.filter(feature=feature1)
 
             if db2_name == "Nuclear":
                 f2_data = Nuclear_TCGA.objects.filter(feature=feature2)
@@ -542,6 +551,8 @@ class ScatterTCGAView(APIView):
                 f2_data = Clinical_TCGA.objects.filter(feature=feature2)
             elif db2_name == "FracLac":
                 f2_data = FracLac_TCGA.objects.filter(feature=feature2)
+            elif db2_name == "Doberstein":
+                f2_data = Doberstein_TCGA.objects.filter(feature=feature2)
 
             if not f1_data or not f2_data:
                 # print(f1_data.values_list())
@@ -557,24 +568,16 @@ class ScatterTCGAView(APIView):
             # Merge the two DataFrames by column
             merged_df = pd.concat([f1_df, f2_df], axis=0)
 
-            # print("Merged DataFrame:")
-            # print(merged_df.head(5))
-
             # Transpose the merged DataFrame
             transposed_df = merged_df.T.reset_index()
             transposed_df.columns = ["patients"] + \
                 [f"{f1_name}", f"{f2_name}"]  # Rename columns
             
-
-
             # Remove redundnant first row
             transposed_df = transposed_df.iloc[1:].reset_index(drop=True)
 
             # Drop columns with na values
             transposed_df = transposed_df.dropna(axis=0)
-
-            # print("Transposed DataFrame:")
-            # print(transposed_df.head(5))
 
             # Convert the transposed DataFrame to a JSON-compatible format
             transposed_json = transposed_df.to_dict(orient="records")

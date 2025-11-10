@@ -1,7 +1,7 @@
 import math
 from rest_framework import serializers
 
-from .models import Feature, Nuclear, Molecular, DrugScreen, Feature_TCGA, Nuclear_TCGA, Molecular_TCGA, Clinical_TCGA, FracLac_TCGA
+from .models import Feature, Nuclear, Molecular, DrugScreen, Feature_TCGA, Nuclear_TCGA, Molecular_TCGA, Clinical_TCGA, FracLac_TCGA, Doberstein_TCGA
 from .utils.constants import CELL_LINES, PATIENTS
 
 
@@ -48,6 +48,7 @@ NuclearTCGASerializer = create_serializer(Nuclear_TCGA, FeatureTCGASerializer, P
 FracLacTCGASerializer = create_serializer(FracLac_TCGA, FeatureTCGASerializer, PATIENTS)
 ClinicalTCGASerializer = create_serializer(Clinical_TCGA, FeatureTCGASerializer, PATIENTS)
 MolecularTCGASerializer = create_serializer(Molecular_TCGA, FeatureTCGASerializer, PATIENTS)
+DobersteinTCGASerializer = create_serializer(Doberstein_TCGA, FeatureTCGASerializer, PATIENTS)
 
 
 # def create_numcat_serializer(model_name, feature_serializer, field_list):

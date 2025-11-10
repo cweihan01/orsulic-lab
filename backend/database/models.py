@@ -113,6 +113,17 @@ for patient in PATIENTS:
     Molecular_TCGA.add_to_class(patient, models.CharField(max_length=50, null=True, blank=True))
 
 
+class Doberstein_TCGA(models.Model):
+
+    feature = models.OneToOneField(Feature_TCGA, on_delete=models.CASCADE, primary_key=True)
+
+    def __str__(self):
+        return self.feature.name
+    
+for patient in PATIENTS:
+    Doberstein_TCGA.add_to_class(patient, models.CharField(max_length=50, null=True, blank=True))
+
+
 class Correlation(models.Model):
     """
     Schema:

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Feature, Nuclear, Molecular, DrugScreen, Correlation, Feature_TCGA, Nuclear_TCGA, Molecular_TCGA, Clinical_TCGA, FracLac_TCGA
+from .models import Feature, Nuclear, Molecular, DrugScreen, Correlation, Feature_TCGA, Nuclear_TCGA, Molecular_TCGA, Clinical_TCGA, FracLac_TCGA, Doberstein_TCGA
 
 # Register your models here.
 admin.site.register(Feature)
@@ -12,3 +12,4 @@ admin.site.register(Nuclear_TCGA)
 admin.site.register(Molecular_TCGA)
 admin.site.register(Clinical_TCGA)
 admin.site.register(FracLac_TCGA)
+admin.site.register(Doberstein_TCGA)

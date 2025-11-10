@@ -3,8 +3,6 @@ import pandas as pd
 import warnings
 from scipy.stats import spearmanr, f_oneway, chi2_contingency
 
-from .constants import CELL_LINES
-
 
 def _round_to_n(x, n):
     """Round to n significant digits."""
