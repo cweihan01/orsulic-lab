@@ -140,7 +140,8 @@ class CorrelationView(APIView):
                 "db2": sorted(db2_names),
             }
             key_json = json.dumps(key_data, separators=(",", ":"), sort_keys=True)
-            cache_key = "corr:" + hashlib.md5(key_json.encode("utf-8")).hexdigest()
+            cache_key = "corr:cellline:" + hashlib.md5(key_json.encode("utf-8")).hexdigest()
+
 
             # Retrieve correlation from cache if possible
             cached_result = cache.get(cache_key)
@@ -421,7 +422,8 @@ class CorrelationTCGAView(APIView):
                 "db2": sorted(db2_names),
             }
             key_json = json.dumps(key_data, separators=(",", ":"), sort_keys=True)
-            cache_key = "corr:" + hashlib.md5(key_json.encode("utf-8")).hexdigest()
+            cache_key = "corr:tcga:" + hashlib.md5(key_json.encode("utf-8")).hexdigest()
+
 
             # Retrieve correlation from cache if possible
             cached_result = cache.get(cache_key)
